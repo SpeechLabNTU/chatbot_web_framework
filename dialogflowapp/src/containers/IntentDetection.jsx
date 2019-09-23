@@ -4,7 +4,7 @@ import React, {Component} from 'react';
 import {InputGroup,FormControl,Button} from "react-bootstrap";
 import {Table} from "react-bootstrap";
 
-class Comparison extends Component {
+class IntentDetection extends Component {
 
   constructor(props) {
     super(props);
@@ -14,6 +14,7 @@ class Comparison extends Component {
         token:"",
         query:"",
         response:"",
+        intent:"",
         apiResponse:"",
         tokenActive:false
     }
@@ -26,7 +27,8 @@ class Comparison extends Component {
     this.setState({query:responseObj.queryText})
   }
 
-  async handleClick(){
+  handleClick(){
+    
     const root_url = "https://dialogflow.googleapis.com/v2";
     const project_id = "chatbot-development-250810";
     const session_id = 6376876876;
@@ -43,14 +45,12 @@ class Comparison extends Component {
     var bodyParameters = {
         "queryInput":{"text":{"text": text, "languageCode":"en"}},
     };
-    var params = {
-      question: this.state.input
-    }
 
-    await axios.post(URL,bodyParameters,config)
+    axios.post(URL,bodyParameters,config)
         .then((res)=>{
           console.log(res.data.queryResult)
           this.setState({response:res.data.queryResult.fulfillmentMessages[0].text.text[0]})
+          this.setState({intent:res.data.queryResult.intent.displayName})
           this.determineQueryType(res.data.queryResult)
           this.setState({isSubmitted:true})
         })
@@ -58,11 +58,7 @@ class Comparison extends Component {
             console.log(err.response)
     });
 
-    await axios.post('http://localhost:3001/api/askJamie', params)
-        .then((res)=>{
-            console.log(res)
-    });
-
+    console.log(this.state.responses)
 
   }
 
@@ -78,7 +74,7 @@ class Comparison extends Component {
     return (
       
         <header className="App-header">
-        <h1>QA Comparison</h1>
+        <h1>Keyword detection</h1>
         <InputGroup className="mb-3" style={{width:"50%"}}>
           <FormControl name="token" onChange={this.handleInput}
             placeholder="Enter Dialogflow Token"
@@ -107,45 +103,25 @@ class Comparison extends Component {
 
 
           {this.state.isSubmitted &&
+
                 <div>
-                  <div className="row">
-                    <div className="col-md-5">
-                      <p>Andrew QA</p>
-                      <Table striped bordered hover variant="dark" style={{width:"100%", marginLeft:"auto", marginRight:"auto"}}>
-                          <thead>
-                              <tr>
-                              <th>{this.state.query}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                              <td>{this.state.response}</td>
-                              </tr>
-                          </tbody>
-                      </Table>
-                    </div>
-
-                    <div className="col-md-5 offset-md-1">
-                      <p>Ask Jamie</p>
-                      <Table striped bordered hover variant="dark" style={{width:"100%", marginLeft:"auto", marginRight:"auto"}}>
-                          <thead>
-                              <tr>
-                              <th>{this.state.query}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                              <td>{this.state.response}</td>
-                              </tr>
-                          </tbody>
-                      </Table>
-                    </div>
-                  </div>
-
-                    
+                    <p>Intent Detected: {this.state.intent}</p>
+                    <Table striped bordered hover variant="dark" style={{width:"50%", marginLeft:"auto", marginRight:"auto"}}>
+                        <thead>
+                            <tr>
+                            <th>{this.state.query}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>{this.state.response}</td>
+                            </tr>
+                        </tbody>
+                    </Table>
                 </div>
           }
 
+    
         </header>
     );
   }
@@ -153,4 +129,4 @@ class Comparison extends Component {
 }
 
 
-export default Comparison;
+export default IntentDetection;

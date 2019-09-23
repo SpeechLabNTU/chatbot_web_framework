@@ -21,6 +21,7 @@ class App extends Component {
             <Nav.Link href="/speechDialog">Speech Sending</Nav.Link>
             <Nav.Link href="/comparison">Keyword Detection</Nav.Link>
             <Nav.Link href="/prompt">Prompt</Nav.Link>
+            <Nav.Link href="/compare">Comparison</Nav.Link>
           </Nav>
         </Navbar>
 

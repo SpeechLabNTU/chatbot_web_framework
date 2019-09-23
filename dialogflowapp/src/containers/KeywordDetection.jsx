@@ -4,7 +4,7 @@ import React, {Component} from 'react';
 import {InputGroup,FormControl,Button} from "react-bootstrap";
 import {Table} from "react-bootstrap";
 
-class Comparison extends Component {
+class keywordDetection extends Component {
 
   constructor(props) {
     super(props);
@@ -16,6 +16,7 @@ class Comparison extends Component {
         response:"",
         intent:"",
         apiResponse:"",
+        keywordDetection: false,
         tokenActive:false
     }
     this.handleClick = this.handleClick.bind(this);
@@ -24,7 +25,37 @@ class Comparison extends Component {
   }
 
   determineQueryType(responseObj){
-    this.setState({query:responseObj.queryText})
+        var parameters = responseObj.parameters
+        var lengthOfKeywords  = Object.keys(parameters).length;
+        console.log(lengthOfKeywords)
+        var count = 0
+        var queryFormation = ""
+
+        if(lengthOfKeywords === 0){
+            this.setState({keywordDetection:false})
+            this.setState({query:responseObj.queryText})
+        }else{
+            this.setState({prompt:false})
+            Object.keys(parameters).forEach(function(key) {
+                if(parameters[key] !== ""){
+                    count = count + 1
+                }
+            })
+
+            if(count === lengthOfKeywords){
+                this.setState({keywordDetection:true})
+                Object.keys(parameters).forEach(function(key) {
+                    queryFormation = queryFormation + parameters[key] + ","
+
+                })
+                this.setState({query:queryFormation})
+            }else{
+                this.setState({keywordDetection:false})
+                this.setState({query:responseObj.queryText})
+            }
+        }
+        
+
   }
 
   handleClick(){
@@ -109,7 +140,7 @@ class Comparison extends Component {
                     <Table striped bordered hover variant="dark" style={{width:"50%", marginLeft:"auto", marginRight:"auto"}}>
                         <thead>
                             <tr>
-                            <th>{this.state.query}</th>
+                            <th>{this.state.keywordDetection && <p>Dialogflow Keywords matched: </p>}{this.state.query}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -130,4 +161,4 @@ class Comparison extends Component {
 }
 
 
-export default Comparison;
+export default keywordDetection;

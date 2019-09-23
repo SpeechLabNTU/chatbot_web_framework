@@ -73,9 +73,7 @@ router.post("/api/matching", (req, res) => {
         })
     }
 
-
 });
-
 
 router.post("/api/prompt", (req, res) => {
 
@@ -155,6 +153,61 @@ function sendQuery(query,res){
         return res.json(sendBack)
     })
     
+}
+
+router.post("/api/directQuery", (req, res) => {
+    
+    var queryText = req.body.queryResult.queryText
+    
+    const options = {
+        method: "POST",
+        url: "http://155.69.146.213:5001/ask_bb/baby_bonus_faq_service",
+        headers: {
+            "Authorization": "Basic ",
+            "Content-Type": "multipart/form-data"
+        },
+        formData : {
+            "input" : queryText
+        }
+    };
+
+    request(options, function (error, response, body){
+        responseQueryText = JSON.parse(response.body)
+        var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
+        return res.json(sendBack)
+    })
+
+});
+
+router.post("/api/askJamie"), (req,res)=> {
+    console.log(req)
+    const {Builder, By, Key, until} = require('selenium-webdriver');
+    var chrome = require('selenium-webdriver/chrome');
+    var options = new chrome.Options().headless();
+    var AskJamieReply = ""
+
+    (async function example(){
+        let driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
+        try {
+            await driver.get('https://www.babybonus.msf.gov.sg');
+            await driver.findElement(By.name('chat_input')).sendKeys('baby bonus', Key.RETURN);
+            await driver.wait(until.elementLocated(By.className('speech\-bubble1')),10000)
+            
+        } finally {
+            var replyPromise = driver.findElement(By.className('last_li'))
+                                        .findElement(By.className('speech\-bubble1'))
+                                        .findElement(By.tagName('div')).getText();
+                                        
+                                    
+            replyPromise.then((text)=>{
+                AskJamieReply = text
+                driver.quit()
+            });
+        }
+    })();
+
+    res.setHeader("Content-Type", "application/json");
+	res.end(JSON.stringify({ reply: AskJamieReply }));
 }
 
 
