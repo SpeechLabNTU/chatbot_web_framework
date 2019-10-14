@@ -74,7 +74,7 @@ class IntentDetection extends Component {
     return (
       
         <header className="App-header">
-        <h1>Keyword detection</h1>
+        <h1>Intent detection</h1>
         <InputGroup className="mb-3" style={{width:"50%"}}>
           <FormControl name="token" onChange={this.handleInput}
             placeholder="Enter Dialogflow Token"

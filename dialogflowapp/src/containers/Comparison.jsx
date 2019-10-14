@@ -2,68 +2,131 @@ import '../App.css';
 import axios from "axios";
 import React, {Component} from 'react';
 import {InputGroup,FormControl,Button} from "react-bootstrap";
+import io from 'socket.io-client'
 import {Table} from "react-bootstrap";
+import loading from '../img/Rolling.gif';
+import Record from '../Record';
 
 class Comparison extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
+        //Direct Query
         isSubmitted:false,
         input:"",
-        token:"",
         query:"",
         response:"",
+        responseJamie:"",
         apiResponse:"",
-        tokenActive:false
+        loading:false,
+        loadingJamie:false,
+        tokenActive:false,
+
+        //Speech to Text
+        audioEnable: false,
+        mode: 'record',
+        backendUrl: 'http://localhost:3001',
+        isSocketReady: false,
+        partialResult: '',
+        status: 0, // 0: idle, 1: streaming, 2: finish
+        isBusy: false,
+        socket: null,
     }
     this.handleClick = this.handleClick.bind(this);
     this.handleInput = this.handleInput.bind(this);
-    this.determineQueryType = this.determineQueryType.bind(this);
   }
 
-  determineQueryType(responseObj){
-    this.setState({query:responseObj.queryText})
+  componentDidMount () {
+    this.initSockets()
+  }
+
+  initSockets() {
+
+    const socket = io(this.state.backendUrl, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity
+    })
+
+    socket.on('connect', () => {
+      console.log('socket connected!')
+    })
+
+    socket.on('stream-ready', () => {
+      this.setState({
+        isSocketReady: true,
+        status: 1
+      })
+    })
+
+    socket.on('stream-data', data => {
+      
+        if (data.result.final) {
+            this.setState(prevState => ({
+            input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
+            partialResult: ''
+            }))
+            this.handleClick()
+
+        } else {
+            this.setState(prevState => ({
+            partialResult: '[...' + data.result.hypotheses[0].transcript + ']'
+            }))
+        }
+    })
+
+    socket.on('stream-close', () => {
+      this.setState({
+        status: 2,
+        isBusy: false
+      })
+    })
+    this.setState({
+      socket
+    })
+  }
+  reset = () => {
+    this.setState({
+      transcription: '',
+      partialResult: ''
+    })
+  }
+
+  setBusy = () => {
+    this.setState({
+      isBusy: true
+    })
+  }
+
+  setStatus = (status) => {
+    this.setState({
+      status
+    })
   }
 
   async handleClick(){
-    const root_url = "https://dialogflow.googleapis.com/v2";
-    const project_id = "chatbot-development-250810";
-    const session_id = 6376876876;
-    const URL = `${root_url}/projects/${project_id}/agent/sessions/${session_id}:detectIntent`;
-    
-    var config = {
-      headers:{
-          "Authorization": "Bearer " + this.state.token,
-          "Content-Type": "application/json"
-      }
-    };
 
-    var text = this.state.input
-    var bodyParameters = {
-        "queryInput":{"text":{"text": text, "languageCode":"en"}},
-    };
     var params = {
       question: this.state.input
     }
 
-    await axios.post(URL,bodyParameters,config)
+    this.setState({loading:true})
+    this.setState({loadingJamie:true})
+    await axios.post("http://localhost:3001/api/dialogflow", params)
         .then((res)=>{
-          console.log(res.data.queryResult)
-          this.setState({response:res.data.queryResult.fulfillmentMessages[0].text.text[0]})
-          this.determineQueryType(res.data.queryResult)
-          this.setState({isSubmitted:true})
-        })
-        .catch((err)=>{
-            console.log(err.response)
-    });
-
-    await axios.post('http://localhost:3001/api/askJamie', params)
+            this.setState({response:res.data.reply})
+            this.setState({loading:false})
+            this.setState({isSubmitted:true})
+        });
+    
+    await axios.post('http://localhost:3001/api/askJamieFast', params)
         .then((res)=>{
-            console.log(res)
+            this.setState({responseJamie:res.data.reply})
+            this.setState({loadingJamie:false})
     });
-
-
+    this.setState({input:''})
   }
 
   handleInput(e) {
@@ -76,75 +139,99 @@ class Comparison extends Component {
   render(){
 
     return (
-      
         <header className="App-header">
-        <h1>QA Comparison</h1>
-        <InputGroup className="mb-3" style={{width:"50%"}}>
-          <FormControl name="token" onChange={this.handleInput}
-            placeholder="Enter Dialogflow Token"
-            aria-label="Enter Dialogflow Token"
-            aria-describedby="basic-addon2"
-          />
-          {this.state.token === "" 
-          ?(<FormControl name="input"
-            disabled
-            placeholder="Ask questions"
-            aria-label="Ask questions"
-            aria-describedby="basic-addon2"
-          />):
-          <FormControl name="input" onChange={this.handleInput}
-            placeholder="Ask questions"
-            aria-label="Ask questions"
-            aria-describedby="basic-addon2"
-          />
-          }
 
-          <InputGroup.Append>
-            <Button onClick={this.handleClick} variant="outline-secondary">Submit</Button>
-          </InputGroup.Append>
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-md-5 offset-md-1">
+            <h1>QA Comparison</h1>
+              <InputGroup className="mb-3" style={{width:"100%"}}>
 
-        </InputGroup>
+                <FormControl name="input" onChange={this.handleInput}
+                  placeholder="Ask questions"
+                  aria-label="Ask questions"
+                  aria-describedby="basic-addon2"
+                />
 
+                <InputGroup.Append>
+                  <Button onClick={this.handleClick} variant="outline-secondary">Submit</Button>
+                </InputGroup.Append>
 
-          {this.state.isSubmitted &&
-                <div>
-                  <div className="row">
-                    <div className="col-md-5">
-                      <p>Andrew QA</p>
-                      <Table striped bordered hover variant="dark" style={{width:"100%", marginLeft:"auto", marginRight:"auto"}}>
-                          <thead>
-                              <tr>
-                              <th>{this.state.query}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                              <td>{this.state.response}</td>
-                              </tr>
-                          </tbody>
-                      </Table>
+              </InputGroup>
+              
+              <FormControl name="input"
+                  readOnly
+                  value={this.state.input + ' ' + this.state.partialResult}
+                  placeholder="Speech Input"
+                  aria-label="Ask questions"
+                  aria-describedby="basic-addon2"
+              />
+              
+              <Record
+              socket={this.state.socket}
+              isBusy={this.state.isBusy}
+              token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3MDc4MzczNCwiZXhwIjoxNTczMzc1NzM0fQ.7mNczYGoTJ_sXRXS_N5GN_HccMz0gl0lObPrl0KuNeI"
+              isSocketReady={this.state.isSocketReady}
+              backendUrl={this.state.backendUrl}
+              reset={this.reset}
+              setBusy={this.setBusy}
+              /> 
+              
+            </div>
+
+            <div className="col-md-4 offset-md-1">
+
+              {this.state.isSubmitted &&
+                  <div>
+                    <div className="row">
+                      <div className="col-md-5">
+                        <p>Andrew QA</p>
+                        <Table striped bordered hover variant="dark" style={{width:"550px", marginLeft:"auto", marginRight:"auto"}}>
+                            <thead>
+                                <tr>
+                                <th><h5>{this.state.input}</h5></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                {this.state.loading && <td><img style={{width:'30px',height:'30px'}} className="response" src={loading} alt="load"/></td>}
+                                {this.state.loading === false && <td><h5>{this.state.response}</h5></td>}
+                                </tr>
+                            </tbody>
+                        </Table>
+                      </div>
                     </div>
 
-                    <div className="col-md-5 offset-md-1">
-                      <p>Ask Jamie</p>
-                      <Table striped bordered hover variant="dark" style={{width:"100%", marginLeft:"auto", marginRight:"auto"}}>
-                          <thead>
-                              <tr>
-                              <th>{this.state.query}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                              <td>{this.state.response}</td>
-                              </tr>
-                          </tbody>
-                      </Table>
+                    <div className="row">
+                      <div className="col-md-5">
+                        <p>Ask Jamie</p>
+                        <Table striped bordered hover variant="dark" style={{width:"550px", marginLeft:"auto", marginRight:"auto"}}>
+                            <thead>
+                                <tr>
+                                <th><h5>{this.state.input}</h5></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                {this.state.loadingJamie && <td><img style={{width:'30px',height:'30px'}} className="response" src={loading} alt="load"/></td>}
+                                {this.state.loadingJamie === false && <td><h5>{this.state.responseJamie}</h5></td>}
+                                </tr>
+                            </tbody>
+                        </Table>
+                      </div>
                     </div>
+
+                      
                   </div>
+            }
+              
+            </div>
 
-                    
-                </div>
-          }
+          </div>
+        </div>
+      
+
+          
 
         </header>
     );

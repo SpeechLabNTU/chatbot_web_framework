@@ -19,8 +19,8 @@ class App extends Component {
           <Nav className="mr-auto">
             <Nav.Link href="/textDialog">Text Sending</Nav.Link>
             <Nav.Link href="/speechDialog">Speech Sending</Nav.Link>
-            <Nav.Link href="/comparison">Keyword Detection</Nav.Link>
-            <Nav.Link href="/prompt">Prompt</Nav.Link>
+            <Nav.Link href="/keyword">Keyword Detection</Nav.Link>
+            <Nav.Link href="/intent">Intent Detection</Nav.Link>
             <Nav.Link href="/compare">Comparison</Nav.Link>
           </Nav>
         </Navbar>

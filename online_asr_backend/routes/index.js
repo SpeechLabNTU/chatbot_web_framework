@@ -3,10 +3,16 @@ const router = express.Router()
 const MainController = require('../controllers/MainController')
 const upload = require('../upload')
 const request = require('request')
+const dialogflow = require('dialogflow');
+const uuid = require('uuid');
+var fs = require('fs');
 
 router.post('/stream/record', MainController.streamByRecording)
 
 router.post('/stream/import', upload.single('file'), MainController.streamByImport)
+
+
+// ==========================================================Query formation keywords API==================================================================
 
 router.post("/api/matching", (req, res) => {
 
@@ -75,6 +81,8 @@ router.post("/api/matching", (req, res) => {
 
 });
 
+// ========================================================Dialogflow Intent Matching and Fallback intentions API==============================================
+
 router.post("/api/prompt", (req, res) => {
 
     var queryText = req.body.queryResult.queryText
@@ -128,7 +136,6 @@ router.post("/api/prompt", (req, res) => {
             var num = Math.floor(Math.random() * Math.floor(arrayOfQuery.length));
             console.log(arrayOfQuery[num])
             sendQuery(arrayOfQuery[num],res)
-
         })
     }
 });
@@ -155,13 +162,15 @@ function sendQuery(query,res){
     
 }
 
+// ============================================================Andrew QA Matching API========================================================================
+
 router.post("/api/directQuery", (req, res) => {
     
     var queryText = req.body.queryResult.queryText
     
     const options = {
         method: "POST",
-        url: "http://155.69.146.213:5001/ask_bb/baby_bonus_faq_service",
+        url: "http://155.69.146.213:8081/ask_bb/baby_bonus_faq_service",
         headers: {
             "Authorization": "Basic ",
             "Content-Type": "multipart/form-data"
@@ -179,37 +188,103 @@ router.post("/api/directQuery", (req, res) => {
 
 });
 
-router.post("/api/askJamie"), (req,res)=> {
-    console.log(req)
+
+// ============================================================Ask Jamie Selenium API==========================================================================
+
+router.post("/api/askJamie", (req,res)=> {
+    
+    query = req.body.question
+    example(query,res)
+    
+});
+
+async function example(query,res){
     const {Builder, By, Key, until} = require('selenium-webdriver');
     var chrome = require('selenium-webdriver/chrome');
     var options = new chrome.Options().headless();
-    var AskJamieReply = ""
+    var response = ""
 
-    (async function example(){
-        let driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
-        try {
-            await driver.get('https://www.babybonus.msf.gov.sg');
-            await driver.findElement(By.name('chat_input')).sendKeys('baby bonus', Key.RETURN);
-            await driver.wait(until.elementLocated(By.className('speech\-bubble1')),10000)
-            
-        } finally {
-            var replyPromise = driver.findElement(By.className('last_li'))
-                                        .findElement(By.className('speech\-bubble1'))
-                                        .findElement(By.tagName('div')).getText();
-                                        
-                                    
-            replyPromise.then((text)=>{
-                AskJamieReply = text
-                driver.quit()
-            });
-        }
-    })();
-
-    res.setHeader("Content-Type", "application/json");
-	res.end(JSON.stringify({ reply: AskJamieReply }));
+    let driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
+    try {
+        await driver.get('https://www.babybonus.msf.gov.sg');
+        await driver.findElement(By.name('chat_input')).sendKeys(query, Key.RETURN);
+        await driver.wait(until.elementLocated(By.className('speech\-bubble1')),10000)
+        
+    } finally {
+        var replyPromise = driver.findElement(By.className('last_li'))
+                                    .findElement(By.className('speech\-bubble1'))
+                                    .findElement(By.tagName('div')).getText();
+        
+        replyPromise.then((text)=>{
+            res.setHeader("Content-Type", "application/json");
+	        res.json({ reply: text})
+            driver.quit()
+        });
+    }
+    
 }
 
+
+// ============================================================Ask Jamie Selenium API==========================================================================
+
+router.post("/api/askJamieFast", (req,res)=> {
+    
+    query = req.body.question
+    example(query,res)
+    
+});
+
+function example(query,res){
+
+    const fs = require('fs');
+    fs.writeFile("questions.txt", query, function(err) {
+
+        if(err) {
+            return console.log(err);
+        }
+    })
+
+    const { spawn } = require('child_process');
+    const pyProg = spawn('python3', ['ask_jamie.py','--test_questions', 'questions.txt']);
+
+    pyProg.stdout.on('data', function(data) {
+        res.json({reply: data.toString()});
+    });
+}
+
+// ==================================================================Dialogflow Connection====================================================================
+
+router.post("/api/dialogflow", (req,res)=> {
+
+    console.log(req.body.question)
+    
+    query = req.body.question
+    dialoflowConnection(query,res)
+    
+});
+
+async function dialoflowConnection(query, res) {
+    
+    const sessionId = uuid.v4();
+    const projectId = 'chatbot-development-250810'
+  
+    const sessionClient = new dialogflow.SessionsClient();
+    const sessionPath = sessionClient.sessionPath(projectId, sessionId);
+  
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: query,
+          languageCode: 'en-US',
+        },
+      },
+    };
+  
+    const responses = await sessionClient.detectIntent(request);
+    const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
+    res.json({reply: result})
+}
 
 
 
