@@ -18,6 +18,8 @@ class Comparison extends Component {
         query:"",
         response:"",
         responseJamie:"",
+        responseRephrased: "",
+        responseBp: "",
         apiResponse:"",
         loading:false,
         loadingJamie:false,
@@ -35,6 +37,7 @@ class Comparison extends Component {
     }
     this.handleClick = this.handleClick.bind(this);
     this.handleInput = this.handleInput.bind(this);
+    this.summarizer = this.summarizer.bind(this);
   }
 
   componentDidMount () {
@@ -106,8 +109,23 @@ class Comparison extends Component {
     })
   }
 
-  async handleClick(){
+  summarizer(result){
+    var array = []
+    var summary = "";
+    array = result.split(" ")
+    for (var i = 0;i<7;i++){
+      if (i === 6){
+        summary += array[i] + "..."
+      }else{
+        summary += array[i] + " "
+      }
+    }
+    return summary
+    
+  }
 
+  async handleClick(){
+    this.setState({query: this.state.input})
     var params = {
       question: this.state.input
     }
@@ -116,14 +134,32 @@ class Comparison extends Component {
     this.setState({loadingJamie:true})
     await axios.post("http://localhost:3001/api/dialogflow", params)
         .then((res)=>{
-            this.setState({response:res.data.reply})
+            var summarized_1 = this.summarizer(res.data.reply)
+            this.setState({response:summarized_1})
             this.setState({loading:false})
             this.setState({isSubmitted:true})
         });
     
     await axios.post('http://localhost:3001/api/askJamieFast', params)
         .then((res)=>{
-            this.setState({responseJamie:res.data.reply})
+            var summarized_2 = this.summarizer(res.data.reply)
+            this.setState({responseJamie:summarized_2})
+            this.setState({loadingJamie:false})
+    });
+
+    await axios.post('http://localhost:3001/api/directQueryRephrased', params)
+        .then((res)=>{
+            console.log(res.data)
+            var summarized_3 = this.summarizer(res.data.reply)
+            this.setState({responseRephrased:summarized_3})
+            this.setState({loadingJamie:false})
+    });
+
+    await axios.post('http://localhost:3001/api/directQueryBp', params)
+        .then((res)=>{
+            console.log(res.data)
+            var summarized_4 = this.summarizer(res.data.reply)
+            this.setState({responseBp:summarized_4})
             this.setState({loadingJamie:false})
     });
     this.setState({input:''})
@@ -139,7 +175,7 @@ class Comparison extends Component {
   render(){
 
     return (
-        <header className="App-header">
+        <header className="App-header"> 
 
         <div className="container-fluid">
           <div className="row">
@@ -159,37 +195,42 @@ class Comparison extends Component {
 
               </InputGroup>
               
-              <FormControl name="input"
-                  readOnly
-                  value={this.state.input + ' ' + this.state.partialResult}
-                  placeholder="Speech Input"
-                  aria-label="Ask questions"
-                  aria-describedby="basic-addon2"
-              />
-              
-              <Record
-              socket={this.state.socket}
-              isBusy={this.state.isBusy}
-              token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3MDc4MzczNCwiZXhwIjoxNTczMzc1NzM0fQ.7mNczYGoTJ_sXRXS_N5GN_HccMz0gl0lObPrl0KuNeI"
-              isSocketReady={this.state.isSocketReady}
-              backendUrl={this.state.backendUrl}
-              reset={this.reset}
-              setBusy={this.setBusy}
-              /> 
-              
             </div>
 
-            <div className="col-md-4 offset-md-1">
+            <div className="col-md-5">
+               <FormControl name="input"
+                    readOnly
+                    value={this.state.input + ' ' + this.state.partialResult}
+                    placeholder="Speech Input"
+                    aria-label="Ask questions"
+                    aria-describedby="basic-addon2"
+                />
+                
+                <Record
+                socket={this.state.socket}
+                isBusy={this.state.isBusy}
+                token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3NTUxMTY1OSwiZXhwIjoxNTc4MTAzNjU5fQ.325tpPfG07dtqgJpHvGsyKB_p1YKwOqxOQMUrI3b5ws"
+                isSocketReady={this.state.isSocketReady}
+                backendUrl={this.state.backendUrl}
+                reset={this.reset}
+                setBusy={this.setBusy}
+                /> 
+                              
+              </div>
+
+          </div>
+
+          <div className="row">
 
               {this.state.isSubmitted &&
                   <div>
                     <div className="row">
-                      <div className="col-md-5">
-                        <p>Andrew QA</p>
-                        <Table striped bordered hover variant="dark" style={{width:"550px", marginLeft:"auto", marginRight:"auto"}}>
+                      <div className="col-md-5 offset-md-1">
+                        <p>Andrew QA Dialogflow</p>
+                        <Table striped bordered hover variant="dark" style={{width:"550px"}}>
                             <thead>
                                 <tr>
-                                <th><h5>{this.state.input}</h5></th>
+                                <th><h5>{this.state.query}</h5></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -200,15 +241,13 @@ class Comparison extends Component {
                             </tbody>
                         </Table>
                       </div>
-                    </div>
 
-                    <div className="row">
-                      <div className="col-md-5">
+                      <div className="col-md-5 offset-md-1">
                         <p>Ask Jamie</p>
-                        <Table striped bordered hover variant="dark" style={{width:"550px", marginLeft:"auto", marginRight:"auto"}}>
+                        <Table striped bordered hover variant="dark" style={{width:"550px"}}>
                             <thead>
                                 <tr>
-                                <th><h5>{this.state.input}</h5></th>
+                                <th><h5>{this.state.query}</h5></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -221,19 +260,52 @@ class Comparison extends Component {
                       </div>
                     </div>
 
+                    <div className="row">
+
+                      <div className="col-md-5 offset-md-1">
+                      <p>Andrew QA Rephrased</p>
+                      <Table striped bordered hover variant="dark" style={{width:"550px"}}>
+                            <thead>
+                                <tr>
+                                <th><h5>{this.state.query}</h5></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                {this.state.loading && <td><img style={{width:'30px',height:'30px'}} className="response" src={loading} alt="load"/></td>}
+                                {this.state.loading === false && <td><h5>{this.state.responseRephrased}</h5></td>}
+                                </tr>
+                            </tbody>
+                        </Table>
+                      </div>
+
+                      <div className="col-md-5 offset-md-1">
+                      <p>Andrew QA Bp</p>
+                      <Table striped bordered hover variant="dark" style={{width:"550px"}}>
+                            <thead>
+                                <tr>
+                                <th><h5>{this.state.query}</h5></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                {this.state.loading && <td><img style={{width:'30px',height:'30px'}} className="response" src={loading} alt="load"/></td>}
+                                {this.state.loading === false && <td><h5>{this.state.responseBp}</h5></td>}
+                                </tr>
+                            </tbody>
+                      </Table>
+                      </div>
+                    </div>
+
                       
                   </div>
             }
               
             </div>
 
-          </div>
+
         </div>
-      
-
-          
-
-        </header>
+        </header> 
     );
   }
 

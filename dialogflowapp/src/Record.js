@@ -233,12 +233,12 @@ export default class Record extends Component {
                     type="button"
                     className="btn btn-primary"
                     title="Starts listening for speech, i.e. starts recording and transcribing."
-                    onClick={this.start}
+                    onMouseUp={this.stop} onMouseDown={this.start}
                   >
                     <i className="fas fa-play" />
                     Start
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     title="Stops listening for speech. Speech captured so far will be recognized as if the user had stopped speaking at this point. Note that in the default case, this does not need to be called, as the speech endpointer will automatically stop the recognizer listening when it determines speech has completed."
                     className="btn btn-danger"
@@ -246,7 +246,7 @@ export default class Record extends Component {
                   >
                     <i className="fas fa-stop" />
                     Stop
-                  </button>
+                  </button> */}
                   <button
                     type="button"
                     className="btn btn-warning"

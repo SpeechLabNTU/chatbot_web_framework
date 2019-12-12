@@ -51,7 +51,6 @@ router.post("/api/matching", (req, res) => {
             var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
             return res.json(sendBack)
         })
-
         
     }else{
         Object.keys(keywords).forEach(function(key) {
@@ -162,7 +161,7 @@ function sendQuery(query,res){
     
 }
 
-// ============================================================Andrew QA Matching API========================================================================
+// ============================================================Andrew QA Matching API [http://155.69.146.213:8081/ask_bb/baby_bonus_faq_service]========================================================================
 
 router.post("/api/directQuery", (req, res) => {
     
@@ -188,6 +187,58 @@ router.post("/api/directQuery", (req, res) => {
 
 });
 
+
+// ============================================================Andrew QA Matching API [http://155.69.146.213:8081/ask_bb_rephrased/baby_bonus_faq_service]========================================================================
+
+router.post("/api/directQueryRephrased", (req, res) => {
+    
+    var query = req.body.question
+    
+    const options = {
+        method: "POST",
+        url: "http://155.69.146.213:8081/ask_bb_rephrased/baby_bonus_faq_service",
+        headers: {
+            "Authorization": "Basic ",
+            "Content-Type": "multipart/form-data"
+        },
+        formData : {
+            "input" : query
+        }
+    };
+
+    request(options, function (error, response, body){
+        responseQueryText = JSON.parse(response.body)
+        console.log(responseQueryText.top1)
+        res.json({ reply: responseQueryText.top1})
+    })
+
+});
+
+// ============================================================Andrew QA Matching API [http://155.69.146.213:8081/ask_bb_bp/baby_bonus_faq_service]========================================================================
+
+router.post("/api/directQueryBp", (req, res) => {
+    
+    var query = req.body.question
+    
+    const options = {
+        method: "POST",
+        url: "http://155.69.146.213:8081/ask_bb_bp/baby_bonus_faq_service",
+        headers: {
+            "Authorization": "Basic ",
+            "Content-Type": "multipart/form-data"
+        },
+        formData : {
+            "input" : query
+        }
+    };
+
+    request(options, function (error, response, body){
+        responseQueryText = JSON.parse(response.body)
+        console.log(responseQueryText.top1)
+        res.json({ reply: responseQueryText.top1})
+    })
+
+});
 
 // ============================================================Ask Jamie Selenium API==========================================================================
 
@@ -248,6 +299,7 @@ function example(query,res){
     const pyProg = spawn('python3', ['ask_jamie.py','--test_questions', 'questions.txt']);
 
     pyProg.stdout.on('data', function(data) {
+
         res.json({reply: data.toString()});
     });
 }
