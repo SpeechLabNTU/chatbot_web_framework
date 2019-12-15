@@ -22,13 +22,48 @@ export default class Record extends Component {
 
   componentWillUnmount() {
     // cancel recorder from browser
-    window.cancelAnimationFrame(this.drawVisual)
+    // window.cancelAnimationFrame(this.drawVisual)
     const track = this.mediaStream.getTracks()[0]
     track.stop()
 
     this.cancel() // cancel stream
   }
   
+
+  async recorderWithoutCanvas () {
+    
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    let source
+
+    if (!navigator.mediaDevices) {
+      console.log('browser doesn\'t support')
+    }
+
+    if (navigator.mediaDevices.getUserMedia) {
+      console.log('getUserMedia supported.')
+      const constraints = { audio: true }
+      try {
+        this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+
+        source = this.audioCtx.createMediaStreamSource(this.mediaStream)
+        this.audioStream = source
+        window.source = source
+
+        // -------IMPORTANT------
+        // eslint-disable-next-line no-undef
+        const recorder = new Recorder(source, { workerPath: '/recorderWorker.js' })
+        this.setState({
+          recorder
+        })
+      } catch (e) {
+        console.log('The following error occured: ' + e)
+        // this.$emit('onError', e.toString())
+      }
+    } else {
+      // this.$emit('onError', 'getUserMedia not supported on your browser!')
+      console.log('getUserMedia not supported on your browser!')
+    }
+  }
 
   async prepare () {
     this.canvas = document.querySelector('.visualizer')
@@ -73,7 +108,7 @@ export default class Record extends Component {
         this.audioStream = source
         // Firefox loses the audio input stream every five seconds
         // To fix added the input to window.source
-        // window.source = source
+        window.source = source
         source.connect(distortion)
         distortion.connect(biquadFilter)
         biquadFilter.connect(gainNode)
@@ -100,7 +135,7 @@ export default class Record extends Component {
   }
 
   visualize () {
-    this.analyser.fftSize = 2048
+    this.analyser.fftSize = 32768
     this.bufferLength = this.analyser.fftSize
     this.dataArray = new Uint8Array(this.bufferLength)
 

@@ -33,7 +33,7 @@ class Comparison extends Component {
         partialResult: '',
         status: 0, // 0: idle, 1: streaming, 2: finish
         isBusy: false,
-        socket: null,
+        socket: null
     }
     this.handleClick = this.handleClick.bind(this);
     this.handleInput = this.handleInput.bind(this);
@@ -71,7 +71,7 @@ class Comparison extends Component {
             input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
             partialResult: ''
             }))
-            this.handleClick()
+            // this.handleClick()
 
         } else {
             this.setState(prevState => ({
@@ -175,11 +175,11 @@ class Comparison extends Component {
   render(){
 
     return (
-        <header className="App-header"> 
+        // <header className="App-header"> 
 
         <div className="container-fluid">
-          <div className="row">
-            <div className="col-md-5 offset-md-1">
+          {/* <div className="row"> */}
+            {/* <div className="col-md-5 offset-md-1">
             <h1>QA Comparison</h1>
               <InputGroup className="mb-3" style={{width:"100%"}}>
 
@@ -195,9 +195,9 @@ class Comparison extends Component {
 
               </InputGroup>
               
-            </div>
+            </div> */}
 
-            <div className="col-md-5">
+            {/* <div className="col-md-5"> */}
                <FormControl name="input"
                     readOnly
                     value={this.state.input + ' ' + this.state.partialResult}
@@ -214,13 +214,14 @@ class Comparison extends Component {
                 backendUrl={this.state.backendUrl}
                 reset={this.reset}
                 setBusy={this.setBusy}
-                /> 
+                audio={this.state.audio}
+                />  
                               
-              </div>
+              {/* </div>
 
-          </div>
+          </div> */}
 
-          <div className="row">
+          {/* <div className="row">
 
               {this.state.isSubmitted &&
                   <div>
@@ -301,11 +302,11 @@ class Comparison extends Component {
                   </div>
             }
               
-            </div>
+            </div> */}
 
 
         </div>
-        </header> 
+        // </header> 
     );
   }
 
