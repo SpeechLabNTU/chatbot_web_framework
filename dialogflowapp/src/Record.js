@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import './Record.css'
 import './recorder'
 import axios from 'axios'
+import Row from 'react-bootstrap/Row'
 
 export default class Record extends Component {
   constructor (props) {
@@ -68,7 +69,8 @@ export default class Record extends Component {
   async prepare () {
     this.canvas = document.querySelector('.visualizer')
     this.canvasCtx = this.canvas.getContext('2d')
-    const intendedWidth = document.querySelector('.visualizer-container').clientWidth
+    // const intendedWidth = document.querySelector('.visualizer-container').clientWidth
+    const intendedWidth = 500
     this.canvas.setAttribute('width', intendedWidth)
     this.canvas.setAttribute('height', 200)
 
@@ -249,54 +251,66 @@ export default class Record extends Component {
 
   render () {
     return (
-      <div className="row">
-        <div className="col-md-12 mt-5">
-          <div className="visualizer-container">
+
+      <Row className="justify-content-md-center">
             <canvas className="visualizer" />
-          </div>
-        </div>
-        <div className="col-md-12 mt-3">
-          <div className="row">
-            <div className="col-md-12">
-              <div className="controls text-center mb-3">
-                <div
-                  className="btn-group"
-                  role="group"
-                  aria-label="Basic example"
-                >
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    title="Starts listening for speech, i.e. starts recording and transcribing."
-                    onMouseUp={this.stop} onMouseDown={this.start}
-                  >
-                    <i className="fas fa-play" />
-                    Start
-                  </button>
-                  {/* <button
-                    type="button"
-                    title="Stops listening for speech. Speech captured so far will be recognized as if the user had stopped speaking at this point. Note that in the default case, this does not need to be called, as the speech endpointer will automatically stop the recognizer listening when it determines speech has completed."
-                    className="btn btn-danger"
-                    onClick={this.stop}
-                  >
-                    <i className="fas fa-stop" />
-                    Stop
-                  </button> */}
-                  <button
-                    type="button"
-                    className="btn btn-warning"
-                    title="Cancels the speech recognition."
-                    onClick={this.cancel}
-                  >
-                    <i className="fal fa-power-off" />
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <button size="lg"
+            type="button" className="btn btn-primary"
+            title="Starts listening for speech, i.e. starts recording and transcribing."
+            onMouseUp={this.stop} onMouseDown={this.start}>
+              <i className="fas fa-play" />
+              Start
+            </button>
+      </Row>
+
+      // <div className="row">
+      //   <div className="col-md-12 mt-5">
+      //     <div className="visualizer-container">
+      //       <canvas className="visualizer" />
+      //     </div>
+      //   </div>
+      //   <div className="col-md-12 mt-3">
+      //     <div className="row">
+      //       <div className="col-md-12">
+      //         <div className="controls text-center mb-3">
+      //           <div
+      //             className="btn-group"
+      //             role="group"
+      //             aria-label="Basic example"
+      //           >
+      //             <button
+      //               type="button"
+      //               className="btn btn-primary"
+      //               title="Starts listening for speech, i.e. starts recording and transcribing."
+      //               onMouseUp={this.stop} onMouseDown={this.start}
+      //             >
+      //               <i className="fas fa-play" />
+      //               Start
+      //             </button>
+      //             <button
+      //               type="button"
+      //               title="Stops listening for speech. Speech captured so far will be recognized as if the user had stopped speaking at this point. Note that in the default case, this does not need to be called, as the speech endpointer will automatically stop the recognizer listening when it determines speech has completed."
+      //               className="btn btn-danger"
+      //               onClick={this.stop}
+      //             >
+      //               <i className="fas fa-stop" />
+      //               Stop
+      //             </button>
+      //             <button
+      //               type="button"
+      //               className="btn btn-warning"
+      //               title="Cancels the speech recognition."
+      //               onClick={this.cancel}
+      //             >
+      //               <i className="fal fa-power-off" />
+      //               Cancel
+      //             </button>
+      //           </div>
+      //         </div>
+      //       </div>
+      //     </div>
+      //   </div>
+      // </div>
     )
   }
 }

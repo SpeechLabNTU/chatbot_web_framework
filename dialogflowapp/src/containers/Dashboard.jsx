@@ -1,27 +1,25 @@
-import React from 'react';
-import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+import React,{Component} from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import Drawer from '@material-ui/core/Drawer';
 import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Link from '@material-ui/core/Link';
 import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listitems';
-import Deposits from './Deposits';
 import Orders from './Orders';
-import Comparison from './Comparison';
+import Record from '../Record';
+import io from 'socket.io-client'
+import axios from "axios";
+import FormControl from '@material-ui/core/FormControl';
+import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
 
 function Copyright() {
   return (
@@ -36,159 +34,211 @@ function Copyright() {
   );
 }
 
-const drawerWidth = 240;
+const root={flexgrow: 1};
+const content={flexgrow: 1, height: '100vh', overflow:'auto'};
+const container={paddingTop: '50px', paddingBottom:'10px'};
+const textField={width:'595px'};
+const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-  },
-  toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
-  },
-  toolbarIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar,
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
-  appBarShift: {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  menuButton: {
-    marginRight: 36,
-  },
-  menuButtonHidden: {
-    display: 'none',
-  },
-  title: {
-    flexGrow: 1,
-  },
-  drawerPaper: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  drawerPaperClose: {
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    width: theme.spacing(7),
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9),
-    },
-  },
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto',
-  },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-  },
-  fixedHeight: {
-    height: 240,
-  },
-}));
+class Dashboard extends Component{
 
-export default function Dashboard() {
+  constructor(props) {
+    super(props);
+    this.state = {
+        //Direct Query
+        isSubmitted:false,
+        input:"",
+        query:"",
+        response:"",
+        responseJamie:"",
+        responseRephrased: "",
+        responseBp: "",
+        apiResponse:"",
+        loading:false,
+        loadingJamie:false,
+        tokenActive:false,
 
-    const classes = useStyles();
-    const [open, setOpen] = React.useState(true);
-    const handleDrawerOpen = () => {
-        setOpen(true);
-    };
-    const handleDrawerClose = () => {
-        setOpen(false);
-    };
-    const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+        //Speech to Text
+        audioEnable: false,
+        mode: 'record',
+        backendUrl: 'http://localhost:3001',
+        isSocketReady: false,
+        partialResult: '',
+        status: 0, // 0: idle, 1: streaming, 2: finish
+        isBusy: false,
+        socket: null,
 
+        //Switch
+        switch: false
+    }
+
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(e) {
+    e.preventDefault();
+    let name = e.target.name;
+    this.setState({[name]:e.target.checked})
+  }
+
+  componentDidMount () {
+    this.initSockets()
+  }
+
+  initSockets() {
+    const socket = io(this.state.backendUrl, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity
+    })
+
+    socket.on('connect', () => {
+      console.log('socket connected!')
+    })
+
+    socket.on('stream-ready', () => {
+      this.setState({
+        isSocketReady: true,
+        status: 1
+      })
+    })
+
+    socket.on('stream-data', data => {
+      
+        if (data.result.final) {
+            this.setState(prevState => ({
+            input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
+            partialResult: ''
+            }))
+            // this.handleClick()
+
+        } else {
+            this.setState(prevState => ({
+            partialResult: '[...' + data.result.hypotheses[0].transcript + ']'
+            }))
+        }
+    })
+
+    socket.on('stream-close', () => {
+      this.setState({
+        status: 2,
+        isBusy: false
+      })
+    })
+    this.setState({
+      socket
+    })
+  }
+
+  reset = () => {
+    this.setState({
+      transcription: '',
+      partialResult: ''
+    })
+  }
+
+  setBusy = () => {
+    this.setState({
+      isBusy: true
+    })
+  }
+
+  setStatus = (status) => {
+    this.setState({
+      status
+    })
+  }
+  
+  render(){
     return (
-        <div className={classes.root}>
+        
+      <div>
         <CssBaseline />
-        <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
-            <Toolbar className={classes.toolbar}>
+        <AppBar position="static" style={root}>
+            <Toolbar>
             <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
             >
                 <MenuIcon />
             </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                Dashboard
+            <Typography component="h1" variant="h6" color="inherit" noWrap>
+                NTU Baby Bonus FAQ
             </Typography>
-            <IconButton color="inherit">
-                <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-                </Badge>
-            </IconButton>
+            
             </Toolbar>
         </AppBar>
-        <Drawer
-            variant="permanent"
-            classes={{
-            paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
-            }}
-            open={open}
-        >
-            <div className={classes.toolbarIcon}>
-            <IconButton onClick={handleDrawerClose}>
-                <ChevronLeftIcon />
-            </IconButton>
-            </div>
-            <Divider />
-            <List>{mainListItems}</List>
-            <Divider />
-            <List>{secondaryListItems}</List>
-        </Drawer>
-        <main className={classes.content}>
-            <div className={classes.appBarSpacer} />
-            <Container maxWidth="lg" className={classes.container}>
+        
+        <main style={content}>
+            <Container maxWidth="lg" style={container}>
             <Grid container spacing={3}>
                 {/* Chart */}
-                <Grid item xs={12} md={8} lg={9}>
-                <Paper className={fixedHeightPaper}>
-                    <Comparison/>
-                </Paper>
+                <Grid item xs={12} md={8} lg={6}>
+                  
+                  {this.state.switch && 
+                  <TextField
+                    style={textField}
+                    id="filled-read-only-input"
+                    label="Read Only"
+                    value={this.state.input + ' ' + this.state.partialResult}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                  }
+
+                  {this.state.switch === false &&
+                  <FormControl fullWidth variant="outlined">
+                  <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-amount"
+                  startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
+                    labelWidth={60}
+                  />
+                  </FormControl>
+                  }
+                  <Switch
+                    checked={this.state.switch}
+                    onChange={this.handleChange}
+                    value="checkedA"
+                    name="switch"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                
                 </Grid>
                 {/* Recent Deposits */}
-                <Grid item xs={12} md={4} lg={3}>
-                <Paper className={fixedHeightPaper}>
-                    <Deposits />
+                <Grid item xs={12} md={4} lg={6}>
+                  
+                  {this.state.switch && 
+                  <Record
+                  socket={this.state.socket}
+                  isBusy={this.state.isBusy}
+                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3NTUxMTY1OSwiZXhwIjoxNTc4MTAzNjU5fQ.325tpPfG07dtqgJpHvGsyKB_p1YKwOqxOQMUrI3b5ws"
+                  isSocketReady={this.state.isSocketReady}
+                  backendUrl={this.state.backendUrl}
+                  reset={this.reset}
+                  setBusy={this.setBusy}
+                  audio={this.state.audio}
+                  />
+                  }
+                  {this.state.switch ===false &&
+                  <Paper style={textPosition}>
+                  <Typography variant="h5" component="h3">
+                    Speech to Text Disabled. 
+                  </Typography>
+                  <Typography component="p">
+                    Select switch to enable speech
+                  </Typography>
                 </Paper>
+                  }
+                  
                 </Grid>
                 {/* Recent Orders */}
                 <Grid item xs={12}>
-                <Paper className={classes.paper}>
+                <Paper>
                     <Orders />
                 </Paper>
                 </Grid>
@@ -198,6 +248,9 @@ export default function Dashboard() {
             </Box>
             </Container>
         </main>
-        </div>
+      </div>
     );
+  }
 }
+
+export default Dashboard
