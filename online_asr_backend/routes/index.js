@@ -338,6 +338,4 @@ async function dialoflowConnection(query, res) {
     res.json({reply: result})
 }
 
-
-
 module.exports = router
