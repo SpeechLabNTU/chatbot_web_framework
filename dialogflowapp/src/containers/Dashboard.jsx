@@ -51,12 +51,14 @@ class Dashboard extends Component{
         isSubmitted:false,
         input:"",
         query:"",
-        response:"",
+        responseDialogflow:"",
+        responseDNN:"",
         responseJamie:"",
         responseRephrased: "",
         responseBp: "",
         apiResponse:"",
-        loading:false,
+        loadingDialogflow:false,
+        loadingDNN: false,
         loadingJamie:false,
         tokenActive:false,
 
@@ -84,11 +86,11 @@ class Dashboard extends Component{
     var array = []
     var summary = "";
     array = result.split(" ")
-    if (array.length < 10){
+    if (array.length < 40){
       summary = result
     }else{
-      for (var i = 0;i<10;i++){
-        if (i === 9){
+      for (var i = 0;i<40;i++){
+        if (i === 39){
           summary += array[i] + "..."
         }else{
           summary += array[i] + " "
@@ -113,13 +115,23 @@ class Dashboard extends Component{
       question: this.state.input
     }
 
-    this.setState({loading:true})
+    this.setState({loadingDialogflow:true})
+    this.setState({loadingDNN:true})
     this.setState({loadingJamie:true})
+    await axios.post("http://localhost:3001/api/russ_query", params)
+        .then((res)=>{
+            
+            var summarized_0 = this.summarizer(res.data.reply)
+            this.setState({responseDNN:summarized_0})
+            this.setState({loadingDNN:false})
+            // this.setState({isSubmitted:true})
+        });
+
     await axios.post("http://localhost:3001/api/dialogflow", params)
         .then((res)=>{
             var summarized_1 = this.summarizer(res.data.reply)
-            this.setState({response:summarized_1})
-            this.setState({loading:false})
+            this.setState({responseDialogflow:summarized_1})
+            this.setState({loadingDialogflow:false})
             // this.setState({isSubmitted:true})
         });
     
@@ -278,7 +290,7 @@ class Dashboard extends Component{
                   <Record
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3NTUxMTY1OSwiZXhwIjoxNTc4MTAzNjU5fQ.325tpPfG07dtqgJpHvGsyKB_p1YKwOqxOQMUrI3b5ws"
+                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3OTA1MDE1MCwiZXhwIjoxNTgxNjQyMTUwfQ.WESdgNCL7HArcfZSnqK24JpoPNZQHZ-6ScHZO67Ucz8"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -302,6 +314,21 @@ class Dashboard extends Component{
                 <Grid item xs={12} md={3}>
                 <TextField
                   id="outlined-multiline-static"
+                  label="Feed Forward Neural Network"
+                  multiline
+                  rows="10"
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  style={textFieldOutput}
+                  value={this.state.loadingDNN ? "loading..." : this.state.responseDNN} 
+                />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                <TextField
+                  id="outlined-multiline-static"
                   label="Ask Jamie"
                   multiline
                   rows="10"
@@ -313,10 +340,11 @@ class Dashboard extends Component{
                   value={this.state.loadingJamie ? "loading..." : this.state.responseJamie} 
                 />
                 </Grid>
+
                 <Grid item xs={12} md={3}>
                 <TextField
                   id="outlined-multiline-static"
-                  label="Andrew QA \w Dialogflow"
+                  label="Dialogflow"
                   multiline
                   rows="10"
                   variant="filled"
@@ -324,7 +352,22 @@ class Dashboard extends Component{
                     readOnly: true,
                   }}
                   style={textFieldOutput}
-                  value={this.state.loading ? "loading..." : this.state.response}
+                  value={this.state.loadingDialogflow ? "loading...": this.state.responseDialogflow}
+                />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                <TextField
+                  id="outlined-multiline-static"
+                  label="Andrew QA \w Dialogflow"
+                  multiline
+                  rows="10"
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  style={textFieldOutput}
+                  // value={this.state.loading ? "loading..." : this.state.response}
                 />
                 </Grid>
                 <Grid item xs={12} md={3}>

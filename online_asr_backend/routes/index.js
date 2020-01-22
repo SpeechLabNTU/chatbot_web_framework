@@ -339,3 +339,21 @@ async function dialoflowConnection(query, res) {
 }
 
 module.exports = router
+
+// ============================================================Deep Neural Network========================================================================
+
+router.post("/api/russ_query", (req, res) => {
+    
+    var query = req.body.question
+    
+    request({
+        method:'POST',
+        url: "http://localhost:5000/api/query",
+        json: {"request":query}
+    }, (error, response, body) =>{
+        console.log(error)
+        console.log(response);
+        res.json({ reply: response.body.response})
+    });
+
+});
