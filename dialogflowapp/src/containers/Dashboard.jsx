@@ -1,15 +1,13 @@
 import React,{Component} from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+// import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Link from '@material-ui/core/Link';
-import MenuIcon from '@material-ui/icons/Menu';
+// import MenuIcon from '@material-ui/icons/Menu';
 import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
@@ -20,27 +18,18 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
-import CircularProgress from '@material-ui/core/CircularProgress';
-
-// function Copyright() {
-//   return (
-//     <Typography variant="body2" color="textSecondary" align="center">
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://material-ui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
 const root={flexgrow: 1};
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
-const textFieldOutput={width:'300px'};
+const textFieldOutput={width:'400px'};
+const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
+const textFielderror={width:'400px',border:'1px solid #ff0000'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
+const form={width:'400px'};
 
 class Dashboard extends Component{
 
@@ -48,7 +37,6 @@ class Dashboard extends Component{
     super(props);
     this.state = {
         //Direct Query
-        isSubmitted:false,
         input:"",
         query:"",
         responseDialogflow:"",
@@ -61,6 +49,16 @@ class Dashboard extends Component{
         loadingDNN: false,
         loadingJamie:false,
         tokenActive:false,
+        comparisonJamie: false,
+        comparisonDialog: false,
+        comparisonDNN: false,
+        thresholdJamie: 0,
+        similarityDialog: false,
+        disimilarityDialog: false,
+        similarityDNN: false,
+        disimilarityDNN: false,
+        choice: "",
+        reccommendation: [],
 
         //Speech to Text
         audioEnable: false,
@@ -78,8 +76,13 @@ class Dashboard extends Component{
 
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleChoice = this.handleChoice.bind(this);
     this.summarizer = this.summarizer.bind(this);
     this.handleInput = this.handleInput.bind(this);
+    this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
+    this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
+    this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
+    
   }
 
   summarizer(result){
@@ -107,7 +110,38 @@ class Dashboard extends Component{
     let name = e.target.name;
     this.setState({[name]:value})
   }
-  
+
+  async APICallResponseCompare(req, callback){
+    await axios.post('http://localhost:3001/api/responseCompare',req)
+        .then((res)=>{
+            let probability = res.data.reply
+            callback(probability)
+            
+        });
+  }
+
+  checkSimilarityDNN(score){
+    if (score < 0.4){
+      this.setState({similarityDNN:false})
+      this.setState({disimilarityDNN: true})
+    }else{
+      this.setState({similarityDNN:true})
+      this.setState({disimilarityDNN:false})
+    }
+  }
+
+  checkSimilarityDialog(score){
+    if (score < 0.4){
+      this.setState({similarityDialog:false})
+      this.setState({disimilarityDialog: true})
+
+    }else{
+      this.setState({similarityDialog:true})
+      this.setState({disimilarityDialog:false})
+    }
+  }
+
+
   async handleClick(){
     
     this.setState({query: this.state.input})
@@ -118,31 +152,111 @@ class Dashboard extends Component{
     this.setState({loadingDialogflow:true})
     this.setState({loadingDNN:true})
     this.setState({loadingJamie:true})
-    await axios.post("http://localhost:3001/api/russ_query", params)
-        .then((res)=>{
-            
-            var summarized_0 = this.summarizer(res.data.reply)
-            this.setState({responseDNN:summarized_0})
-            this.setState({loadingDNN:false})
-            // this.setState({isSubmitted:true})
-        });
-
-    await axios.post("http://localhost:3001/api/dialogflow", params)
-        .then((res)=>{
-            var summarized_1 = this.summarizer(res.data.reply)
-            this.setState({responseDialogflow:summarized_1})
-            this.setState({loadingDialogflow:false})
-            // this.setState({isSubmitted:true})
-        });
     
     await axios.post('http://localhost:3001/api/askJamieFast', params)
         .then((res)=>{
+          if(res.status === 200){
             var summarized_2 = this.summarizer(res.data.reply)
             this.setState({responseJamie:summarized_2})
             this.setState({loadingJamie:false})
+            this.setState({comparisonJamie:true})
+          }else{
+            console.log("Ask Jamie Error")
+          }
+            
     });
+
+    await axios.post("http://localhost:3001/api/russ_query", params)
+    .then((res)=>{
+        if (res.status === 200){
+          this.setState({reccommendation: res.data.queries})
+          var summarized_0 = this.summarizer(res.data.reply)
+          this.setState({responseDNN:summarized_0})
+          this.setState({loadingDNN:false})
+          this.setState({comparisonDNN:true})
+          console.log(this.state.reccommendation[0].question)
+        }else{
+          console.log("DNN Error")
+        }
+    }).catch(() =>{
+        console.log("DNN Connection Error")
+    })
+
+
+    await axios.post("http://localhost:3001/api/dialogflow", params)
+        .then((res)=>{
+
+          if(res.status === 200){
+            var summarized_1 = this.summarizer(res.data.reply)
+            this.setState({responseDialogflow:summarized_1})
+            this.setState({loadingDialogflow:false})
+            this.setState({comparisonDialog:true})
+          }else{
+            console.log("Dialogflow Error")
+          }
+            
+    });
+
+    if(this.state.comparisonDialog && this.state.comparisonJamie ){
+      
+      let req = {responses: [this.state.responseDialogflow, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityDialog)
+      }catch(e){
+        console.log("Comparison Error")
+      }
+      
+    }
+
+    if(this.state.comparisonDNN && this.state.comparisonJamie){
     
-    this.setState({input:''})
+      let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityDNN);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+      
+    }
+  }
+
+  handleChoice(e){
+    e.preventDefault();
+    let name = e.target.name;
+    let value = e.target.value;
+    this.setState({[name]:value})
+    
+    let params = {
+      question: this.state.choice
+    }
+
+    axios.post("http://localhost:3001/api/russ_query", params)
+    .then((res)=>{
+        if (res.status === 200){
+          this.setState({reccommendation: res.data.queries})
+          var summarized_0 = this.summarizer(res.data.reply)
+          this.setState({responseDNN:summarized_0})
+          this.setState({loadingDNN:false})
+          this.setState({comparisonDNN:true})
+          console.log(this.state.reccommendation[0].question)
+        }else{
+          console.log("DNN Error")
+        }
+    }).catch(() =>{
+        console.log("DNN Connection Error")
+    }).then(()=>{
+      if(this.state.comparisonDNN && this.state.comparisonJamie){
+    
+        let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
+        try{
+          this.APICallResponseCompare(req, this.checkSimilarityDNN);
+        }catch(e){
+          console.log("Comparison Error")
+        }
+        
+      }
+    })
+
   }
 
   handleChange(e) {
@@ -227,13 +341,13 @@ class Dashboard extends Component{
         <CssBaseline />
         <AppBar position="static" style={root}>
             <Toolbar>
-            <IconButton
+            {/* <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="open drawer"
             >
                 <MenuIcon />
-            </IconButton>
+            </IconButton> */}
             <Typography component="h1" variant="h6" color="inherit" noWrap>
                 NTU Baby Bonus FAQ
             </Typography>
@@ -311,7 +425,7 @@ class Dashboard extends Component{
                   
                 </Grid>
                 
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Feed Forward Neural Network"
@@ -321,12 +435,32 @@ class Dashboard extends Component{
                   InputProps={{
                     readOnly: true,
                   }}
-                  style={textFieldOutput}
+                  style={this.state.similarityDNN ? textFieldsuccess: this.state.disimilarityDNN ? textFielderror: textFieldOutput}
                   value={this.state.loadingDNN ? "loading..." : this.state.responseDNN} 
                 />
+                <FormControl variant="outlined" style={form}>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={this.state.choice}
+                    onChange={this.handleChoice}
+                    name="choice"
+                  >
+                    <MenuItem disabled value="recommended questions">--Recommended Questions--</MenuItem>
+                    {this.state.reccommendation.map((options,i)=>{
+                        return(
+                        <MenuItem key={i} value={options.question}>{options.question}</MenuItem>
+                        );
+                    }) 
+
+                    }
+                    
+                  </Select>
+                </FormControl>
+                  
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Ask Jamie"
@@ -341,7 +475,7 @@ class Dashboard extends Component{
                 />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Dialogflow"
@@ -351,12 +485,12 @@ class Dashboard extends Component{
                   InputProps={{
                     readOnly: true,
                   }}
-                  style={textFieldOutput}
+                  style={this.state.similarityDialog ? textFieldsuccess: this.state.disimilarityDialog ? textFielderror: textFieldOutput} 
                   value={this.state.loadingDialogflow ? "loading...": this.state.responseDialogflow}
                 />
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Andrew QA \w Dialogflow"
@@ -369,8 +503,9 @@ class Dashboard extends Component{
                   style={textFieldOutput}
                   // value={this.state.loading ? "loading..." : this.state.response}
                 />
+
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Andrew QA Rephrased"
@@ -383,7 +518,7 @@ class Dashboard extends Component{
                   style={textFieldOutput}
                 />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-multiline-static"
                   label="Andrew QA Bp"
