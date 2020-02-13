@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
+// import AppBar from '@material-ui/core/AppBar';
+// import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
@@ -18,8 +18,9 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Dialogflow from './Dialogflow';
 
-const root={flexgrow: 1};
+// const root={flexgrow: 1};
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
@@ -80,7 +81,10 @@ class Dashboard extends Component{
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
-    
+    this.function1 = this.function1.bind(this);
+    this.function2 = this.function2.bind(this);
+    this.function3 = this.function3.bind(this);
+    this.comparison = this.comparison.bind(this);
   }
 
   summarizer(result){
@@ -139,6 +143,70 @@ class Dashboard extends Component{
     }
   }
 
+  function1(params){
+    let that = this;
+    return new Promise(function(resolve,reject){
+      axios.post('http://localhost:3001/jamie/api/askJamieFast', params)
+      .then((res)=>{
+          var summarized_2 = that.summarizer(res.data.reply)
+          that.setState({responseJamie:summarized_2})
+          that.setState({loadingJamie:false})
+          that.setState({comparisonJamie:true})
+          resolve("Done")
+      });
+      
+    })
+  }
+
+  function2(params){
+    let that = this;
+    return new Promise(function(resolve,reject){
+      axios.post("http://localhost:3001/dialog/api/dialogflow", params)
+      .then((res)=>{
+          var summarized_1 = that.summarizer(res.data.reply)
+          that.setState({responseDialogflow:summarized_1})
+          that.setState({loadingDialogflow:false})
+          that.setState({comparisonDialog:true})
+          resolve("Done")
+      });
+    })
+    
+  }
+
+  function3(params){
+    return new Promise(function(resolve, reject){
+      axios.post("http://localhost:3001/flask/api/russ_query", params)
+      .then((res)=>{
+            this.setState({reccommendation: res.data.queries})
+            var summarized_0 = this.summarizer(res.data.reply)
+            this.setState({responseDNN:summarized_0})
+            this.setState({loadingDNN:false})
+            this.setState({comparisonDNN:true})
+            resolve("Done")
+      })
+    })
+    
+  }
+
+  comparison(){
+    
+    if(this.state.comparisonDialog && this.state.comparisonJamie ){
+      let req = {responses: [this.state.responseDialogflow, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityDialog)
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
+    if(this.state.comparisonDNN && this.state.comparisonJamie){
+      let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityDNN);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
+  }
 
   async handleClick(){
     
@@ -150,72 +218,12 @@ class Dashboard extends Component{
     this.setState({loadingDialogflow:true})
     this.setState({loadingDNN:true})
     this.setState({loadingJamie:true})
-    
-    await axios.post('http://localhost:3001/jamie/api/askJamieFast', params)
-        .then((res)=>{
-          if(res.status === 200){
-            var summarized_2 = this.summarizer(res.data.reply)
-            this.setState({responseJamie:summarized_2})
-            this.setState({loadingJamie:false})
-            this.setState({comparisonJamie:true})
-          }else{
-            console.log("Ask Jamie Error")
-          }
-            
-    });
-
-    await axios.post("http://localhost:3001/flask/api/russ_query", params)
-    .then((res)=>{
-        if (res.status === 200){
-          this.setState({reccommendation: res.data.queries})
-          var summarized_0 = this.summarizer(res.data.reply)
-          this.setState({responseDNN:summarized_0})
-          this.setState({loadingDNN:false})
-          this.setState({comparisonDNN:true})
-          console.log(this.state.reccommendation[0].question)
-        }else{
-          console.log("DNN Error")
-        }
-    }).catch(() =>{
-        console.log("DNN Connection Error")
+    let that = this;
+    await Promise.all([this.function1(params),this.function2(params),this.function3(params)]).then(function(values){
+      console.log(values);
+      that.comparison()
     })
-
-
-    await axios.post("http://localhost:3001/dialog/api/dialogflow", params)
-        .then((res)=>{
-
-          if(res.status === 200){
-            var summarized_1 = this.summarizer(res.data.reply)
-            this.setState({responseDialogflow:summarized_1})
-            this.setState({loadingDialogflow:false})
-            this.setState({comparisonDialog:true})
-          }else{
-            console.log("Dialogflow Error")
-          }
-            
-    });
-
-    if(this.state.comparisonDialog && this.state.comparisonJamie ){
-      
-      let req = {responses: [this.state.responseDialogflow, this.state.responseJamie]}
-      try{
-        this.APICallResponseCompare(req, this.checkSimilarityDialog)
-      }catch(e){
-        console.log("Comparison Error")
-      }
-      
-    }
-
-    if(this.state.comparisonDNN && this.state.comparisonJamie){
     
-      let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
-      try{
-        this.APICallResponseCompare(req, this.checkSimilarityDNN);
-      }catch(e){
-        console.log("Comparison Error")
-      }
-      
-    }
   }
 
   handleChoice(e){
@@ -390,7 +398,7 @@ class Dashboard extends Component{
                 </Grid>
                 {/* Recent Deposits */}
                 <Grid item xs={12} md={4} lg={6}>
-                  
+
                   {this.state.switch && 
                   <Record
                   socket={this.state.socket}
@@ -467,18 +475,12 @@ class Dashboard extends Component{
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Dialogflow"
-                  multiline
-                  rows="10"
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={this.state.similarityDialog ? textFieldsuccess: this.state.disimilarityDialog ? textFielderror: textFieldOutput} 
-                  value={this.state.loadingDialogflow ? "loading...": this.state.responseDialogflow}
-                />
+                  <Dialogflow
+                    similarityDialog = {this.state.similarityDialog}
+                    disimilarityDialog = {this.state.disimilarityDialog}
+                    loadingDialogflow = {this.state.loadingDialogflow}
+                    responseDialogflow = {this.state.responseDialogflow}
+                  />
                 </Grid>
 
                 <Grid item xs={12} md={4}>
