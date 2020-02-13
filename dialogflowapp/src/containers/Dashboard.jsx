@@ -3,11 +3,9 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-// import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-// import MenuIcon from '@material-ui/icons/Menu';
 import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
@@ -112,7 +110,7 @@ class Dashboard extends Component{
   }
 
   async APICallResponseCompare(req, callback){
-    await axios.post('http://localhost:3001/api/responseCompare',req)
+    await axios.post('http://localhost:3001/flask/api/responseCompare',req)
         .then((res)=>{
             let probability = res.data.reply
             callback(probability)
@@ -153,7 +151,7 @@ class Dashboard extends Component{
     this.setState({loadingDNN:true})
     this.setState({loadingJamie:true})
     
-    await axios.post('http://localhost:3001/api/askJamieFast', params)
+    await axios.post('http://localhost:3001/jamie/api/askJamieFast', params)
         .then((res)=>{
           if(res.status === 200){
             var summarized_2 = this.summarizer(res.data.reply)
@@ -166,7 +164,7 @@ class Dashboard extends Component{
             
     });
 
-    await axios.post("http://localhost:3001/api/russ_query", params)
+    await axios.post("http://localhost:3001/flask/api/russ_query", params)
     .then((res)=>{
         if (res.status === 200){
           this.setState({reccommendation: res.data.queries})
@@ -183,7 +181,7 @@ class Dashboard extends Component{
     })
 
 
-    await axios.post("http://localhost:3001/api/dialogflow", params)
+    await axios.post("http://localhost:3001/dialog/api/dialogflow", params)
         .then((res)=>{
 
           if(res.status === 200){
@@ -230,7 +228,7 @@ class Dashboard extends Component{
       question: this.state.choice
     }
 
-    axios.post("http://localhost:3001/api/russ_query", params)
+    axios.post("http://localhost:3001/flask/api/russ_query", params)
     .then((res)=>{
         if (res.status === 200){
           this.setState({reccommendation: res.data.queries})
@@ -339,21 +337,14 @@ class Dashboard extends Component{
         
       <div>
         <CssBaseline />
-        <AppBar position="static" style={root}>
+        {/* <AppBar position="static" style={root}>
             <Toolbar>
-            {/* <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="open drawer"
-            >
-                <MenuIcon />
-            </IconButton> */}
             <Typography component="h1" variant="h6" color="inherit" noWrap>
                 NTU Baby Bonus FAQ
             </Typography>
             
             </Toolbar>
-        </AppBar>
+        </AppBar> */}
         
         <main style={content}>
             <Container maxWidth="lg" style={container}>
@@ -404,7 +395,7 @@ class Dashboard extends Component{
                   <Record
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU3OTA1MDE1MCwiZXhwIjoxNTgxNjQyMTUwfQ.WESdgNCL7HArcfZSnqK24JpoPNZQHZ-6ScHZO67Ucz8"
+                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4MTU1OTA1MiwiZXhwIjoxNTg0MTUxMDUyfQ.WEDXHrcPfCfM7hHaFB7Oj5shOnQRQyu2RcN1xwLGrVw"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -533,9 +524,7 @@ class Dashboard extends Component{
                 </Grid>
                 
             </Grid>
-            {/* <Box pt={4}>
-                <Copyright />
-            </Box> */}
+            
             </Container>
         </main>
       </div>
