@@ -17,7 +17,7 @@ class Dialogflow extends Component{
           label="Dialogflow"
           multiline
           rows="10"
-          variant="filled"
+          variant="outlined"
           InputProps={{
             readOnly: true,
           }}

@@ -16,19 +16,19 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 import Dialogflow from './Dialogflow';
+import DNN from './DNN';
+import Jamie from "./Jamie";
 
 // const root={flexgrow: 1};
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
-const textFieldOutput={width:'400px'};
-const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
-const textFielderror={width:'400px',border:'1px solid #ff0000'};
+// const textFieldOutput={width:'400px'};
+// const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
+// const textFielderror={width:'400px',border:'1px solid #ff0000'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
-const form={width:'400px'};
+// const form={width:'400px'};
 
 class Dashboard extends Component{
 
@@ -174,16 +174,17 @@ class Dashboard extends Component{
   }
 
   function3(params){
+    let that = this;
     return new Promise(function(resolve, reject){
       axios.post("http://localhost:3001/flask/api/russ_query", params)
       .then((res)=>{
-            this.setState({reccommendation: res.data.queries})
-            var summarized_0 = this.summarizer(res.data.reply)
-            this.setState({responseDNN:summarized_0})
-            this.setState({loadingDNN:false})
-            this.setState({comparisonDNN:true})
+            that.setState({reccommendation: res.data.queries})
+            var summarized_0 = that.summarizer(res.data.reply)
+            that.setState({responseDNN:summarized_0})
+            that.setState({loadingDNN:false})
+            that.setState({comparisonDNN:true})
             resolve("Done")
-      })
+      });
     })
     
   }
@@ -227,7 +228,7 @@ class Dashboard extends Component{
   }
 
   handleChoice(e){
-    e.preventDefault();
+    
     let name = e.target.name;
     let value = e.target.value;
     this.setState({[name]:value})
@@ -425,53 +426,22 @@ class Dashboard extends Component{
                 </Grid>
                 
                 <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Feed Forward Neural Network"
-                  multiline
-                  rows="10"
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={this.state.similarityDNN ? textFieldsuccess: this.state.disimilarityDNN ? textFielderror: textFieldOutput}
-                  value={this.state.loadingDNN ? "loading..." : this.state.responseDNN} 
-                />
-                <FormControl variant="outlined" style={form}>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={this.state.choice}
-                    onChange={this.handleChoice}
-                    name="choice"
-                  >
-                    <MenuItem disabled value="recommended questions">--Recommended Questions--</MenuItem>
-                    {this.state.reccommendation.map((options,i)=>{
-                        return(
-                        <MenuItem key={i} value={options.question}>{options.question}</MenuItem>
-                        );
-                    }) 
-
-                    }
-                    
-                  </Select>
-                </FormControl>
-                  
+                  <DNN
+                    similarityDNN = {this.state.similarityDNN}
+                    disimilarityDNN = {this.state.disimilarityDNN}
+                    loadingDNN = {this.state.loadingDNN}
+                    responseDNN = {this.state.responseDNN}
+                    choice = {this.state.choice}
+                    handleChoice = {this.handleChoice}
+                    reccommendation = {this.state.reccommendation}
+                  />
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Ask Jamie"
-                  multiline
-                  rows="10"
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={textFieldOutput}
-                  value={this.state.loadingJamie ? "loading..." : this.state.responseJamie} 
-                />
+                  <Jamie
+                    loadingJamie = {this.state.loadingJamie}
+                    responseJamie = {this.state.responseJamie}
+                  />
                 </Grid>
 
                 <Grid item xs={12} md={4}>
@@ -481,48 +451,6 @@ class Dashboard extends Component{
                     loadingDialogflow = {this.state.loadingDialogflow}
                     responseDialogflow = {this.state.responseDialogflow}
                   />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Andrew QA \w Dialogflow"
-                  multiline
-                  rows="10"
-                  variant="outlined"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={textFieldOutput}
-                  // value={this.state.loading ? "loading..." : this.state.response}
-                />
-
-                </Grid>
-                <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Andrew QA Rephrased"
-                  multiline
-                  rows="10"
-                  variant="outlined"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={textFieldOutput}
-                />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                <TextField
-                  id="outlined-multiline-static"
-                  label="Andrew QA Bp"
-                  multiline
-                  rows="10"
-                  variant="outlined"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  style={textFieldOutput}
-                />
                 </Grid>
                 
             </Grid>
