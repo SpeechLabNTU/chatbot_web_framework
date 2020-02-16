@@ -16,9 +16,13 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormGroup from '@material-ui/core/FormGroup';
 import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
+import MICL from "./MICL";
 
 // const root={flexgrow: 1};
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
@@ -41,25 +45,33 @@ class Dashboard extends Component{
         responseDialogflow:"",
         responseDNN:"",
         responseJamie:"",
-        responseRephrased: "",
-        responseBp: "",
-        apiResponse:"",
+        responseMICL:"",
+
         loadingDialogflow:false,
         loadingDNN: false,
         loadingJamie:false,
-        tokenActive:false,
+        loadingMICL: false,
+
         comparisonJamie: false,
         comparisonDialog: false,
         comparisonDNN: false,
-        thresholdJamie: 0,
+        comparisonMICL: false,
+
         similarityDialog: false,
         disimilarityDialog: false,
         similarityDNN: false,
         disimilarityDNN: false,
+        similarityMICL: false,
+        disimilaritMICL: false,
+
         choice: "",
         reccommendation: [],
+        checkDialog: false,
+        checkMICL: false,
+        checkDNN: false,
 
         //Speech to Text
+        tokenActive:false,
         audioEnable: false,
         mode: 'record',
         backendUrl: 'http://localhost:3001',
@@ -74,16 +86,19 @@ class Dashboard extends Component{
     }
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleCheck = this.handleCheck.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.handleChoice = this.handleChoice.bind(this);
     this.summarizer = this.summarizer.bind(this);
     this.handleInput = this.handleInput.bind(this);
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
+    this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
     this.function1 = this.function1.bind(this);
     this.function2 = this.function2.bind(this);
     this.function3 = this.function3.bind(this);
+    this.function4 = this.function4.bind(this);
     this.comparison = this.comparison.bind(this);
   }
 
@@ -143,6 +158,18 @@ class Dashboard extends Component{
     }
   }
 
+  checkSimilarityMICL(score){
+    console.log("hello")
+    if (score < 0.4){
+      this.setState({similarityMICL:false})
+      this.setState({disimilarityMICL: true})
+
+    }else{
+      this.setState({similarityMICL:true})
+      this.setState({disimilarityMICL:false})
+    }
+  }
+
   function1(params){
     let that = this;
     return new Promise(function(resolve,reject){
@@ -163,6 +190,7 @@ class Dashboard extends Component{
     return new Promise(function(resolve,reject){
       axios.post("http://localhost:3001/dialog/api/dialogflow", params)
       .then((res)=>{
+          console.log("hi")
           var summarized_1 = that.summarizer(res.data.reply)
           that.setState({responseDialogflow:summarized_1})
           that.setState({loadingDialogflow:false})
@@ -189,6 +217,21 @@ class Dashboard extends Component{
     
   }
 
+  function4(params){
+    let that = this;
+    return new Promise(function(resolve, reject){
+      axios.post("http://localhost:3001/micl/api/directQuery", params)
+      .then((res)=>{
+            // that.setState({reccommendation: res.data.queries})
+            var summarized_4 = that.summarizer(res.data.reply)
+            that.setState({responseMICL:summarized_4})
+            that.setState({loadingMICL:false})
+            that.setState({comparisonMICL:true})
+            resolve("Done")
+      });
+    })
+  }
+
   comparison(){
     
     if(this.state.comparisonDialog && this.state.comparisonJamie ){
@@ -207,6 +250,15 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
+
+    if(this.state.comparisonMICL && this.state.comparisonJamie){
+      let req = {responses: [this.state.responseMICL, this.state.responseMICL]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityMICL);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
   }
 
   async handleClick(){
@@ -219,8 +271,10 @@ class Dashboard extends Component{
     this.setState({loadingDialogflow:true})
     this.setState({loadingDNN:true})
     this.setState({loadingJamie:true})
+    this.setState({loadingMICL:true})
     let that = this;
-    await Promise.all([this.function1(params),this.function2(params),this.function3(params)]).then(function(values){
+    await Promise.all([this.function1(params),this.state.checkDialog && this.function2(params),
+      this.state.checkDNN && this.function3(params), this.state.checkMICL && this.function4(params)]).then(function(values){
       console.log(values);
       that.comparison()
     })
@@ -266,8 +320,12 @@ class Dashboard extends Component{
 
   }
 
+  handleCheck(e){
+    let name = e.target.name;
+    this.setState({[name]: e.target.checked})
+  }
+
   handleChange(e) {
-    e.preventDefault();
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
   }
@@ -425,6 +483,32 @@ class Dashboard extends Component{
                   
                 </Grid>
                 
+                <Grid item xs={12} md={12}>
+                <FormGroup row>
+                  <FormControlLabel
+                    control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
+                    label="Dialogflow"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
+                    label="MICL"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={this.state.checkDNN} name="checkDNN" value="DNN" onChange={this.handleCheck}/>}
+                    label="DNN"
+                  />
+                </FormGroup>
+
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Jamie
+                    loadingJamie = {this.state.loadingJamie}
+                    responseJamie = {this.state.responseJamie}
+                  />
+                </Grid>
+
+                {this.state.checkDNN &&
                 <Grid item xs={12} md={4}>
                   <DNN
                     similarityDNN = {this.state.similarityDNN}
@@ -436,14 +520,9 @@ class Dashboard extends Component{
                     reccommendation = {this.state.reccommendation}
                   />
                 </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <Jamie
-                    loadingJamie = {this.state.loadingJamie}
-                    responseJamie = {this.state.responseJamie}
-                  />
-                </Grid>
-
+                }
+                
+                {this.state.checkDialog &&
                 <Grid item xs={12} md={4}>
                   <Dialogflow
                     similarityDialog = {this.state.similarityDialog}
@@ -452,6 +531,19 @@ class Dashboard extends Component{
                     responseDialogflow = {this.state.responseDialogflow}
                   />
                 </Grid>
+                }
+
+                {this.state.checkMICL &&
+                <Grid item xs={12} md={4}>
+                  <MICL
+                    similarityMICL = {this.state.similarityMICL}
+                    disimilarityMICL = {this.state.disimilarityMICL}
+                    loadingMICL = {this.state.loadingMICL}
+                    responseMICL = {this.state.responseMICL}
+                  />
+                </Grid>
+                }
+
                 
             </Grid>
             

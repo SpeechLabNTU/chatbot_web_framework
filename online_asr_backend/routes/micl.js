@@ -5,7 +5,8 @@ const request = require('request')
 /*Andrew QA Matching API [http://155.69.146.213:8081/ask_bb/baby_bonus_faq_service]*/
 router.post("/api/directQuery", (req, res) => {
     
-    let queryText = req.body.queryResult.queryText
+    // let queryText = req.body.queryResult.queryText
+    let queryText = req.body.question
     
     const options = {
         method: "POST",
@@ -21,8 +22,9 @@ router.post("/api/directQuery", (req, res) => {
 
     request(options, function (error, response, body){
         responseQueryText = JSON.parse(response.body)
-        var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
-        return res.json(sendBack)
+
+        // var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
+        return res.json({reply: responseQueryText.top1})
     })
 
 });
@@ -46,7 +48,7 @@ router.post("/api/directQueryRephrased", (req, res) => {
 
     request(options, function (error, response, body){
         responseQueryText = JSON.parse(response.body)
-        console.log(responseQueryText.top1)
+        // console.log(responseQueryText.top1)
         res.json({ reply: responseQueryText.top1})
     })
 
@@ -71,7 +73,7 @@ router.post("/api/directQueryBp", (req, res) => {
 
     request(options, function (error, response, body){
         responseQueryText = JSON.parse(response.body)
-        console.log(responseQueryText.top1)
+        // console.log(responseQueryText.top1)
         res.json({ reply: responseQueryText.top1})
     })
 

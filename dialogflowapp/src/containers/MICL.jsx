@@ -9,7 +9,7 @@ const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
 const textFielderror={width:'400px',border:'1px solid #ff0000'};
 const form={width:'400px'};
 
-class DNN extends Component{
+class MICL extends Component{
   
   render(){
     
@@ -18,17 +18,17 @@ class DNN extends Component{
       <div>
         <TextField
             id="outlined-multiline-static"
-            label="Feed Forward Neural Network"
+            label="MICL"
             multiline
             rows="10"
             variant="filled"
             InputProps={{
             readOnly: true,
             }}
-            style={this.props.similarityDNN ? textFieldsuccess: this.props.disimilarityDNN ? textFielderror: textFieldOutput}
-            value={this.props.loadingDNN ? "loading..." : this.props.responseDNN} 
+            style={this.props.similarityMICL ? textFieldsuccess: this.props.disimilarityMICL ? textFielderror: textFieldOutput}
+            value={this.props.loadingMICL ? "loading..." : this.props.responseMICL} 
         />
-        <FormControl variant="outlined" style={form}>
+        {/* <FormControl variant="outlined" style={form}>
             <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
@@ -46,11 +46,11 @@ class DNN extends Component{
             }
             
             </Select>
-        </FormControl>
+        </FormControl> */}
 
       </div>
     );
   }
 }
 
-export default DNN
+export default MICL
