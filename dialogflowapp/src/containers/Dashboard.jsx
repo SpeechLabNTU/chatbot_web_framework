@@ -23,16 +23,14 @@ import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
+import AISG from "../img/AISG.png"
+import MSF from "../img/MSF.png"
+import NTU from "../img/NTU.png"
 
-// const root={flexgrow: 1};
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
-// const textFieldOutput={width:'400px'};
-// const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
-// const textFielderror={width:'400px',border:'1px solid #ff0000'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
-// const form={width:'400px'};
 
 class Dashboard extends Component{
 
@@ -190,7 +188,6 @@ class Dashboard extends Component{
     return new Promise(function(resolve,reject){
       axios.post("http://localhost:3001/dialog/api/dialogflow", params)
       .then((res)=>{
-          console.log("hi")
           var summarized_1 = that.summarizer(res.data.reply)
           that.setState({responseDialogflow:summarized_1})
           that.setState({loadingDialogflow:false})
@@ -314,10 +311,8 @@ class Dashboard extends Component{
         }catch(e){
           console.log("Comparison Error")
         }
-        
       }
     })
-
   }
 
   handleCheck(e){
@@ -404,26 +399,29 @@ class Dashboard extends Component{
         
       <div>
         <CssBaseline />
-        {/* <AppBar position="static" style={root}>
-            <Toolbar>
-            <Typography component="h1" variant="h6" color="inherit" noWrap>
-                NTU Baby Bonus FAQ
-            </Typography>
-            
-            </Toolbar>
-        </AppBar> */}
-        
+
         <main style={content}>
             <Container maxWidth="lg" style={container}>
+
+            <Grid container style={{paddingBottom:"40px"}} justify="center">
+              <Grid item xs={6} md={2} style={{textAlign:"center"}}>
+                    <img src={AISG} style={{width: '80px', height: '80px'}} alt="AISG Logo"/>
+              </Grid>
+              <Grid item xs={6} md={2} style={{textAlign:"center"}}>
+                  <img src={NTU} style={{width: '230px', height: '80px'}} alt="NTU Logo"/>
+              </Grid>
+              <Grid item xs={6} md={2} style={{textAlign:"center", paddingLeft:"60px"}}>
+                    <img src={MSF} style={{width: '160px', height: '80px'}} alt="MSF Logo"/>
+              </Grid>
+            </Grid>
             <Grid container spacing={3}>
-                {/* Chart */}
                 <Grid item xs={12} md={8} lg={6}>
                   
                   {this.state.switch && 
                   <TextField
                     style={textField}
                     id="filled-read-only-input"
-                    label="Read Only"
+                    label="Read blahblah"
                     value={this.state.input + ' ' + this.state.partialResult}
                     InputProps={{
                       readOnly: true,
@@ -546,7 +544,7 @@ class Dashboard extends Component{
 
                 
             </Grid>
-            
+
             </Container>
         </main>
       </div>

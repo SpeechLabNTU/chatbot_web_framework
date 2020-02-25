@@ -10,7 +10,6 @@ router.post("/api/dialogflow", (req,res)=> {
     
     query = req.body.question
     dialoflowConnection(query,res)
-    
 });
 
 async function dialoflowConnection(query, res) {
