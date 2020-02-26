@@ -1,6 +1,3 @@
 node_modules/
-Testing/
-permutations/
-audio/
-dnn/
-venv/
+deepNeuralNetwork/
+key/

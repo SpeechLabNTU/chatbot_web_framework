@@ -3,13 +3,14 @@ const router = express.Router()
 const request = require('request')
 
 /*Deep Neural Network Python API*/
+/* Unused for Docker version
 router.post("/api/russ_query", (req, res) => {
     
     let query = req.body.question
 
     request({
         method:'POST',
-        url: "http://localhost:5000/api/query",
+        url: "http://172.21.0.3:5000/api/query",
         json: {"request":query}
     }, (error, response, body) =>{ 
 
@@ -26,6 +27,7 @@ router.post("/api/russ_query", (req, res) => {
     });
 
 });
+*/
 
 /*Response Comparison*/
 router.post("/api/responseCompare", (req,res)=>{
@@ -34,7 +36,7 @@ router.post("/api/responseCompare", (req,res)=>{
     console.log(query)
     request({
         method:'POST',
-        url: "http://localhost:5000/api/similarityCheck",
+        url: "http://172.21.0.4:5000/api/similarityCheck",
         json: {"request":query}
     }, (error, response, body) =>{
 

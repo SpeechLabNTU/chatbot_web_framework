@@ -20,7 +20,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import Dialogflow from './Dialogflow';
-import DNN from './DNN';
+/*import DNN from './DNN';*/
 import Jamie from "./Jamie";
 import MICL from "./MICL";
 import AISG from "../img/AISG.png"
@@ -41,32 +41,32 @@ class Dashboard extends Component{
         input:"",
         query:"",
         responseDialogflow:"",
-        responseDNN:"",
+        /*responseDNN:"",*/
         responseJamie:"",
         responseMICL:"",
 
         loadingDialogflow:false,
-        loadingDNN: false,
+        /*loadingDNN: false,*/
         loadingJamie:false,
         loadingMICL: false,
 
         comparisonJamie: false,
         comparisonDialog: false,
-        comparisonDNN: false,
+        /*comparisonDNN: false,*/
         comparisonMICL: false,
 
         similarityDialog: false,
         disimilarityDialog: false,
-        similarityDNN: false,
-        disimilarityDNN: false,
+        /*similarityDNN: false,
+        disimilarityDNN: false,*/
         similarityMICL: false,
         disimilaritMICL: false,
 
         choice: "",
-        reccommendation: [],
+        /*reccommendation: [],*/
         checkDialog: false,
         checkMICL: false,
-        checkDNN: false,
+        /*checkDNN: false,*/
 
         //Speech to Text
         tokenActive:false,
@@ -89,13 +89,13 @@ class Dashboard extends Component{
     this.handleChoice = this.handleChoice.bind(this);
     this.summarizer = this.summarizer.bind(this);
     this.handleInput = this.handleInput.bind(this);
-    this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
+    /*this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);*/
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
     this.function1 = this.function1.bind(this);
     this.function2 = this.function2.bind(this);
-    this.function3 = this.function3.bind(this);
+    /*this.function3 = this.function3.bind(this);*/
     this.function4 = this.function4.bind(this);
     this.comparison = this.comparison.bind(this);
   }
@@ -135,6 +135,7 @@ class Dashboard extends Component{
         });
   }
 
+  /* Unused for Docker version
   checkSimilarityDNN(score){
     if (score < 0.4){
       this.setState({similarityDNN:false})
@@ -144,6 +145,7 @@ class Dashboard extends Component{
       this.setState({disimilarityDNN:false})
     }
   }
+  */
 
   checkSimilarityDialog(score){
     if (score < 0.4){
@@ -198,6 +200,7 @@ class Dashboard extends Component{
     
   }
 
+  /* Unused for docker version
   function3(params){
     let that = this;
     return new Promise(function(resolve, reject){
@@ -213,6 +216,7 @@ class Dashboard extends Component{
     })
     
   }
+  */
 
   function4(params){
     let that = this;
@@ -239,6 +243,7 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
+    /* Unused for docker version
     if(this.state.comparisonDNN && this.state.comparisonJamie){
       let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
       try{
@@ -247,6 +252,7 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
+    */
 
     if(this.state.comparisonMICL && this.state.comparisonJamie){
       let req = {responses: [this.state.responseMICL, this.state.responseMICL]}
@@ -266,12 +272,12 @@ class Dashboard extends Component{
     }
 
     this.setState({loadingDialogflow:true})
-    this.setState({loadingDNN:true})
+    /*this.setState({loadingDNN:true})*/
     this.setState({loadingJamie:true})
     this.setState({loadingMICL:true})
     let that = this;
     await Promise.all([this.function1(params),this.state.checkDialog && this.function2(params),
-      this.state.checkDNN && this.function3(params), this.state.checkMICL && this.function4(params)]).then(function(values){
+      this.state.checkMICL && this.function4(params)]).then(function(values){
       console.log(values);
       that.comparison()
     })
@@ -288,6 +294,7 @@ class Dashboard extends Component{
       question: this.state.choice
     }
 
+    /* Unused for Docker version
     axios.post("http://localhost:3001/flask/api/russ_query", params)
     .then((res)=>{
         if (res.status === 200){
@@ -313,6 +320,7 @@ class Dashboard extends Component{
         }
       }
     })
+    */
   }
 
   handleCheck(e){
@@ -491,10 +499,14 @@ class Dashboard extends Component{
                     control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
                     label="MICL"
                   />
+                  
+                  {/* Unused for docker version
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDNN} name="checkDNN" value="DNN" onChange={this.handleCheck}/>}
                     label="DNN"
-                  />
+                  /> 
+                  */}
+
                 </FormGroup>
 
                 </Grid>
@@ -506,6 +518,7 @@ class Dashboard extends Component{
                   />
                 </Grid>
 
+                {/* Unused for Docker version
                 {this.state.checkDNN &&
                 <Grid item xs={12} md={4}>
                   <DNN
@@ -518,7 +531,8 @@ class Dashboard extends Component{
                     reccommendation = {this.state.reccommendation}
                   />
                 </Grid>
-                }
+                } 
+                */}
                 
                 {this.state.checkDialog &&
                 <Grid item xs={12} md={4}>

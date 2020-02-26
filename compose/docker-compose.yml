@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+
+  ##################
+  # Node Container
+  ##################
+  server:
+    build: 
+      context: ../online_asr_backend
+      args:
+        - KEY=${KEY} 
+        - PROJECTID=${PROJECTID}
+    expose: 
+      - ${APP_SERVER_PORT}
+    ports:
+      - ${APP_SERVER_PORT}:${APP_SERVER_PORT} 
+    volumes:
+      - ../online_asr_backend/routes:/srv/app/server/routes
+    command: npm run dev
+
+  ##################
+  # Flask Container
+  ##################
+  api:
+    build: ../comparison
+    expose:
+      - ${FLASK_SERVER_PORT}
+    ports:
+      - ${FLASK_SERVER_PORT}:${FLASK_SERVER_PORT}
+    # volumes:
+    #   - ../production:/api
+    command: python flaskApp.py
+    # environment:
+    #   - FLASK_ENV=development
+    #   - FLASK_APP=flaskApp.py
+    #   - FLASK_DEBUG=1
+
+  ##################
+  # Client Container
+  ##################
+  client:
+    build: 
+      context: ../dialogflowapp
+      args:
+        - API_ENDPOINT=${API_ENDPOINT}
+    expose: 
+      - ${REACT_APP_PORT}
+    ports:
+      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+    volumes:
+      - ../dialogflowapp/src:/srv/app/client/src
+      - ../dialogflowapp/public:/srv/app/client/public
+    command: npm run start
