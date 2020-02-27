@@ -12,3 +12,7 @@ training_data
 __pycache__/
 lib/
 others/
+
+#optional
+.vscode/
+.DS_Store
