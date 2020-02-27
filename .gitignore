@@ -1,2 +1,14 @@
+#Frontend & Backend directorys
 node_modules/
-venv/
+
+#dataConstruction directory
+permutations/
+
+#dnnTraining directory
+tflearn_logs/
+training_data
+
+#python directory
+__pycache__/
+lib/
+others/
