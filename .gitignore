@@ -1,6 +1,9 @@
 #Frontend & Backend directorys
 node_modules/
 
+#backend
+gcloud/
+
 #dataConstruction directory
 permutations/
 
