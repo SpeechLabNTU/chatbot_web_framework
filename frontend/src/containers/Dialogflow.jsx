@@ -1,10 +1,7 @@
 import React,{Component} from 'react';
 import TextField from '@material-ui/core/TextField';
-
-const textFieldOutput={width:'400px'};
-const textFieldsuccess={width:'400px',border:'1px solid #00ff00'};
-const textFielderror={width:'400px',border:'1px solid #ff0000'};
-
+import FormControl from '@material-ui/core/FormControl';
+const form={width:'400px'};
 
 class Dialogflow extends Component{
   
@@ -12,19 +9,20 @@ class Dialogflow extends Component{
     return (
         
       <div>
-        <TextField
-          id="outlined-multiline-static"
-          label="Dialogflow"
-          multiline
-          rows="10"
-          variant="filled"
-          InputProps={{
-            readOnly: true,
-          }}
-          style={this.props.similarityDialog ? textFieldsuccess: this.props.disimilarityDialog ? textFielderror: textFieldOutput} 
-          value={this.props.loadingDialogflow ? "loading...": this.props.responseDialogflow}
-        />
-
+        <FormControl variant="outlined" style={form}>
+          <TextField
+            id="outlined-multiline-static"
+            label="Dialogflow"
+            multiline
+            rows="10"
+            variant="outlined"
+            InputProps={{
+              readOnly: true,
+            }}
+            helperText= {this.props.similarityDialog ? "Similarity Score: " + this.props.scoreDialog : this.props.disimilarityDialog ? "Similarity Score " + this.props.scoreDialog: "Comparison Inactive"} 
+            value={this.props.loadingDialogflow ? "loading...": this.props.responseDialogflow}
+          />
+        </FormControl>
       </div>
     );
   }

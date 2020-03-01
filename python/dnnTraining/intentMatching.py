@@ -106,7 +106,7 @@ net = tflearn.regression(net)
 model = tflearn.DNN(net, tensorboard_dir='tflearn_logs')
 
 #Train Model
-model.fit(train_x, train_y, n_epoch=100, batch_size=32, show_metric=True, validation_set=0.2)
+model.fit(train_x, train_y, n_epoch=100, batch_size=32, show_metric=True, validation_set=0.2, shuffle=True)
 
 model.save('model.tflearn')
 

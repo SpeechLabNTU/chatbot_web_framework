@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import TextField from '@material-ui/core/TextField';
-
-const textFieldOutput={width:'400px'};
+import FormControl from '@material-ui/core/FormControl';
+const form={width:'400px'};
 
 class Dialogflow extends Component{
   
@@ -9,6 +9,7 @@ class Dialogflow extends Component{
     return (
         
       <div>
+        <FormControl variant="outlined" style={form}>
         <TextField
             id="outlined-multiline-static"
             label="Ask Jamie"
@@ -18,10 +19,9 @@ class Dialogflow extends Component{
             InputProps={{
             readOnly: true,
             }}
-            style={textFieldOutput}
             value={this.props.loadingJamie ? "loading..." : this.props.responseJamie} 
         />
-
+        </FormControl>
       </div>
     );
   }

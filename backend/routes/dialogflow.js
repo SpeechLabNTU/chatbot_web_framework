@@ -30,9 +30,13 @@ async function dialoflowConnection(query, res) {
       },
     };
   
-    const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
-    res.status(200).json({reply: result})
+    await sessionClient.detectIntent(request).then(responses=>{
+      const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
+      res.json({reply: result})
+    }).catch(err=>{
+      res.json({reply: "Unable to reach Dialogflow"})
+    })
+    
 }
 
 module.exports = router

@@ -13,16 +13,13 @@ router.post("/api/russ_query", (req, res) => {
         json: {"request":query}
     }, (error, response, body) =>{ 
 
-        res.setTimeout(5000, function(){
-            res.status(500)
-        });
-
-        if(!error){
-            res.status(200).json({ reply: response.body.response, queries: response.body.reccomendation})
+        if(error !== null){
+            if (error.errno === "ECONNREFUSED"){
+                res.json({ reply: "DNN server is down", queries:[]})
+            }
         }else{
-            res.status(500)
+            res.json({ reply: response.body.response, queries: response.body.reccomendation})
         }
-        
     });
 
 });
@@ -32,19 +29,21 @@ router.post("/api/responseCompare", (req,res)=>{
     
     let query = req.body.responses
     console.log(query)
+
     request({
         method:'POST',
         url: "http://localhost:5000/api/similarityCheck",
         json: {"request":query}
     }, (error, response, body) =>{
-
-        if(!error){
-            res.status(200).json({ reply: response.body.response})
+        if (error !== null){
+            if(error.errno === "ECONNREFUSED"){
+                res.json({ reply:-1})
+            }
         }else{
-            res.status(500)
+            res.status(200).json({ reply: response.body.response})
         }
-        
     });
+
 });
 
 module.exports = router

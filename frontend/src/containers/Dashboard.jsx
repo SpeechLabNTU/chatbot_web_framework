@@ -60,7 +60,11 @@ class Dashboard extends Component{
         similarityDNN: false,
         disimilarityDNN: false,
         similarityMICL: false,
-        disimilaritMICL: false,
+        disimilarityMICL: false,
+
+        scoreDialog: 0,
+        scoreDNN: 0,
+        scoreMICL: 0,
 
         choice: "",
         reccommendation: [],
@@ -130,12 +134,17 @@ class Dashboard extends Component{
     await axios.post('http://localhost:3001/flask/api/responseCompare',req)
         .then((res)=>{
             let probability = res.data.reply
-            callback(probability)
-            
+            if (probability !== -1){
+              callback(probability)
+            }
+        }).catch(error=>{
+          console.log("Error Contacting API server")
         });
+        
   }
 
   checkSimilarityDNN(score){
+    this.setState({scoreDNN:score})
     if (score < 0.4){
       this.setState({similarityDNN:false})
       this.setState({disimilarityDNN: true})
@@ -146,6 +155,7 @@ class Dashboard extends Component{
   }
 
   checkSimilarityDialog(score){
+    this.setState({scoreDialog:score})
     if (score < 0.4){
       this.setState({similarityDialog:false})
       this.setState({disimilarityDialog: true})
@@ -157,7 +167,7 @@ class Dashboard extends Component{
   }
 
   checkSimilarityMICL(score){
-    console.log("hello")
+    this.setState({scoreMICL:score})
     if (score < 0.4){
       this.setState({similarityMICL:false})
       this.setState({disimilarityMICL: true})
@@ -178,6 +188,9 @@ class Dashboard extends Component{
           that.setState({loadingJamie:false})
           that.setState({comparisonJamie:true})
           resolve("Done")
+      })
+      .catch(error=>{
+          console.log("Error contacting Ask Jamie")
       });
       
     })
@@ -193,6 +206,9 @@ class Dashboard extends Component{
           that.setState({loadingDialogflow:false})
           that.setState({comparisonDialog:true})
           resolve("Done")
+      })
+      .catch(error=>{
+          console.log("Error contacting Dialogflow")
       });
     })
     
@@ -209,7 +225,10 @@ class Dashboard extends Component{
             that.setState({loadingDNN:false})
             that.setState({comparisonDNN:true})
             resolve("Done")
-      });
+      })
+      .catch(error=>{
+          console.log("Error contacting Flask server")
+      })
     })
     
   }
@@ -225,7 +244,10 @@ class Dashboard extends Component{
             that.setState({loadingMICL:false})
             that.setState({comparisonMICL:true})
             resolve("Done")
-      });
+      })
+      .catch(error=>{
+          console.log("Error contacting MICL server")
+      })
     })
   }
 
@@ -260,7 +282,10 @@ class Dashboard extends Component{
   }
 
   async handleClick(){
-    
+
+    this.setState({similarityDialog: false})
+    this.setState({similarityMICL: false})
+    this.setState({similarityDNN: false})
     this.setState({query: this.state.input})
     var params = {
       question: this.state.input
@@ -324,18 +349,22 @@ class Dashboard extends Component{
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
+    if(this.state.switch===false){
+      this.initSockets()
+    }
   }
 
-  componentDidMount () {
-    this.initSockets()
-  }
+  // componentDidMount () {
+  //   this.initSockets()
+  // }
 
   initSockets() {
     const socket = io(this.state.backendUrl, {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: Infinity
+      // reconnectionAttempts: Infinity
+      reconnectionAttempts: 2
     })
 
     socket.on('connect', () => {
@@ -493,7 +522,6 @@ class Dashboard extends Component{
                     label="MICL"
                   />
                   
-                 
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDNN} name="checkDNN" value="DNN" onChange={this.handleCheck}/>}
                     label="DNN"
@@ -520,6 +548,7 @@ class Dashboard extends Component{
                     choice = {this.state.choice}
                     handleChoice = {this.handleChoice}
                     reccommendation = {this.state.reccommendation}
+                    scoreDNN = {this.state.scoreDNN}
                   />
                 </Grid>
                 } 
@@ -531,6 +560,7 @@ class Dashboard extends Component{
                     disimilarityDialog = {this.state.disimilarityDialog}
                     loadingDialogflow = {this.state.loadingDialogflow}
                     responseDialogflow = {this.state.responseDialogflow}
+                    scoreDialog = {this.state.scoreDialog}
                   />
                 </Grid>
                 }
@@ -542,6 +572,7 @@ class Dashboard extends Component{
                     disimilarityMICL = {this.state.disimilarityMICL}
                     loadingMICL = {this.state.loadingMICL}
                     responseMICL = {this.state.responseMICL}
+                    scoreMICL = {this.state.scoreMICL}
                   />
                 </Grid>
                 }

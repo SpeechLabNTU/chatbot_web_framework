@@ -21,10 +21,15 @@ router.post("/api/directQuery", (req, res) => {
     };
 
     request(options, function (error, response, body){
-        responseQueryText = JSON.parse(response.body)
-
-        // var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
-        return res.json({reply: responseQueryText.top1})
+        if(error !== null){
+            if (error.errno === "ECONNREFUSED"){
+                res.json({ reply: "MICL server is down", queries:[]})
+            }
+        }else{
+            responseQueryText = JSON.parse(response.body)
+            // var sendBack = {fulfillmentMessages: [{"text":{"text": [responseQueryText.top1]}}]}
+            res.json({reply: responseQueryText.top1})
+        }
     })
 
 });
@@ -47,9 +52,15 @@ router.post("/api/directQueryRephrased", (req, res) => {
     };
 
     request(options, function (error, response, body){
-        responseQueryText = JSON.parse(response.body)
-        // console.log(responseQueryText.top1)
-        res.json({ reply: responseQueryText.top1})
+        if(error !== null){
+            if (error.errno === "ECONNREFUSED"){
+                res.json({ reply: "MICL server is down", queries:[]})
+            }
+        }else{
+            responseQueryText = JSON.parse(response.body)
+            // console.log(responseQueryText.top1)
+            res.json({ reply: responseQueryText.top1})
+        }
     })
 
 });
@@ -72,9 +83,16 @@ router.post("/api/directQueryBp", (req, res) => {
     };
 
     request(options, function (error, response, body){
-        responseQueryText = JSON.parse(response.body)
-        // console.log(responseQueryText.top1)
-        res.json({ reply: responseQueryText.top1})
+        if(error !== null){
+            if (error.errno === "ECONNREFUSED"){
+                res.json({ reply: "MICL server is down", queries:[]})
+            }
+        }else{
+            responseQueryText = JSON.parse(response.body)
+            // console.log(responseQueryText.top1)
+            res.json({ reply: responseQueryText.top1})
+        }
+        
     })
 
 });
