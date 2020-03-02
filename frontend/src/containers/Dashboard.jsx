@@ -1,7 +1,5 @@
 import React,{Component} from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
-// import AppBar from '@material-ui/core/AppBar';
-// import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
@@ -23,6 +21,8 @@ import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
+import Charts from "./Charts";
+import UploadBox from "./UploadBox";
 import AISG from "../img/AISG.png"
 import MSF from "../img/MSF.png"
 import NTU from "../img/NTU.png"
@@ -31,6 +31,7 @@ const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
+  
 
 class Dashboard extends Component{
 
@@ -354,10 +355,6 @@ class Dashboard extends Component{
     }
   }
 
-  // componentDidMount () {
-  //   this.initSockets()
-  // }
-
   initSockets() {
     const socket = io(this.state.backendUrl, {
       reconnection: true,
@@ -444,6 +441,17 @@ class Dashboard extends Component{
                     <img src={MSF} style={{width: '160px', height: '80px'}} alt="MSF Logo"/>
               </Grid>
             </Grid>
+
+            <Grid container spacing={3} style={{paddingBottom:"40px"}}>
+              <Grid item xs={12} md={6} lg={6}>
+                <Charts/>
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6}>
+                <UploadBox/>
+              </Grid>
+            </Grid>
+
             <Grid container spacing={3}>
                 <Grid item xs={12} md={8} lg={6}>
                   
@@ -581,6 +589,7 @@ class Dashboard extends Component{
             </Grid>
 
             </Container>
+            
         </main>
       </div>
     );
