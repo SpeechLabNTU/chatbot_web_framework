@@ -28,7 +28,7 @@ router.post("/api/russ_query", (req, res) => {
 router.post("/api/responseCompare", (req,res)=>{
     
     let query = req.body.responses
-    console.log(query)
+    // console.log(query)
 
     request({
         method:'POST',
@@ -40,6 +40,8 @@ router.post("/api/responseCompare", (req,res)=>{
                 res.json({ reply:-1})
             }
         }else{
+            console.log(query)
+            console.log(response.body.response)
             res.status(200).json({ reply: response.body.response})
         }
     });

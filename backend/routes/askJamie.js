@@ -9,15 +9,16 @@ router.post("/api/askJamieFast", (req,res)=> {
 });
 
 function example(query,res){
-
-    fs.writeFile("questions.txt", query, function(err) {
-        if(err) {
-            return console.log(err);
-        }
-    })
+    
+    // console.log(query)
+    // fs.writeFile("questions.txt", query, function(err) {
+    //     if(err) {
+    //         return console.log(err);
+    //     }
+    // })
 
     const { spawn } = require('child_process');
-    const pyProg = spawn('python3', ['ask_jamie.py','--test_questions', 'questions.txt']);
+    const pyProg = spawn('python3', ['ask_jamie.py','--test_questions', query]);
 
     pyProg.stdout.on('data', function(data) {
 

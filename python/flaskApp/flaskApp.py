@@ -38,7 +38,7 @@ def query():
 @app.route('/api/similarityCheck', methods=['GET','POST'])
 def similarityCheck():
     content2 = request.json
-    similarity_threshold = Similarity.measureSimilarity(content2['request'])
+    similarity_threshold = Similarity.Similarity(content2['request'])
 
     return jsonify({"response":similarity_threshold})
 

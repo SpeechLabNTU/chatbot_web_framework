@@ -73,6 +73,10 @@ class Dashboard extends Component{
         checkMICL: false,
         checkDNN: false,
 
+        querys : [],
+        responseScoreArray: [],
+        trackScore:[],
+
         //Speech to Text
         tokenActive:false,
         audioEnable: false,
@@ -103,6 +107,8 @@ class Dashboard extends Component{
     this.function3 = this.function3.bind(this);
     this.function4 = this.function4.bind(this);
     this.comparison = this.comparison.bind(this);
+    this.handleQueryInput = this.handleQueryInput.bind(this);
+    this.MassResponseComparison = this.MassResponseComparison.bind(this);
   }
 
   summarizer(result){
@@ -188,7 +194,7 @@ class Dashboard extends Component{
           that.setState({responseJamie:summarized_2})
           that.setState({loadingJamie:false})
           that.setState({comparisonJamie:true})
-          resolve("Done")
+          resolve(summarized_2)
       })
       .catch(error=>{
           console.log("Error contacting Ask Jamie")
@@ -206,7 +212,7 @@ class Dashboard extends Component{
           that.setState({responseDialogflow:summarized_1})
           that.setState({loadingDialogflow:false})
           that.setState({comparisonDialog:true})
-          resolve("Done")
+          resolve(summarized_1)
       })
       .catch(error=>{
           console.log("Error contacting Dialogflow")
@@ -280,6 +286,60 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
+  }
+
+
+  MassResponseComparison(req){
+    let that = this
+    return new Promise(function(resolve, reject){
+      axios.post('http://localhost:3001/flask/api/responseCompare',req)
+        .then((res)=>{
+            let probability = res.data.reply
+            if (probability !== -1){
+              resolve(probability)
+            }
+        }).catch(error=>{
+          console.log("Error Contacting API server")
+        });
+        
+    });
+        
+  }
+
+  async handleQueryInput(content, responseSelection){
+    this.setState({querys:content});
+    console.log(this.state.querys)
+    console.log(responseSelection)
+    let functionPostArray = []
+    let functionPostArrayModel = []
+
+    if(responseSelection === "null"){
+      console.log("Define QA engine first")
+    }else if(responseSelection === "Dialogflow"){
+        for (let i=0;i<content.length;i++){
+          let ques = {question: content[i]}
+          functionPostArrayModel.push(this.function1(ques))
+          functionPostArray.push(this.function2(ques));
+        }
+
+        let that = this;
+        let promiseArray = [functionPostArrayModel,functionPostArray]
+        
+        const promiseAll = Promise.all(promiseArray.map(Promise.all.bind(Promise)))
+        promiseAll.then(function(value){
+            console.log(value)
+            let functionCompareArray = []
+            for (let i =0;i<value[0].length;i++){
+              let responsesArray = {responses:[value[0][i],value[1][i]]}
+              functionCompareArray.push(that.MassResponseComparison(responsesArray))
+            }
+            Promise.all(functionCompareArray).then(function(score){
+              that.setState({responseScoreArray:score})
+            });
+
+        })
+    }
+    
   }
 
   async handleClick(){
@@ -444,15 +504,15 @@ class Dashboard extends Component{
 
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
               <Grid item xs={12} md={6} lg={6}>
-                <Charts/>
+                <Charts responseScoreArray={this.state.responseScoreArray}/>
               </Grid>
 
               <Grid item xs={12} md={6} lg={6}>
-                <UploadBox/>
+                <UploadBox handleQueryInput={this.handleQueryInput}/>
               </Grid>
             </Grid>
 
-            <Grid container spacing={3}>
+            <Grid container spacing={3} style={{paddingBottom:'30px'}}>
                 <Grid item xs={12} md={8} lg={6}>
                   
                   {this.state.switch && 

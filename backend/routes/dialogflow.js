@@ -5,9 +5,6 @@ const uuid = require('uuid');
 
 /*Dialogflow Connection*/
 router.post("/api/dialogflow", (req,res)=> {
-
-    console.log(req.body.question)
-    
     query = req.body.question
     dialoflowConnection(query,res)
 });
