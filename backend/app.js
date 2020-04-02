@@ -1,11 +1,13 @@
+
 const express = require('express');
 const dialogflowRouter = require('./routes/dialogflow');
 const miclRouter = require('./routes/micl');
 const flaskRouter = require('./routes/flask');
 const askJamieRouter = require('./routes/askJamie');
 const STT = require('./controllers/MainController');
-const app = express();
 const upload = require('./upload');
+
+const app = express();
 
 app.use(require('cors')({ origin: true, credentials: true }))
 app.use(express.json())
@@ -20,5 +22,7 @@ app.post('/stream/record', STT.streamByRecording)
 app.post('/stream/import', upload.single('file'), STT.streamByImport)
 
 module.exports = app
+
+
 
 

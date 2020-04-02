@@ -10,6 +10,7 @@ import logging, os
 import warnings  
 import pickle
 import math
+import matplotlib.pyplot as plt
 
 def serialize_input(matrix,num_column,num_rows):
     L2sum_store = {}
@@ -47,8 +48,11 @@ for intent in intents['intents']:
 #Stem words and remove duplicates
 words = [stemmer.stem(w.lower()) for w in words if w not in ignore_words]
 words = sorted(list(set(words)))
-
 classes = sorted(list(set(classes)))
+
+
+# print(len(classes),"classes",classes)
+# print(len(words),"Unique words",words)
 
 #creating training data
 training = []
@@ -106,8 +110,9 @@ net = tflearn.regression(net)
 model = tflearn.DNN(net, tensorboard_dir='tflearn_logs')
 
 #Train Model
-model.fit(train_x, train_y, n_epoch=100, batch_size=32, show_metric=True, validation_set=0.2, shuffle=True)
+model.fit(train_x, train_y, n_epoch=50, batch_size=32, show_metric=True, validation_set=0.2, shuffle=True)
 
-model.save('model.tflearn')
 
-pickle.dump({'words':words, 'classes':classes, 'train_x':train_x, 'train_y':train_y}, open("training_data","wb"))
+# model.save('model.tflearn')
+
+# pickle.dump({'words':words, 'classes':classes, 'train_x':train_x, 'train_y':train_y}, open("training_data","wb"))

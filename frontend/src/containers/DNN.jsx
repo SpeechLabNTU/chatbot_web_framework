@@ -16,7 +16,7 @@ class DNN extends Component{
         <FormControl variant="outlined" style={form}>
           <TextField
               id="outlined-multiline-static"
-              label="Feed Forward Neural Network"
+              label="Text Classification Model"
               multiline
               rows="10"
               variant="outlined"

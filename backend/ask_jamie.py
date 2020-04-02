@@ -24,12 +24,14 @@ if __name__ == '__main__':
     payload = partial_payload.copy()
     payload.update({"Question": question})
     xml_string = requests.post(url, data=payload).text
+
+    # print(xml_string)
     # parse xml string
     root = ET.fromstring(xml_string)
     count = int(root.find("Count").text)
 
     # parse html string
-    raw_answers = [e.find("{urn:agathos-com:imfinity:flexanswer:data:v1}Text").text for e in root.find("Responses").findall("Response")]
+    raw_answers = [e.find("{urn:agathos-com:agathos-solutions:flexanswer:data:v1}Text").text for e in root.find("Responses").findall("Response")]
     
     for raw_answer in raw_answers:
         answer = BeautifulSoup(raw_answer, features='html.parser').text

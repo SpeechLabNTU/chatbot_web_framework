@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import CanvasJSReact from '../assets/canvasjs.react';
 var CanvasJSChart = CanvasJSReact.CanvasJSChart;
- 
+
 // class SplineChart extends Component {
 // 	render() {
 // 		let chart = useRef();
@@ -65,7 +65,7 @@ export default function SplineChart(props){
 			},
 			data: [{
 				yValueFormatString: "##.00",
-                type: "spline",
+                type: "scatter",
                 name: "Dialogflow",
 				dataPoints: responseData
             }

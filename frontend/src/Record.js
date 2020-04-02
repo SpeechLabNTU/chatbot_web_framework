@@ -3,13 +3,16 @@ import './Record.css'
 import './recorder'
 import axios from 'axios'
 import Row from 'react-bootstrap/Row'
+import Button from '@material-ui/core/Button';
 
 export default class Record extends Component {
   constructor (props) {
     super(props)
     this.state = {
       recorder: {},
-      recordInterval: 0
+      recordInterval: 0,
+      isRecording: false,
+      stopRecording: true
     }
   }
 
@@ -209,8 +212,9 @@ export default class Record extends Component {
 
       // Start recording
       this.state.recorder.record()
-
       this.props.setBusy()
+      this.setState({ isRecording: true })
+      this.setState({ stopRecording: false })
     } catch (err) {
       console.log(err)
     }
@@ -223,6 +227,8 @@ export default class Record extends Component {
     // Stop recording
     if (this.state.recorder) {
       this.state.recorder.stop()
+      this.setState({ isRecording: false })
+      this.setState({ stopRecording: true})
       // Push the remaining audio to the server
       this.state.recorder.export16kMono((blob) => {
         if (this.props.isSocketReady) {
@@ -254,13 +260,15 @@ export default class Record extends Component {
 
       <Row className="justify-content-md-center">
             <canvas className="visualizer" />
-            <button size="lg"
+            <Button onClick={this.start} disabled={this.state.isRecording} variant="contained" color = "primary">Start Streaming</Button>
+            <Button onClick={this.stop} disabled={this.state.stopRecording} variant="contained" color = "primary">Stop Streaming</Button>
+            {/* <button size="lg"
             type="button" className="btn btn-primary"
             title="Starts listening for speech, i.e. starts recording and transcribing."
             onMouseUp={this.stop} onMouseDown={this.start}>
               <i className="fas fa-play" />
               Start
-            </button>
+            </button> */}
       </Row>
 
       // <div className="row">

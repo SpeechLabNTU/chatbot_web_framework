@@ -23,9 +23,11 @@ import Jamie from "./Jamie";
 import MICL from "./MICL";
 import Charts from "./Charts";
 import UploadBox from "./UploadBox";
-import AISG from "../img/AISG.png"
-import MSF from "../img/MSF.png"
-import NTU from "../img/NTU.png"
+import AISG from "../img/AISG.png";
+import MSF from "../img/MSF.png";
+import NTU from "../img/NTU.png";
+import Banner from "./Banner";
+import {Tab, Tabs} from "react-bootstrap";
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
@@ -41,6 +43,7 @@ class Dashboard extends Component{
         //Direct Query
         input:"",
         query:"",
+
         responseDialogflow:"",
         responseDNN:"",
         responseJamie:"",
@@ -108,6 +111,7 @@ class Dashboard extends Component{
     this.function4 = this.function4.bind(this);
     this.comparison = this.comparison.bind(this);
     this.handleQueryInput = this.handleQueryInput.bind(this);
+    this.handleSingleInput = this.handleSingleInput.bind(this);
     this.MassResponseComparison = this.MassResponseComparison.bind(this);
   }
 
@@ -187,6 +191,7 @@ class Dashboard extends Component{
 
   function1(params){
     let that = this;
+    this.setState({loadingJamie:true})
     return new Promise(function(resolve,reject){
       axios.post('http://localhost:3001/jamie/api/askJamieFast', params)
       .then((res)=>{
@@ -194,7 +199,7 @@ class Dashboard extends Component{
           that.setState({responseJamie:summarized_2})
           that.setState({loadingJamie:false})
           that.setState({comparisonJamie:true})
-          resolve(summarized_2)
+          resolve(res.data.reply)
       })
       .catch(error=>{
           console.log("Error contacting Ask Jamie")
@@ -205,6 +210,7 @@ class Dashboard extends Component{
 
   function2(params){
     let that = this;
+    this.setState({loadingDialogflow:true})
     return new Promise(function(resolve,reject){
       axios.post("http://localhost:3001/dialog/api/dialogflow", params)
       .then((res)=>{
@@ -212,7 +218,7 @@ class Dashboard extends Component{
           that.setState({responseDialogflow:summarized_1})
           that.setState({loadingDialogflow:false})
           that.setState({comparisonDialog:true})
-          resolve(summarized_1)
+          resolve(res.data.reply)
       })
       .catch(error=>{
           console.log("Error contacting Dialogflow")
@@ -223,6 +229,7 @@ class Dashboard extends Component{
 
   function3(params){
     let that = this;
+    this.setState({loadingDNN:true})
     return new Promise(function(resolve, reject){
       axios.post("http://localhost:3001/flask/api/russ_query", params)
       .then((res)=>{
@@ -231,7 +238,7 @@ class Dashboard extends Component{
             that.setState({responseDNN:summarized_0})
             that.setState({loadingDNN:false})
             that.setState({comparisonDNN:true})
-            resolve("Done")
+            resolve(summarized_0)
       })
       .catch(error=>{
           console.log("Error contacting Flask server")
@@ -250,7 +257,7 @@ class Dashboard extends Component{
             that.setState({responseMICL:summarized_4})
             that.setState({loadingMICL:false})
             that.setState({comparisonMICL:true})
-            resolve("Done")
+            resolve(res.data.reply)
       })
       .catch(error=>{
           console.log("Error contacting MICL server")
@@ -342,6 +349,34 @@ class Dashboard extends Component{
     
   }
 
+
+  async handleSingleInput(input, responseSelection){
+    if(responseSelection === "null"){
+      console.log("Define QA engine first")
+    }else if(responseSelection === "Dialogflow"){
+
+        let that = this;
+        let ques = {question: input}
+        const promiseAll = Promise.all([this.function1(ques), this.function2(ques)]);
+        promiseAll.then(function(value){
+            let responsesArray = {responses:[value[0],value[1]]}
+            
+            Promise.all([that.MassResponseComparison(responsesArray)]).then(function(score){
+              console.log(score)
+              that.setState(prevState=>({
+                responseScoreArray: [...prevState.responseScoreArray,score[0]]
+              }))
+              // that.setState({
+              //   responseScoreArray: that.state.responseScoreArray.concat([score[0]])
+              // })
+              console.log(that.state.responseScoreArray);
+            
+            });
+
+        })
+    }
+  }
+
   async handleClick(){
 
     this.setState({similarityDialog: false})
@@ -352,9 +387,6 @@ class Dashboard extends Component{
       question: this.state.input
     }
 
-    this.setState({loadingDialogflow:true})
-    this.setState({loadingDNN:true})
-    this.setState({loadingJamie:true})
     this.setState({loadingMICL:true})
     let that = this;
     await Promise.all([this.function1(params),this.state.checkDialog && this.function2(params),
@@ -502,14 +534,14 @@ class Dashboard extends Component{
               </Grid>
             </Grid>
 
-            <Grid container spacing={3} style={{paddingBottom:"40px"}}>
-              <Grid item xs={12} md={6} lg={6}>
-                <Charts responseScoreArray={this.state.responseScoreArray}/>
-              </Grid>
+            <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
+            
+            <Tab eventKey="dashboard" title="Dashboard">
+            
+            <br/><br/>
 
-              <Grid item xs={12} md={6} lg={6}>
-                <UploadBox handleQueryInput={this.handleQueryInput}/>
-              </Grid>
+            <Grid container style={{paddingBottom:"40px"}} justify="center">
+              <Banner/>
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
@@ -519,7 +551,7 @@ class Dashboard extends Component{
                   <TextField
                     style={textField}
                     id="filled-read-only-input"
-                    label="Read blahblah"
+                    label="Read"
                     value={this.state.input + ' ' + this.state.partialResult}
                     InputProps={{
                       readOnly: true,
@@ -558,7 +590,7 @@ class Dashboard extends Component{
                   <Record
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4MTU1OTA1MiwiZXhwIjoxNTg0MTUxMDUyfQ.WEDXHrcPfCfM7hHaFB7Oj5shOnQRQyu2RcN1xwLGrVw"
+                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NDQ1NTAxOSwiZXhwIjoxNTg3MDQ3MDE5fQ.W_rahk0lDQNLu8ExdizviAnUkWInlt5pyfEcZzxYX58"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -648,6 +680,23 @@ class Dashboard extends Component{
                 
             </Grid>
 
+            </Tab>
+
+            <Tab eventKey="chart" title="Chart">
+            <br/><br/>
+            <Grid container spacing={3} style={{paddingBottom:"40px"}}>
+              <Grid item xs={12} md={6} lg={6}>
+                <Charts responseScoreArray={this.state.responseScoreArray}/>
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6}>
+                <UploadBox handleQueryInput={this.handleQueryInput}/>
+              </Grid>
+            </Grid>
+              
+            </Tab>
+
+            </Tabs>
             </Container>
             
         </main>
