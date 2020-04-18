@@ -23,6 +23,7 @@ import Jamie from "./Jamie";
 import MICL from "./MICL";
 import Charts from "./Charts";
 import UploadBox from "./UploadBox";
+import Rajat from "./Rajat";
 import AISG from "../img/AISG.png";
 import MSF from "../img/MSF.png";
 import NTU from "../img/NTU.png";
@@ -48,16 +49,19 @@ class Dashboard extends Component{
         responseDNN:"",
         responseJamie:"",
         responseMICL:"",
+        responseRajat: "",
 
         loadingDialogflow:false,
         loadingDNN: false,
         loadingJamie:false,
         loadingMICL: false,
+        loadingRajat: false,
 
         comparisonJamie: false,
         comparisonDialog: false,
         comparisonDNN: false,
         comparisonMICL: false,
+        comparisonRajat: false,
 
         similarityDialog: false,
         disimilarityDialog: false,
@@ -65,16 +69,20 @@ class Dashboard extends Component{
         disimilarityDNN: false,
         similarityMICL: false,
         disimilarityMICL: false,
+        similarityRajat: false,
+        disimilarityRajat: false,
 
         scoreDialog: 0,
         scoreDNN: 0,
         scoreMICL: 0,
+        scoreRajat: 0,
 
         choice: "",
         reccommendation: [],
         checkDialog: false,
         checkMICL: false,
         checkDNN: false,
+        checkRajat: false,
 
         querys : [],
         responseScoreArray: [],
@@ -104,11 +112,13 @@ class Dashboard extends Component{
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
+    this.checkSimilarityRajat = this.checkSimilarityRajat.bind(this);
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
     this.function1 = this.function1.bind(this);
     this.function2 = this.function2.bind(this);
     this.function3 = this.function3.bind(this);
     this.function4 = this.function4.bind(this);
+    this.function5 = this.function5.bind(this);
     this.comparison = this.comparison.bind(this);
     this.handleQueryInput = this.handleQueryInput.bind(this);
     this.handleSingleInput = this.handleSingleInput.bind(this);
@@ -154,6 +164,8 @@ class Dashboard extends Component{
         
   }
 
+  //==============Similarity Comparison Checks==============
+
   checkSimilarityDNN(score){
     this.setState({scoreDNN:score})
     if (score < 0.4){
@@ -188,6 +200,21 @@ class Dashboard extends Component{
       this.setState({disimilarityMICL:false})
     }
   }
+
+  checkSimilarityRajat(score){
+    this.setState({scoreRajat:score})
+    if (score < 0.4){
+      this.setState({similarityRajat:false})
+      this.setState({disimilarityRajat: true})
+
+    }else{
+      this.setState({similarityRajat:true})
+      this.setState({disimilarityRajat:false})
+    }
+  }
+
+
+  //==============Chatbot API Service Call====================
 
   function1(params){
     let that = this;
@@ -249,6 +276,7 @@ class Dashboard extends Component{
 
   function4(params){
     let that = this;
+    this.setState({loadingMICL:true})
     return new Promise(function(resolve, reject){
       axios.post("http://localhost:3001/micl/api/directQuery", params)
       .then((res)=>{
@@ -264,6 +292,25 @@ class Dashboard extends Component{
       })
     })
   }
+
+  function5(params){
+    let that = this;
+    this.setState({loadingRajat:true})
+    return new Promise(function(resolve, reject){
+      axios.post("http://localhost:3001/rajat/api/queryEndpoint", params)
+      .then((res)=>{
+            var summarized_5 = that.summarizer(res.data.reply)
+            that.setState({responseRajat:summarized_5})
+            that.setState({loadingRajat:false})
+            that.setState({comparisonRajat:true})
+            resolve(res.data.reply)
+      })
+      .catch(error=>{
+          console.log("Error contacting Rajat server")
+      })
+    })
+  }
+
 
   comparison(){
     
@@ -286,18 +333,25 @@ class Dashboard extends Component{
     }
 
     if(this.state.comparisonMICL && this.state.comparisonJamie){
-      let req = {responses: [this.state.responseMICL, this.state.responseMICL]}
+      let req = {responses: [this.state.responseMICL, this.state.responseJamie]}
       try{
         this.APICallResponseCompare(req, this.checkSimilarityMICL);
       }catch(e){
         console.log("Comparison Error")
       }
     }
+
+    if(this.state.comparisonRajat && this.state.comparisonJamie){
+      let req = {responses: [this.state.responseRajat, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityRajat);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
   }
 
-
   MassResponseComparison(req){
-    let that = this
     return new Promise(function(resolve, reject){
       axios.post('http://localhost:3001/flask/api/responseCompare',req)
         .then((res)=>{
@@ -366,9 +420,6 @@ class Dashboard extends Component{
               that.setState(prevState=>({
                 responseScoreArray: [...prevState.responseScoreArray,score[0]]
               }))
-              // that.setState({
-              //   responseScoreArray: that.state.responseScoreArray.concat([score[0]])
-              // })
               console.log(that.state.responseScoreArray);
             
             });
@@ -387,10 +438,9 @@ class Dashboard extends Component{
       question: this.state.input
     }
 
-    this.setState({loadingMICL:true})
     let that = this;
     await Promise.all([this.function1(params),this.state.checkDialog && this.function2(params),
-      this.state.checkDNN && this.function3(params), this.state.checkMICL && this.function4(params)]).then(function(values){
+      this.state.checkDNN && this.function3(params), this.state.checkMICL && this.function4(params), this.state.checkRajat && this.function5(params)]).then(function(values){
       console.log(values);
       that.comparison()
     })
@@ -590,7 +640,7 @@ class Dashboard extends Component{
                   <Record
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NDQ1NTAxOSwiZXhwIjoxNTg3MDQ3MDE5fQ.W_rahk0lDQNLu8ExdizviAnUkWInlt5pyfEcZzxYX58"
+                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NzExNjExOCwiZXhwIjoxNTg5NzA4MTE4fQ.VuJ8nlMvftzu0FvDkKIDECsJz_CTQwsadRcWyETV__Y"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -622,9 +672,14 @@ class Dashboard extends Component{
                     label="MICL"
                   />
                   
-                  <FormControlLabel
+                  {/* <FormControlLabel
                     control={<Checkbox checked={this.state.checkDNN} name="checkDNN" value="DNN" onChange={this.handleCheck}/>}
                     label="DNN"
+                  /> */}
+
+                  <FormControlLabel
+                    control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
+                    label="Rajat"
                   /> 
 
                 </FormGroup>
@@ -673,6 +728,18 @@ class Dashboard extends Component{
                     loadingMICL = {this.state.loadingMICL}
                     responseMICL = {this.state.responseMICL}
                     scoreMICL = {this.state.scoreMICL}
+                  />
+                </Grid>
+                }
+
+                {this.state.checkRajat &&
+                <Grid item xs={12} md={4}>
+                  <Rajat
+                    similarityRajat = {this.state.similarityRajat}
+                    disimilarityRajat = {this.state.disimilarityRajat}
+                    loadingRajat = {this.state.loadingRajat}
+                    responseRajat = {this.state.responseRajat}
+                    scoreRajat = {this.state.scoreRajat}
                   />
                 </Grid>
                 }
