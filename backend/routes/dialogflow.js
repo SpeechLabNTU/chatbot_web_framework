@@ -28,6 +28,7 @@ async function dialoflowConnection(query, res) {
     };
   
     await sessionClient.detectIntent(request).then(responses=>{
+      console.log(responses)
       const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
       res.json({reply: result})
     }).catch(err=>{
