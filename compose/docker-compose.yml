@@ -7,30 +7,32 @@ services:
   ##################
   server:
     build: 
-      context: ../online_asr_backend
+      context: ../backend
       args:
         - KEY=${KEY} 
         - PROJECTID=${PROJECTID}
-    expose: 
-      - ${APP_SERVER_PORT}
+    # expose: 
+    #   - ${APP_SERVER_PORT}
     ports:
       - ${APP_SERVER_PORT}:${APP_SERVER_PORT} 
-    volumes:
-      - ../online_asr_backend/routes:/srv/app/server/routes
-    command: npm run dev
+    # volumes:
+    #   - ../online_asr_backend/routes:/srv/app/server/routes
+    # command: npm run dev
 
   ##################
   # Flask Container
   ##################
   api:
     build: ../comparison
-    expose:
-      - ${FLASK_SERVER_PORT}
+    # expose:
+    #   - ${FLASK_SERVER_PORT}
     ports:
-      - ${FLASK_SERVER_PORT}:${FLASK_SERVER_PORT}
+      - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
+    environment:
+      PORT: ${CONTAINER_PORT}
     # volumes:
     #   - ../production:/api
-    command: python flaskApp.py
+    # command: python flaskApp.py
     # environment:
     #   - FLASK_ENV=development
     #   - FLASK_APP=flaskApp.py
@@ -41,14 +43,15 @@ services:
   ##################
   client:
     build: 
-      context: ../dialogflowapp
-      args:
-        - API_ENDPOINT=${API_ENDPOINT}
-    expose: 
-      - ${REACT_APP_PORT}
+      context: ../frontend
+      # args:
+      #   - API_ENDPOINT=${API_ENDPOINT}
+    # expose: 
+    #   - ${REACT_APP_PORT}
     ports:
-      - ${REACT_APP_PORT}:${REACT_APP_PORT}
-    volumes:
-      - ../dialogflowapp/src:/srv/app/client/src
-      - ../dialogflowapp/public:/srv/app/client/public
-    command: npm run start
+      # - ${REACT_APP_PORT}:${REACT_APP_PORT}
+      - ${REACT_APP_PORT}:${NGINX_PORT}
+    # volumes:
+    #   - ../dialogflowapp/src:/srv/app/client/src
+    #   - ../dialogflowapp/public:/srv/app/client/public
+    # command: npm run start

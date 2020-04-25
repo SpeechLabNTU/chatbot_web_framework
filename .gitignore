@@ -1,4 +1,15 @@
+#Frontend & Backend directorys
 node_modules/
-deepNeuralNetwork/
-key/
-.DS_STORE
+
+#backend
+google-cloud-sdk-281.0.0-linux-x86_64.tar.gz
+chatbot-development-250810-f7f99844f386.json
+
+#python directory
+__pycache__/
+lib/
+others/
+
+#optional
+.vscode/
+.DS_Store
