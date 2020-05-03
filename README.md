@@ -9,15 +9,15 @@ Each image build folder will contain its respective Dockerfiles configured for p
 To build/configure a production image, Docker client must be present on the local system to be able to spawn a docker image. Download Docker client here https://www.docker.com/
 
 # Docker basic commands
-**docker image ls**: List available/downloaded Docker images
-**docker container ls -a**: List containers(runnable images)
-**docker build -t app:tag .**: Build application based on Docker file configuration
-**docker run -d -p port:port app:tag**: Running a application after build
-**docker /start/stop/restart [container ID]**: Start/Stop/Restart containers
-**docker system prune -a**: Delete all containers
-**docker rm [container ID]**: Remove specific container
-**docker rmi [image ID]**: Remove specific image
-**docker exec -it [container ID] /bin/bash**: Access container operating system
+**docker image ls**: List available/downloaded Docker images<br/>
+**docker container ls -a**: List containers(runnable images)<br/>
+**docker build -t app:tag .**: Build application based on Docker file configuration<br/>
+**docker run -d -p port:port app:tag**: Running a application after build<br/>
+**docker /start/stop/restart [container ID]**: Start/Stop/Restart containers<br/>
+**docker system prune -a**: Delete all containers<br/>
+**docker rm [container ID]**: Remove specific container<br/>
+**docker rmi [image ID]**: Remove specific image<br/>
+**docker exec -it [container ID] /bin/bash**: Access container operating system<br/>
 
 # Instructions to spin up a Production build
 1. CD into the *compose* directory
