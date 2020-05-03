@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  ##################
+  # Node Container
+  ##################
+  server:
+    image: berrywonder/chatbotplatform:server
+    environment:
+        - KEY=${KEY}
+        - PROJECTID=${PROJECTID}
+        - MICL_ENDPOINT=${MICL_ENDPOINT}
+        - RAJAT_ENDPOINT=${RAJAT_ENDPOINT}
+        - FLASK_ENDPOINT=${FLASK_ENDPOINT}
+    #build: 
+    #  context: ../backend
+    #  args:
+    #    - KEY=${KEY} 
+    #    - PROJECTID=${PROJECTID}
+    ports:
+      - ${APP_SERVER_PORT}:${APP_SERVER_PORT} 
+
+  ##################
+  # Flask Container
+  ##################
+  api:
+    image: berrywonder/chatbotplatform:flask
+    environment:
+      - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
+      - PORT=${CONTAINER_PORT}
+    #build: ../comparison
+    #ports:
+    #  - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
+    #environment:
+    #  PORT: ${CONTAINER_PORT}
+
+  ##################
+  # Client Container
+  ##################
+  client:
+    image: berrywonder/chatbotplatform:client
+    environment:
+        - REACT_APP_API=${API_ENDPOINT}
+    #build: 
+    #  context: ../frontend
+    ports:
+      - ${REACT_APP_PORT}:${NGINX_PORT}

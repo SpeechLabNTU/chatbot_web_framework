@@ -11,6 +11,9 @@ services:
       args:
         - KEY=${KEY} 
         - PROJECTID=${PROJECTID}
+        - MICL_ENDPOINT=${MICL_ENDPOINT}
+        - RAJAT_ENDPOINT=${RAJAT_ENDPOINT}
+        - FLASK_ENDPOINT=${FLASK_ENDPOINT}
     # expose: 
     #   - ${APP_SERVER_PORT}
     ports:
@@ -44,8 +47,8 @@ services:
   client:
     build: 
       context: ../frontend
-      # args:
-      #   - API_ENDPOINT=${API_ENDPOINT}
+      args:
+        - API_ENDPOINT=${API_ENDPOINT}
     # expose: 
     #   - ${REACT_APP_PORT}
     ports:

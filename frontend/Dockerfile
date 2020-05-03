@@ -11,12 +11,16 @@ RUN npm install
 
 COPY . /srv/app/client
 
-RUN echo "REACT_APP_API=http://localhost:3001" > .env
+ARG API_ENDPOINT
+
+RUN echo "REACT_APP_API=$API_ENDPOINT" > .env
 
 RUN npm run build
 
 #production environment
 FROM nginx:stable-alpine
+
+COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /srv/app/client/build /usr/share/nginx/html
 

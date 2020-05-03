@@ -32,6 +32,14 @@ ENV GCLOUD_PROJECT=$PROJECTID \
     GOOGLE_APPLICATION_CREDENTIALS=/srv/app/server/key/$KEY
 ENV ENV="/etc/profile"
 
+ARG MICL_ENDPOINT
+ARG RAJAT_ENDPOINT
+ARG FLASK_ENDPOINT
+
+RUN echo "MICL_ENDPOINT=$MICL_ENDPOINT" >> .env
+RUN echo "RAJAT_ENDPOINT=$RAJAT_ENDPOINT" >> .env
+RUN echo "FLASK_ENDPOINT=$FLASK_ENDPOINT" >> .env
+
 RUN npm install -g pm2
 CMD ["pm2-runtime","ecosystem.config.js"]
 

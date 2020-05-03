@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const request = require('request')
+const dotenv = require('dotenv');
+dotenv.config();
 
 /*Deep Neural Network Python API*/
 router.post("/api/russ_query", (req, res) => {
@@ -9,7 +11,7 @@ router.post("/api/russ_query", (req, res) => {
 
     request({
         method:'POST',
-        url: "http://localhost:5000/api/query",
+        url: `${process.env.FLASK_ENDPOINT}/api/query`,
         json: {"request":query}
     }, (error, response, body) =>{ 
 
@@ -32,7 +34,7 @@ router.post("/api/responseCompare", (req,res)=>{
 
     request({
         method:'POST',
-        url: "http://api:5000/api/similarityCheck",
+        url: `${process.env.FLASK_ENDPOINT}/api/similarityCheck`,
         json: {"request":query}
     }, (error, response, body) =>{
         if (error !== null){
