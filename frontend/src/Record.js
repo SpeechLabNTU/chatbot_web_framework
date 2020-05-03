@@ -196,7 +196,6 @@ export default class Record extends Component {
         token: this.props.token
       })
 
-
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
           if (this.props.isSocketReady) {

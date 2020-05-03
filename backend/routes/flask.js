@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const request = require('request')
+// const dotenv = require('dotenv');
+// dotenv.config();
 
 /*Deep Neural Network Python API*/
 router.post("/api/russ_query", (req, res) => {
@@ -29,7 +31,7 @@ router.post("/api/responseCompare", (req,res)=>{
     
     let query = req.body.responses
     // console.log(query)
-
+    
     request({
         method:'POST',
         url: "http://localhost:5000/api/similarityCheck",

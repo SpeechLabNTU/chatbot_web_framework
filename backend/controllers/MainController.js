@@ -75,6 +75,71 @@ class MainController {
     }
   }
 
+
+  static async googlestreamByRecording (req, res, next) {
+
+    // Imports the Google Cloud client library
+    const speech = require('@google-cloud/speech');
+    const googleclient = new speech.SpeechClient();
+
+    //Enable backend recorder 
+    const recorder = require('node-record-lpcm16')
+
+    //Configure transcription Request
+    const request = {
+      config:{
+          encoding: "LINEAR16",
+          sampleRateHertz: 8000,
+          languageCode: "en-US"
+      },
+      interimResults: true
+    }
+        
+    // Handle Web Socket Connection
+    io.on('connect', (connection) => {
+        console.log('Connection Initiated')
+
+        io.emit('stream-ready') // tell frontend that socket is ready
+
+        //Signal on socket error
+        connection.on('error', (error) => {
+          console.log('Connection Error: ' + error.toString())
+        })
+        //Signal on socket close
+        connection.on('close', () => {
+          console.log('echo-protocol Connection Closed')
+
+          io.emit('stream-close') // send close signal to client
+
+        })
+
+        let recognizeStream = googleclient
+              .streamingRecognize(request)
+              .on("error", console.error)
+              .on("data", data=>{
+                io.emit('stream-data',data.results[0].alternatives[0].transcript)
+            })
+
+        recorder
+        .record({
+            sampleRateHertz: 16000,
+            threshold: 0,
+            // Other options, see https://www.npmjs.com/package/node-record-lpcm16#options
+            verbose: true,
+            recordProgram: 'rec', // Try also "arecord" or "sox"
+            silence: '10.0',
+          })
+          .stream()
+          .on('error', console.error)
+          .pipe(recognizeStream);
+
+
+          console.log('Listening...')
+        
+    })
+    
+  }
+
   static async streamByImport (req, res, next) {
     try {
       const token = req.body.token

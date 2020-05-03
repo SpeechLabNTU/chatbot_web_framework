@@ -19,6 +19,7 @@ app.use('/flask', flaskRouter);
 app.use('/jamie', askJamieRouter);
 app.use('/rajat', rajatRouter);
 
+app.post('/stream/google', STT.googlestreamByRecording)
 app.post('/stream/record', STT.streamByRecording)
 app.post('/stream/import', upload.single('file'), STT.streamByImport)
 
