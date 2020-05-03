@@ -64,13 +64,9 @@ class Dashboard extends Component{
         comparisonRajat: false,
 
         similarityDialog: false,
-        disimilarityDialog: false,
         similarityDNN: false,
-        disimilarityDNN: false,
         similarityMICL: false,
-        disimilarityMICL: false,
         similarityRajat: false,
-        disimilarityRajat: false,
 
         scoreDialog: 0,
         scoreDNN: 0,
@@ -103,28 +99,39 @@ class Dashboard extends Component{
         switch: false
     }
 
+    //Action Listeners Method Bindings
     this.handleChange = this.handleChange.bind(this);
     this.handleCheck = this.handleCheck.bind(this);
     this.handleClick = this.handleClick.bind(this);
-    this.handleChoice = this.handleChoice.bind(this);
-    this.summarizer = this.summarizer.bind(this);
+    // this.handleChoice = this.handleChoice.bind(this);
     this.handleInput = this.handleInput.bind(this);
+
+    //Summarizer Method Binding
+    this.summarizer = this.summarizer.bind(this);
+    
+    //Similarity Check Method Bindings
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.checkSimilarityRajat = this.checkSimilarityRajat.bind(this);
+
+    //Response Comparison Method Bindings
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
-    this.function1 = this.function1.bind(this);
-    this.function2 = this.function2.bind(this);
-    this.function3 = this.function3.bind(this);
-    this.function4 = this.function4.bind(this);
-    this.function5 = this.function5.bind(this);
     this.comparison = this.comparison.bind(this);
+
+    //API Call Method Bindings
+    this.askJamieAPI = this.askJamieAPI.bind(this);
+    this.dialogflowAPI = this.dialogflowAPI.bind(this);
+    this.dnnAPI = this.dnnAPI.bind(this);
+    this.miclAPI = this.miclAPI.bind(this);
+    this.rajatAPI = this.rajatAPI.bind(this);
+
+    //Performance Analysis Method Bindings
     this.handleQueryInput = this.handleQueryInput.bind(this);
-    this.handleSingleInput = this.handleSingleInput.bind(this);
     this.MassResponseComparison = this.MassResponseComparison.bind(this);
   }
 
+  //Response summarizer
   summarizer(result){
     var array = []
     var summary = "";
@@ -144,6 +151,7 @@ class Dashboard extends Component{
     return summary 
   }
 
+  //User input handling
   handleInput(e) {
     e.preventDefault();
     let value = e.target.value;
@@ -151,6 +159,7 @@ class Dashboard extends Component{
     this.setState({[name]:value})
   }
 
+  //Response comparison function. Parameters(Array of Response Pair)
   async APICallResponseCompare(req, callback){
     await axios.post('http://localhost:3001/flask/api/responseCompare',req)
         .then((res)=>{
@@ -164,59 +173,29 @@ class Dashboard extends Component{
         
   }
 
-  //==============Similarity Comparison Checks==============
-
+  //checkSimilarity method prefix updates response comparison scores
   checkSimilarityDNN(score){
     this.setState({scoreDNN:score})
-    if (score < 0.4){
-      this.setState({similarityDNN:false})
-      this.setState({disimilarityDNN: true})
-    }else{
-      this.setState({similarityDNN:true})
-      this.setState({disimilarityDNN:false})
-    }
+    this.setState({similarityDNN:true})
   }
 
   checkSimilarityDialog(score){
     this.setState({scoreDialog:score})
-    if (score < 0.4){
-      this.setState({similarityDialog:false})
-      this.setState({disimilarityDialog: true})
-
-    }else{
-      this.setState({similarityDialog:true})
-      this.setState({disimilarityDialog:false})
-    }
+    this.setState({similarityDialog: true})
   }
 
   checkSimilarityMICL(score){
     this.setState({scoreMICL:score})
-    if (score < 0.4){
-      this.setState({similarityMICL:false})
-      this.setState({disimilarityMICL: true})
-
-    }else{
-      this.setState({similarityMICL:true})
-      this.setState({disimilarityMICL:false})
-    }
+    this.setState({similarityMICL:true})
   }
 
   checkSimilarityRajat(score){
     this.setState({scoreRajat:score})
-    if (score < 0.4){
-      this.setState({similarityRajat:false})
-      this.setState({disimilarityRajat: true})
-
-    }else{
-      this.setState({similarityRajat:true})
-      this.setState({disimilarityRajat:false})
-    }
+    this.setState({similarityRajat:true})
   }
 
-
-  //==============Chatbot API Service Call====================
-
-  function1(params){
+  //API Chatbot services for interation simulation
+  askJamieAPI(params){
     let that = this;
     this.setState({loadingJamie:true})
     return new Promise(function(resolve,reject){
@@ -235,7 +214,7 @@ class Dashboard extends Component{
     })
   }
 
-  function2(params){
+  dialogflowAPI(params){
     let that = this;
     this.setState({loadingDialogflow:true})
     return new Promise(function(resolve,reject){
@@ -254,7 +233,7 @@ class Dashboard extends Component{
     
   }
 
-  function3(params){
+  dnnAPI(params){
     let that = this;
     this.setState({loadingDNN:true})
     return new Promise(function(resolve, reject){
@@ -274,7 +253,7 @@ class Dashboard extends Component{
     
   }
 
-  function4(params){
+  miclAPI(params){
     let that = this;
     this.setState({loadingMICL:true})
     return new Promise(function(resolve, reject){
@@ -293,7 +272,7 @@ class Dashboard extends Component{
     })
   }
 
-  function5(params){
+  rajatAPI(params){
     let that = this;
     this.setState({loadingRajat:true})
     return new Promise(function(resolve, reject){
@@ -311,9 +290,9 @@ class Dashboard extends Component{
     })
   }
 
-
+  //Make sure responses are present before executing response comparison
   comparison(){
-    
+
     if(this.state.comparisonDialog && this.state.comparisonJamie ){
       let req = {responses: [this.state.responseDialogflow, this.state.responseJamie]}
       try{
@@ -351,144 +330,79 @@ class Dashboard extends Component{
     }
   }
 
-  MassResponseComparison(req){
-    return new Promise(function(resolve, reject){
-      axios.post('http://localhost:3001/flask/api/responseCompare',req)
-        .then((res)=>{
-            let probability = res.data.reply
-            if (probability !== -1){
-              resolve(probability)
-            }
-        }).catch(error=>{
-          console.log("Error Contacting API server")
-        });
-        
-    });
-        
-  }
-
-  async handleQueryInput(content, responseSelection){
-    this.setState({querys:content});
-    console.log(this.state.querys)
-    console.log(responseSelection)
-    let functionPostArray = []
-    let functionPostArrayModel = []
-
-    if(responseSelection === "null"){
-      console.log("Define QA engine first")
-    }else if(responseSelection === "Dialogflow"){
-        for (let i=0;i<content.length;i++){
-          let ques = {question: content[i]}
-          functionPostArrayModel.push(this.function1(ques))
-          functionPostArray.push(this.function2(ques));
-        }
-
-        let that = this;
-        let promiseArray = [functionPostArrayModel,functionPostArray]
-        
-        const promiseAll = Promise.all(promiseArray.map(Promise.all.bind(Promise)))
-        promiseAll.then(function(value){
-            console.log(value)
-            let functionCompareArray = []
-            for (let i =0;i<value[0].length;i++){
-              let responsesArray = {responses:[value[0][i],value[1][i]]}
-              functionCompareArray.push(that.MassResponseComparison(responsesArray))
-            }
-            Promise.all(functionCompareArray).then(function(score){
-              that.setState({responseScoreArray:score})
-            });
-
-        })
-    }
-    
-  }
-
-
-  async handleSingleInput(input, responseSelection){
-    if(responseSelection === "null"){
-      console.log("Define QA engine first")
-    }else if(responseSelection === "Dialogflow"){
-
-        let that = this;
-        let ques = {question: input}
-        const promiseAll = Promise.all([this.function1(ques), this.function2(ques)]);
-        promiseAll.then(function(value){
-            let responsesArray = {responses:[value[0],value[1]]}
-            
-            Promise.all([that.MassResponseComparison(responsesArray)]).then(function(score){
-              console.log(score)
-              that.setState(prevState=>({
-                responseScoreArray: [...prevState.responseScoreArray,score[0]]
-              }))
-              console.log(that.state.responseScoreArray);
-            
-            });
-
-        })
-    }
-  }
-
+  //On input submit action handler
   async handleClick(){
 
+    //Reset comparison score value
     this.setState({similarityDialog: false})
     this.setState({similarityMICL: false})
     this.setState({similarityDNN: false})
     this.setState({query: this.state.input})
+
+    //Construct input object
     var params = {
       question: this.state.input
     }
 
+    //Bind this to variable for use in promise
     let that = this;
-    await Promise.all([this.function1(params),this.state.checkDialog && this.function2(params),
-      this.state.checkDNN && this.function3(params), this.state.checkMICL && this.function4(params), this.state.checkRajat && this.function5(params)]).then(function(values){
-      console.log(values);
+
+    //Promise of Chatbot Services 
+    await Promise.all([this.askJamieAPI(params),this.state.checkDialog && this.dialogflowAPI(params),
+      this.state.checkDNN && this.dnnAPI(params), this.state.checkMICL && this.miclAPI(params), 
+      this.state.checkRajat && this.rajatAPI(params)]).then(function(values){
+      console.log(values)
+      
+      //On successful chatbot interaction, execute comparison for each chatbot response pair
       that.comparison()
     })
-    
   }
 
-  handleChoice(e){
-    
-    let name = e.target.name;
-    let value = e.target.value;
-    this.setState({[name]:value})
-    
-    let params = {
-      question: this.state.choice
-    }
+  //handleChoice Method used for resubmission of recommnedationed queries
 
-    axios.post("http://localhost:3001/flask/api/russ_query", params)
-    .then((res)=>{
-        if (res.status === 200){
-          this.setState({reccommendation: res.data.queries})
-          var summarized_0 = this.summarizer(res.data.reply)
-          this.setState({responseDNN:summarized_0})
-          this.setState({loadingDNN:false})
-          this.setState({comparisonDNN:true})
-          console.log(this.state.reccommendation[0].question)
-        }else{
-          console.log("DNN Error")
-        }
-    }).catch(() =>{
-        console.log("DNN Connection Error")
-    }).then(()=>{
-      if(this.state.comparisonDNN && this.state.comparisonJamie){
+  // handleChoice(e){
+  //   let name = e.target.name;
+  //   let value = e.target.value;
+  //   this.setState({[name]:value})
     
-        let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
-        try{
-          this.APICallResponseCompare(req, this.checkSimilarityDNN);
-        }catch(e){
-          console.log("Comparison Error")
-        }
-      }
-    })
-  }
+  //   let params = {
+  //     question: this.state.choice
+  //   }
 
+  //   axios.post("http://localhost:3001/flask/api/russ_query", params)
+  //   .then((res)=>{
+  //       if (res.status === 200){
+  //         this.setState({reccommendation: res.data.queries})
+  //         var summarized_0 = this.summarizer(res.data.reply)
+  //         this.setState({responseDNN:summarized_0})
+  //         this.setState({loadingDNN:false})
+  //         this.setState({comparisonDNN:true})
+  //         console.log(this.state.reccommendation[0].question)
+  //       }else{
+  //         console.log("DNN Error")
+  //       }
+  //   }).catch(() =>{
+  //       console.log("DNN Connection Error")
+  //   }).then(()=>{
+  //     if(this.state.comparisonDNN && this.state.comparisonJamie){
+    
+  //       let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
+  //       try{
+  //         this.APICallResponseCompare(req, this.checkSimilarityDNN);
+  //       }catch(e){
+  //         console.log("Comparison Error")
+  //       }
+  //     }
+  //   })
+  // }
+
+  //Handles selection of Chatbot services through checkboxes
   handleCheck(e){
     let name = e.target.name;
     this.setState({[name]: e.target.checked})
   }
 
+  //Handle switch mechanism for text/speech input switches
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
@@ -497,6 +411,7 @@ class Dashboard extends Component{
     }
   }
 
+  //Socket initialization for speech queries
   initSockets() {
     const socket = io(this.state.backendUrl, {
       reconnection: true,
@@ -563,6 +478,59 @@ class Dashboard extends Component{
     })
   }
   
+  //Response comparison promises for batch query upload
+  MassResponseComparison(req){
+    return new Promise(function(resolve, reject){
+      axios.post('http://localhost:3001/flask/api/responseCompare',req)
+        .then((res)=>{
+            let probability = res.data.reply
+            if (probability !== -1){
+              resolve(probability)
+            }
+        }).catch(error=>{
+          console.log("Error Contacting API server")
+        });
+        
+    });
+        
+  }
+
+  //Handling of multiple input queries
+  async handleQueryInput(content, responseSelection){
+    this.setState({querys:content});
+    console.log(this.state.querys)
+    console.log(responseSelection)
+    let functionPostArray = []
+    let functionPostArrayModel = []
+
+    if(responseSelection === "null"){
+      console.log("Define QA engine first")
+    }else if(responseSelection === "Dialogflow"){
+        for (let i=0;i<content.length;i++){
+          let ques = {question: content[i]}
+          functionPostArrayModel.push(this.askJamieAPI(ques))
+          functionPostArray.push(this.dialogflowAPI(ques));
+        }
+
+        let that = this;
+        let promiseArray = [functionPostArrayModel,functionPostArray]
+        
+        const promiseAll = Promise.all(promiseArray.map(Promise.all.bind(Promise)))
+        promiseAll.then(function(value){
+            console.log(value)
+            let functionCompareArray = []
+            for (let i =0;i<value[0].length;i++){
+              let responsesArray = {responses:[value[0][i],value[1][i]]}
+              functionCompareArray.push(that.MassResponseComparison(responsesArray))
+            }
+            Promise.all(functionCompareArray).then(function(score){
+              that.setState({responseScoreArray:score})
+            });
+
+        })
+    }
+  }
+
   render(){
     return (
         
@@ -697,11 +665,10 @@ class Dashboard extends Component{
                 <Grid item xs={12} md={4}>
                   <DNN
                     similarityDNN = {this.state.similarityDNN}
-                    disimilarityDNN = {this.state.disimilarityDNN}
                     loadingDNN = {this.state.loadingDNN}
                     responseDNN = {this.state.responseDNN}
                     choice = {this.state.choice}
-                    handleChoice = {this.handleChoice}
+                    // handleChoice = {this.handleChoice}
                     reccommendation = {this.state.reccommendation}
                     scoreDNN = {this.state.scoreDNN}
                   />
@@ -712,7 +679,6 @@ class Dashboard extends Component{
                 <Grid item xs={12} md={4}>
                   <Dialogflow
                     similarityDialog = {this.state.similarityDialog}
-                    disimilarityDialog = {this.state.disimilarityDialog}
                     loadingDialogflow = {this.state.loadingDialogflow}
                     responseDialogflow = {this.state.responseDialogflow}
                     scoreDialog = {this.state.scoreDialog}
@@ -724,7 +690,6 @@ class Dashboard extends Component{
                 <Grid item xs={12} md={4}>
                   <MICL
                     similarityMICL = {this.state.similarityMICL}
-                    disimilarityMICL = {this.state.disimilarityMICL}
                     loadingMICL = {this.state.loadingMICL}
                     responseMICL = {this.state.responseMICL}
                     scoreMICL = {this.state.scoreMICL}
@@ -736,7 +701,6 @@ class Dashboard extends Component{
                 <Grid item xs={12} md={4}>
                   <Rajat
                     similarityRajat = {this.state.similarityRajat}
-                    disimilarityRajat = {this.state.disimilarityRajat}
                     loadingRajat = {this.state.loadingRajat}
                     responseRajat = {this.state.responseRajat}
                     scoreRajat = {this.state.scoreRajat}

@@ -19,7 +19,7 @@ class Dialogflow extends Component{
             InputProps={{
               readOnly: true,
             }}
-            helperText= {this.props.similarityDialog ? "Similarity Score: " + this.props.scoreDialog : this.props.disimilarityDialog ? "Similarity Score " + this.props.scoreDialog: "Comparison Inactive"} 
+            helperText= {this.props.similarityDialog ? "Similarity Score: " + this.props.scoreDialog : "Comparison Inactive"} 
             value={this.props.loadingDialogflow ? "loading...": this.props.responseDialogflow}
           />
         </FormControl>

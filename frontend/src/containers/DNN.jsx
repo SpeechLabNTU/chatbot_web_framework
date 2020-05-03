@@ -23,7 +23,7 @@ class DNN extends Component{
               InputProps={{
               readOnly: true,
               }}
-              helperText= {this.props.similarityDNN ? "Similarity Score: " + this.props.scoreDNN : this.props.disimilarityDNN ? "Similarity Score " + this.props.scoreDNN: "Comparison Inactive"}
+              helperText= {this.props.similarityDNN ? "Similarity Score: " + this.props.scoreDNN : "Comparison Inactive"}
               value={this.props.loadingDNN ? "loading..." : this.props.responseDNN} 
           />
           <Select

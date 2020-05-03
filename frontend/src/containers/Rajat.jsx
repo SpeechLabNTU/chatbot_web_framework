@@ -20,7 +20,7 @@ class Rajat extends Component{
               InputProps={{
               readOnly: true,
               }}
-              helperText= {this.props.similarityRajat ? "Similarity Score: " + this.props.scoreRajat : this.props.disimilarityRajat ? "Similarity Score " + this.props.scoreRajat: "Comparison Inactive"}
+              helperText= {this.props.similarityRajat ? "Similarity Score: " + this.props.scoreRajat : "Comparison Inactive"}
               value={this.props.loadingRajat ? "loading..." : this.props.responseRajat} 
           />
         </FormControl>

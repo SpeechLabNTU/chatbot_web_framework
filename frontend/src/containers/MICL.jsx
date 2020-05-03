@@ -20,7 +20,7 @@ class MICL extends Component{
               InputProps={{
               readOnly: true,
               }}
-              helperText= {this.props.similarityMICL ? "Similarity Score: " + this.props.scoreMICL : this.props.disimilarityMICL ? "Similarity Score " + this.props.scoreMICL: "Comparison Inactive"}
+              helperText= {this.props.similarityMICL ? "Similarity Score: " + this.props.scoreMICL : "Comparison Inactive"}
               value={this.props.loadingMICL ? "loading..." : this.props.responseMICL} 
           />
         </FormControl>
