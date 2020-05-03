@@ -1,13 +1,14 @@
-# Final Year Project Dialogflow Chatbot
+# Final Year Project FAQ Chatbot Framework for Response Comparisons and Performance Analysis
 
 # Project Summary
 The objective of this project is to design a full stack web application to compare a variable set of FAQ Chatbot API endpoints. The chatbot platform includes a text input and a speech input for intuitiveness and to cater for real live scenarios(Speech feature for public deployment). For the context of this project, MSF's Baby Bonus is used as a test bed for FAQ question and answer matching. The current APIs used are as follows:<br/>
 
 # FAQ Matching APIs
 1. Govtech's askJamie (Benchmark for accuracy comparison)<br/>
-2. MICL lab's QA matching engine<br/>
+2. MICL lab's QA Matching Model<br/>
 3. Google's Dialogflow<br/>
-4. Self developed Text Classification Engine with Deep Neural Network<br/>
+4. Text Classification Model<br/>
+5. Rajat QA Matching Model<br/>
 
 # Speech to Text API
 1. AISG's Speech to Text<br/>
@@ -15,33 +16,24 @@ The objective of this project is to design a full stack web application to compa
 3. Twilio Speech Lab (To be implemented)<br/>
 
 # Features
-1. Switchable Text/Speech based input<br/>
+1. Text and Speech based input methods<br/>
 2. Multi FAQ Endpoint selection for response visualization<br/>
 3. Response similarity comparison<br/>
 4. Recommendation for similar questions<br/>
 
 # Deployment Considerations
-Docker is used to set up 3 microservices React Frontend, Node Backend and Flask Server for response comparison. A docker-compose file is used to start up all microservices for deployment usage.
+Docker is used to set up 3 microservices React Frontend, Node Backend and Flask Server for response comparison. A docker-compose file is used to start up all microservices for deployment usage. Docker deployment resources can be found in the Docker branch of the repository.
 
 # Includes:
-frontend directory(ReactJS)<br/>
-backend directory(NodeJS)<br/>
-comparison directory(Response comparison API on Flask framework)<br/>
-compose directory(Docker compose and env file)<br/>
-python directory(python program)<br/>
+**frontend directory**: Written on ReactJS, provides the view of the application<br/>
+**backend directory**: Written on NodeJS, provides API endpoints for frontend<br/>
+**comparison directory**: Written on Flask, provides API service for response comparisons<br/>
+**dialogflowfunctions**: Written on NodeJS, used to upload intentions ot dialogflow for NLP training<br/>
 
 # Master Branch
 
-This branch includes both Docker builds as well as local builds. Build differences are as follows:<br/>
-**Docker Build**<br/>
-1. Frontend Directory<br/>
-2. Backend Directory<br/>
-3. Comparison Directory<br/>
-4. Compose Directory<br/>
-
-**Development Build (Recommended)**<br/>
-
-Following directories should be executed in seperate terminals to run application
+**Running Development**<br/>
+Following directories must be executed in seperate terminals to run application
 
 1. Frontend Directory<br/>
 2. Backend Directory<br/>
