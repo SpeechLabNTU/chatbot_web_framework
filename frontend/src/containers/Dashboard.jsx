@@ -432,6 +432,22 @@ class Dashboard extends Component{
       })
     })
 
+    socket.on('stream-data-google', data => {
+      
+      if (data.results[0].isFinal) {
+          this.setState(prevState => ({
+          input: prevState.transcription + ' ' + data.results[0].alternatives[0].transcript,
+          partialResult: ''
+          }))
+          this.handleClick()
+
+      } else {
+          this.setState(prevState => ({
+          partialResult: '[...' + data.results[0].alternatives[0].transcript + ']'
+          }))
+      }
+  })
+
     socket.on('stream-data', data => {
       
         if (data.result.final) {

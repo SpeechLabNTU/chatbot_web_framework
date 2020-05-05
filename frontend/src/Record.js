@@ -17,7 +17,7 @@ export default class Record extends Component {
   }
 
   async componentDidMount () {
-    await this.prepare()
+    await this.recorderWithoutCanvas()
 
     this.props.socket.on('stream-close', () => {
      this.cancel()
@@ -192,7 +192,7 @@ export default class Record extends Component {
 
       this.props.reset()
     
-      await axios.post(`${this.props.backendUrl}/stream/record`, {
+      await axios.post(`${this.props.backendUrl}/stream/google`, {
         token: this.props.token
       })
 
