@@ -2,16 +2,8 @@ import React, { Component } from 'react'
 import './Record.css'
 import './recorder'
 import axios from 'axios'
+import Row from 'react-bootstrap/Row'
 import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import RadioGroup from '@material-ui/core/RadioGroup'
-import Radio from '@material-ui/core/Radio'
-
-const textField={width:'auto'};
-const buttonStyle={width:'350px'}
 
 export default class Record extends Component {
   constructor (props) {
@@ -20,11 +12,8 @@ export default class Record extends Component {
       recorder: {},
       recordInterval: 0,
       isRecording: false,
-      stopRecording: true,
-      service: 'record',
-      start: false
+      stopRecording: true
     }
-    this.handleChange = this.handleChange.bind(this);
   }
 
   async componentDidMount () {
@@ -196,7 +185,7 @@ export default class Record extends Component {
   // -------IMPORTANT------
   // Function below
   start = async () => {
-    this.setState({start:true})
+    
     try {
       if (this.props.isBusy) {
         return
@@ -204,7 +193,9 @@ export default class Record extends Component {
 
       this.props.reset()
 
-      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`, {
+      // this.props.socket.emit('join-room')
+    
+      await axios.post(`${this.props.backendUrl}/stream/record`, {
         token: this.props.token
       })
 
@@ -234,7 +225,6 @@ export default class Record extends Component {
   // -------IMPORTANT------
   // Function below
   stop = () => {
-    this.setState({start:false})
     clearInterval(this.state.recordInterval)
     // Stop recording
     if (this.state.recorder) {
@@ -268,72 +258,70 @@ export default class Record extends Component {
     }
   }
 
-  handleChange(e){
-    let option = e.target.value
-    this.setState({service: option})
-    
-  }
-
   render () {
     return (
-      <div>
-      <FormControl fullWidth variant="outlined">
 
-      <TextField
-          style={textField}
-          id="filled-read-only-input"
-          label="Read"
-          value={this.props.input + ' ' + this.props.partialResult}
-          InputProps={{
-            readOnly: true,
-          }}
-          variant="filled"
-          name="input"
-      />
+      <Row className="justify-content-md-center">
+            <canvas className="visualizer" />
+            <Button onClick={this.start} disabled={this.state.isRecording} variant="contained" color = "primary">Start Streaming</Button>
+            <Button onClick={this.stop} disabled={this.state.stopRecording} variant="contained" color = "primary">Stop Streaming</Button>
+            {/* <button size="lg"
+            type="button" className="btn btn-primary"
+            title="Starts listening for speech, i.e. starts recording and transcribing."
+            onMouseUp={this.stop} onMouseDown={this.start}>
+              <i className="fas fa-play" />
+              Start
+            </button> */}
+      </Row>
 
-      <ButtonGroup variant="contained" color="primary">
-        <Button style={buttonStyle} onClick={this.start} disabled={this.state.isRecording}>Start</Button>
-        <Button style={buttonStyle} onClick={this.stop} disabled={this.state.stopRecording}>Stop</Button>
-      </ButtonGroup>
-
-      <RadioGroup aria-label="position" name="position" value={this.state.service} onChange={this.handleChange} row>
-        
-        
-        {this.state.start === true && this.state.service === 'google'
-          ?<FormControlLabel
-          disabled
-          value="record"
-          control={<Radio color="primary" />}
-          label="AISG"
-          />
-          :<FormControlLabel
-          value="record"
-          control={<Radio color="primary" />}
-          label="AISG"
-          />
-        }
-
-        {this.state.start === true && this.state.service === 'record'
-          ?<FormControlLabel
-            disabled
-            value="google"
-            control={<Radio color="primary" />}
-            label="Google"
-          />
-          :<FormControlLabel
-          value="google"
-          control={<Radio color="primary" />}
-          label="Google"
-        />
-        }
-        
-      </RadioGroup>
-
-      </FormControl>
-      
-      
-      </div>
-      
+      // <div className="row">
+      //   <div className="col-md-12 mt-5">
+      //     <div className="visualizer-container">
+      //       <canvas className="visualizer" />
+      //     </div>
+      //   </div>
+      //   <div className="col-md-12 mt-3">
+      //     <div className="row">
+      //       <div className="col-md-12">
+      //         <div className="controls text-center mb-3">
+      //           <div
+      //             className="btn-group"
+      //             role="group"
+      //             aria-label="Basic example"
+      //           >
+      //             <button
+      //               type="button"
+      //               className="btn btn-primary"
+      //               title="Starts listening for speech, i.e. starts recording and transcribing."
+      //               onMouseUp={this.stop} onMouseDown={this.start}
+      //             >
+      //               <i className="fas fa-play" />
+      //               Start
+      //             </button>
+      //             <button
+      //               type="button"
+      //               title="Stops listening for speech. Speech captured so far will be recognized as if the user had stopped speaking at this point. Note that in the default case, this does not need to be called, as the speech endpointer will automatically stop the recognizer listening when it determines speech has completed."
+      //               className="btn btn-danger"
+      //               onClick={this.stop}
+      //             >
+      //               <i className="fas fa-stop" />
+      //               Stop
+      //             </button>
+      //             <button
+      //               type="button"
+      //               className="btn btn-warning"
+      //               title="Cancels the speech recognition."
+      //               onClick={this.cancel}
+      //             >
+      //               <i className="fal fa-power-off" />
+      //               Cancel
+      //             </button>
+      //           </div>
+      //         </div>
+      //       </div>
+      //     </div>
+      //   </div>
+      // </div>
     )
   }
 }

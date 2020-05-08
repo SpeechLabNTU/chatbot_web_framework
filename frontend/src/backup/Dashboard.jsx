@@ -8,6 +8,7 @@ import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
 import FormControl from '@material-ui/core/FormControl';
+import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -547,33 +548,20 @@ class Dashboard extends Component{
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
-
-                <Grid item xs={12} md={12} style={{textAlign:"center"}}>
-
-                  <FormControlLabel
-                    control = {<Switch
-                                checked={this.state.switch}
-                                onChange={this.handleChange}
-                                value="checkedA"
-                                name="switch"
-                                inputProps={{ 'aria-label': 'secondary checkbox' }}
-                                label="Switch between Text and Speech"
-                                />}
-                    label="SWITCH BETWEEN TEXT AND SPEECH"
-                  />
-                </Grid>
-
                 <Grid item xs={12} md={8} lg={6}>
                   
                   {this.state.switch && 
-                  <Paper style={textPosition}>
-                    <Typography variant="h5" component="h3">
-                      Text Input Disabled. 
-                    </Typography>
-                    <Typography component="p">
-                      Select switch to enable text
-                  </Typography>
-                  </Paper>
+                  <TextField
+                    style={textField}
+                    id="filled-read-only-input"
+                    label="Read"
+                    value={this.state.input + ' ' + this.state.partialResult}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                    name="input"
+                  />
                   }
 
                   {this.state.switch === false &&
@@ -589,17 +577,20 @@ class Dashboard extends Component{
                   <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
                   </FormControl>
                   }
-                  
+                  <Switch
+                    checked={this.state.switch}
+                    onChange={this.handleChange}
+                    value="checkedA"
+                    name="switch"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
                 
                 </Grid>
                 
                 <Grid item xs={12} md={4} lg={6}>
 
                   {this.state.switch && 
-
                   <Record
-                  input= {this.state.input}
-                  partialResult = {this.state.partialResult}
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
                   token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NzExNjExOCwiZXhwIjoxNTg5NzA4MTE4fQ.VuJ8nlMvftzu0FvDkKIDECsJz_CTQwsadRcWyETV__Y"
@@ -612,22 +603,19 @@ class Dashboard extends Component{
                   }
                   {this.state.switch ===false &&
                   <Paper style={textPosition}>
-                    <Typography variant="h5" component="h3">
-                      Speech to Text Disabled. 
-                    </Typography>
-                    <Typography component="p">
-                      Select switch to enable speech
-                    </Typography>
-                  </Paper>
+                  <Typography variant="h5" component="h3">
+                    Speech to Text Disabled. 
+                  </Typography>
+                  <Typography component="p">
+                    Select switch to enable speech
+                  </Typography>
+                </Paper>
                   }
                   
                 </Grid>
                 
                 <Grid item xs={12} md={12}>
-                <h3>Select Chatbot Services:</h3>
-                
                 <FormGroup row>
-                  
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
                     label="Dialogflow"
@@ -636,6 +624,11 @@ class Dashboard extends Component{
                     control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
                     label="MICL"
                   />
+                  
+                  {/* <FormControlLabel
+                    control={<Checkbox checked={this.state.checkDNN} name="checkDNN" value="DNN" onChange={this.handleCheck}/>}
+                    label="DNN"
+                  /> */}
 
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}

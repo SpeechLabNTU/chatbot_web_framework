@@ -26,7 +26,7 @@ class DNN extends Component{
               helperText= {this.props.similarityDNN ? "Similarity Score: " + this.props.scoreDNN : "Comparison Inactive"}
               value={this.props.loadingDNN ? "loading..." : this.props.responseDNN} 
           />
-          <Select
+          {/* <Select
           labelId="demo-simple-select-outlined-label"
           id="demo-simple-select-outlined"
           value={this.props.choice}
@@ -43,7 +43,7 @@ class DNN extends Component{
 
           }
           
-          </Select>
+          </Select> */}
         </FormControl>
 
       </div>
