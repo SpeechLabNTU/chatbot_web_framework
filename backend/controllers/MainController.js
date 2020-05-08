@@ -9,44 +9,10 @@ class MainController {
   static async streamByRecording (req, res, next) {
     try {
       const token = req.body.token
-
-      let client = new WebSocketClient()
-      let conn = null
-      client.on('connectFailed', (error) => {
-        console.log('Connect Error: ' + error.toString())
-        io.emit('stream-close') // send close signal to client
-      })
-
-      client.on('connect', (connection) => {
-        conn = connection
-        console.log('WebSocket Client Connected')
-
-        io.emit('stream-ready') // tell frontend that socket is ready
-
-        connection.on('error', (error) => {
-          console.log('Connection Error: ' + error.toString())
-        })
-        connection.on('close', () => {
-          console.log('echo-protocol Connection Closed')
-
-          io.emit('stream-close') // send close signal to client
-
-          client = null
-        })
-        connection.on('message', (message) => {
-          const data = JSON.parse(message.utf8Data)
-
-          if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
-            io.emit('stream-data', data)
-          }
-        })
-      })
-
-      // start connect to online server
-      client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1?token=${token}`, null, null, null, null)
       
       // in this example, client doesn't join any room. so in here we need to listen on all sockets connected to backend
       Object.keys(io.sockets.connected).forEach(key => {
+        
         io.sockets.connected[key].on('stream-input', data => {
           if (conn) {
             conn.sendBytes(data)
@@ -63,15 +29,49 @@ class MainController {
         io.sockets.connected[key].on('stream-cancel', () => {
           conn.close() // immediately close connection to online server
         })
+
+        let client = new WebSocketClient()
+        let conn = null
+      
+        client.on('connectFailed', (error) => {
+          console.log('Connect Error: ' + error.toString())
+          io.sockets.connected[key].emit('stream-close') // send close signal to client
+        })
+  
+        client.on('connect', (connection) => {
+          conn = connection
+          console.log('WebSocket Client Connected')
+  
+          io.sockets.connected[key].emit('stream-ready') // tell frontend that socket is ready
+  
+          connection.on('error', (error) => {
+            console.log('Connection Error: ' + error.toString())
+          })
+          connection.on('close', () => {
+            console.log('echo-protocol Connection Closed')
+  
+            io.sockets.connected[key].emit('stream-close') // send close signal to client
+  
+            client = null
+          })
+          connection.on('message', (message) => {
+            const data = JSON.parse(message.utf8Data)
+  
+            if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
+              io.sockets.connected[key].emit(`stream-data`, data)
+            }
+          })
+        })
+  
+        // start connect to online server
+        client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1?token=${token}`, null, null, null, null)
+
       })
 
-      return res.json({
-        success: true
-      })
+      return res.json({success: true})
+
     } catch (e) {
-      return res.status(500).json({
-        message: 'Error when streaming'
-      })
+      return res.status(500).json({message: 'Error when streaming'})
     }
   }
 

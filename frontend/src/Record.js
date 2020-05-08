@@ -196,7 +196,6 @@ export default class Record extends Component {
         token: this.props.token
       })
 
-
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
           if (this.props.isSocketReady) {
@@ -236,6 +235,7 @@ export default class Record extends Component {
         }
         this.state.recorder.clear()
       }, 'audio/x-raw')
+      this.props.reset()
     } else {
       this.$emit('onError', 'Recorder undefined')
     }

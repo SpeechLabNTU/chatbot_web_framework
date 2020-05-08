@@ -24,9 +24,10 @@ import MICL from "./MICL";
 import Charts from "./Charts";
 import UploadBox from "./UploadBox";
 import Rajat from "./Rajat";
-import AISG from "../img/AISG.png";
-import MSF from "../img/MSF.png";
-import NTU from "../img/NTU.png";
+import NUS from "../img/nus.png";
+import AISG from "../img/aisg.png";
+import MSF from "../img/msf.png";
+import NTU from "../img/ntu.png";
 import Banner from "./Banner";
 import {Tab, Tabs} from "react-bootstrap";
 
@@ -34,7 +35,6 @@ const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textField={width:'595px'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
-  
 
 class Dashboard extends Component{
 
@@ -520,6 +520,7 @@ class Dashboard extends Component{
 
   reset = () => {
     this.setState({
+      input: '',
       transcription: '',
       partialResult: ''
     })
@@ -547,14 +548,17 @@ class Dashboard extends Component{
             <Container maxWidth="lg" style={container}>
 
             <Grid container style={{paddingBottom:"40px"}} justify="center">
-              <Grid item xs={6} md={2} style={{textAlign:"center"}}>
-                    <img src={AISG} style={{width: '80px', height: '80px'}} alt="AISG Logo"/>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+                    <img src={AISG} style={{width: '80px', height:'70px'}} alt="AISG Logo"/>
               </Grid>
-              <Grid item xs={6} md={2} style={{textAlign:"center"}}>
-                  <img src={NTU} style={{width: '230px', height: '80px'}} alt="NTU Logo"/>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+                  <img src={NTU} style={{width: '160px', height:'70px'}} alt="NTU Logo"/>
               </Grid>
-              <Grid item xs={6} md={2} style={{textAlign:"center", paddingLeft:"60px"}}>
-                    <img src={MSF} style={{width: '160px', height: '80px'}} alt="MSF Logo"/>
+              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+                    <img src={NUS} style={{width: '160px', height:'70px'}} alt="NUS Logo"/>
+              </Grid>
+              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+                    <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
             </Grid>
 
