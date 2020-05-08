@@ -185,14 +185,17 @@ export default class Record extends Component {
   // -------IMPORTANT------
   // Function below
   start = async () => {
+    
     try {
       if (this.props.isBusy) {
         return
       }
 
       this.props.reset()
+
+      // this.props.socket.emit('join-room')
     
-      await axios.post(`${this.props.backendUrl}/stream/google`, {
+      await axios.post(`${this.props.backendUrl}/stream/record`, {
         token: this.props.token
       })
 
@@ -235,6 +238,7 @@ export default class Record extends Component {
         }
         this.state.recorder.clear()
       }, 'audio/x-raw')
+      this.props.reset()
     } else {
       this.$emit('onError', 'Recorder undefined')
     }

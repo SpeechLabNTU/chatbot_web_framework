@@ -18,4 +18,5 @@ function example(query,res){
     });
 }
 
+
 module.exports = router
