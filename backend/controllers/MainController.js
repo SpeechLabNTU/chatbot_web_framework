@@ -75,6 +75,79 @@ class MainController {
     }
   }
 
+  static async googlestreamByRecording (req, res, next) {
+    try{
+    // Imports the Google Cloud client library
+    const speech = require('@google-cloud/speech');
+
+    //Configure transcription Request
+    const request = {
+      config:{
+          encoding: "LINEAR16",
+          sampleRateHertz: 16000,
+          languageCode: "en-US"
+      },
+      interimResults: true
+    }
+
+    let recognizeStream = null
+        
+    // Handle Web Socket Connection
+    Object.keys(io.sockets.connected).forEach(key => {
+
+        console.log('Connection Initiated')
+        io.emit('stream-ready') // tell frontend that socket is ready
+
+        // //Signal on socket error
+        io.sockets.connected[key].on('error', (error) => {
+          console.log('Connection Error: ' + error.toString())
+        })
+
+        const googleclient = new speech.SpeechClient();
+
+        //Start Connection to GCLOUD
+        io.sockets.connected[key].on('stream-input', data =>{
+          
+          if(!recognizeStream){
+            console.log('INIT GCLOUD SPEECH')
+
+            recognizeStream = googleclient
+              .streamingRecognize(request)
+              .on('error', console.error)
+              .on('data', data => {
+                io.emit('stream-data-google', data)
+                // io.emit('stream-data-google', data.results[0].alternatives[0].transcript)
+              })
+          }
+
+          recognizeStream.write(new Uint8Array(data))
+
+        })
+
+        //Signal on socket close
+        io.sockets.connected[key].on('stream-stop', () => {
+          console.log('echo-protocol Connection Closed')
+          recognizeStream.destroy()
+          recognizeStream = null
+          io.emit('stream-close') // send close signal to client
+
+        })
+
+    })
+    
+
+    return res.json({
+      success: true
+    })
+
+    }catch (e) {
+      return res.status(500).json({
+        message: 'Error when streaming'
+      })
+    }
+    
+  }
+
   static async streamByImport (req, res, next) {
     try {
       const token = req.body.token
