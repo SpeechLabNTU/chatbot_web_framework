@@ -75,7 +75,6 @@ class MainController {
     }
   }
 
-
   static async googlestreamByRecording (req, res, next) {
     try{
     // Imports the Google Cloud client library
