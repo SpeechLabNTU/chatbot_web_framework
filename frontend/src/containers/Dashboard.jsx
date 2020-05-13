@@ -595,7 +595,10 @@ class Dashboard extends Component{
                 <UploadBox 
                 handleQueryInput={this.handleQueryInput} 
                 askJamieAPI={this.askJamieAPI} 
-                dialogflowAPI={this.dialogflowAPI}/>
+                dialogflowAPI={this.dialogflowAPI}
+                miclAPI={this.miclAPI}
+                rajatAPI={this.rajatAPI}
+                />
               </Grid>
 
             </Grid>
