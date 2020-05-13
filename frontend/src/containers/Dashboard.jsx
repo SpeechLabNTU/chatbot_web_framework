@@ -19,8 +19,8 @@ import FormGroup from '@material-ui/core/FormGroup';
 import Dialogflow from './Dialogflow';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
-import Charts from "./Charts";
 import UploadBox from "./UploadBox";
+import AudioUpload from "./Audiofile";
 import Rajat from "./Rajat";
 import AISG from "../img/aisg.png";
 import MSF from "../img/msf.png";
@@ -114,9 +114,6 @@ class Dashboard extends Component{
     this.miclAPI = this.miclAPI.bind(this);
     this.rajatAPI = this.rajatAPI.bind(this);
 
-    //Performance Analysis Method Bindings
-    this.handleQueryInput = this.handleQueryInput.bind(this);
-    this.MassResponseComparison = this.MassResponseComparison.bind(this);
   }
 
   //Response summarizer
@@ -410,59 +407,6 @@ class Dashboard extends Component{
       status
     })
   }
-  
-  //Response comparison promises for batch query upload
-  MassResponseComparison(req){
-    return new Promise(function(resolve, reject){
-      axios.post(`${process.env.REACT_APP_API}/flask/api/responseCompare`,req)
-        .then((res)=>{
-            let probability = res.data.reply
-            if (probability !== -1){
-              resolve(probability)
-            }
-        }).catch(error=>{
-          console.log("Error Contacting API server")
-        });
-        
-    });
-        
-  }
-
-  //Handling of multiple input queries
-  async handleQueryInput(content, responseSelection){
-    this.setState({querys:content});
-    console.log(this.state.querys)
-    console.log(responseSelection)
-    let functionPostArray = []
-    let functionPostArrayModel = []
-
-    if(responseSelection === "null"){
-      console.log("Define QA engine first")
-    }else if(responseSelection === "Dialogflow"){
-        for (let i=0;i<content.length;i++){
-          let ques = {question: content[i]}
-          functionPostArrayModel.push(this.askJamieAPI(ques))
-          functionPostArray.push(this.dialogflowAPI(ques));
-        }
-
-        let that = this;
-        let promiseArray = [functionPostArrayModel,functionPostArray]
-        
-        const promiseAll = Promise.all(promiseArray.map(Promise.all.bind(Promise)))
-        promiseAll.then(function(value){
-            console.log(value)
-            let functionCompareArray = []
-            for (let i =0;i<value[0].length;i++){
-              let responsesArray = {responses:[value[0][i],value[1][i]]}
-              functionCompareArray.push(that.MassResponseComparison(responsesArray))
-            }
-            Promise.all(functionCompareArray).then(function(score){
-              that.setState({responseScoreArray:score})
-            });
-
-        })
-    }
-  }
 
   render(){
     return (
@@ -638,7 +582,6 @@ class Dashboard extends Component{
                   />
                 </Grid>
                 }
-
                 
             </Grid>
 
@@ -647,15 +590,21 @@ class Dashboard extends Component{
             <Tab eventKey="chart" title="Chart">
             <br/><br/>
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
-              <Grid item xs={12} md={6} lg={6}>
-                <Charts responseScoreArray={this.state.responseScoreArray}/>
+
+              <Grid item xs={12} md={12}>
+                <UploadBox 
+                handleQueryInput={this.handleQueryInput} 
+                askJamieAPI={this.askJamieAPI} 
+                dialogflowAPI={this.dialogflowAPI}/>
               </Grid>
 
-              <Grid item xs={12} md={6} lg={6}>
-                <UploadBox handleQueryInput={this.handleQueryInput}/>
-              </Grid>
             </Grid>
               
+            </Tab>
+
+            <Tab eventKey="Audio" title="Audio">
+            <br/><br/>
+              <AudioUpload/>
             </Tab>
 
             </Tabs>
