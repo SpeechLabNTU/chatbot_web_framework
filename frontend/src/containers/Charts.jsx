@@ -66,7 +66,7 @@ export default function SplineChart(props){
 			data: [{
 				yValueFormatString: "##.00",
                 type: "scatter",
-                name: "Dialogflow",
+                name: props.chatbot,
 				dataPoints: responseData
             }
             ]

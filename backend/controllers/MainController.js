@@ -79,7 +79,6 @@ class MainController {
     try{
     // Imports the Google Cloud client library
     const speech = require('@google-cloud/speech');
-    const googleclient = new speech.SpeechClient();
 
     //Configure transcription Request
     const request = {
@@ -103,6 +102,8 @@ class MainController {
         io.sockets.connected[key].on('error', (error) => {
           console.log('Connection Error: ' + error.toString())
         })
+
+        const googleclient = new speech.SpeechClient();
 
         //Start Connection to GCLOUD
         io.sockets.connected[key].on('stream-input', data =>{

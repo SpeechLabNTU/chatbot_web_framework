@@ -3,7 +3,7 @@ readJSONFIle()
 function readJSONFIle(){
     var fs = require('fs');
 
-    fs.readFile('../python/dataConstruction/babybonusintents.json','utf8', function(err, contents) {
+    fs.readFile('../flaskservice/dataConstruction/babybonusintents.json','utf8', function(err, contents) {
         const obj = JSON.parse(contents)
         num_intents = Object.keys(obj.intents).length
         console.log(num_intents)

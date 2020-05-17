@@ -12,7 +12,7 @@ The objective of this project is to design a full stack web application to compa
 
 # Speech to Text API
 1. AISG's Speech to Text<br/>
-2. Google's Speech API (To be implemented)<br/>
+2. Google's Speech API<br/>
 3. Twilio Speech Lab (To be implemented)<br/>
 
 # Features
@@ -37,6 +37,6 @@ Following directories must be executed in seperate terminals to run application
 
 1. Frontend Directory<br/>
 2. Backend Directory<br/>
-3. flaskservice Directory<br/>
+3. flaskservice Directory(Deep Neural Network + Similarity) or comparison Directory(Similarity only)<br/>
 
 # Installation/setup instructions will be provided in each directory.

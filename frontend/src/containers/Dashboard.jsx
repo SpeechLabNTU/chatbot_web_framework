@@ -4,6 +4,8 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
@@ -23,19 +25,17 @@ import MICL from "./MICL";
 import Charts from "./Charts";
 import Chartplotly from "./Chartplotly";
 import UploadBox from "./UploadBox";
+import AudioUpload from "./Audiofile";
 import Rajat from "./Rajat";
 import AISG from "../img/AISG.png";
 import MSF from "../img/MSF.png";
 import NTU from "../img/NTU.png";
 import NUS from "../img/nus.png";
-import Banner from "./Banner";
 import {Tab, Tabs} from "react-bootstrap";
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
-const textField={width:'595px'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
-  
 
 class Dashboard extends Component{
 
@@ -104,12 +104,11 @@ class Dashboard extends Component{
     this.handleChange = this.handleChange.bind(this);
     this.handleCheck = this.handleCheck.bind(this);
     this.handleClick = this.handleClick.bind(this);
-    // this.handleChoice = this.handleChoice.bind(this);
     this.handleInput = this.handleInput.bind(this);
 
     //Summarizer Method Binding
     this.summarizer = this.summarizer.bind(this);
-    
+
     //Similarity Check Method Bindings
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
@@ -126,10 +125,6 @@ class Dashboard extends Component{
     this.dnnAPI = this.dnnAPI.bind(this);
     this.miclAPI = this.miclAPI.bind(this);
     this.rajatAPI = this.rajatAPI.bind(this);
-
-    //Performance Analysis Method Bindings
-    this.handleQueryInput = this.handleQueryInput.bind(this);
-    this.MassResponseComparison = this.MassResponseComparison.bind(this);
   }
 
   //Response summarizer
@@ -148,8 +143,8 @@ class Dashboard extends Component{
         }
       }
     }
-    
-    return summary 
+
+    return summary
   }
 
   //User input handling
@@ -171,7 +166,7 @@ class Dashboard extends Component{
         }).catch(error=>{
           console.log("Error Contacting API server")
         });
-        
+
   }
 
   //checkSimilarity method prefix updates response comparison scores
@@ -211,7 +206,7 @@ class Dashboard extends Component{
       .catch(error=>{
           console.log("Error contacting Ask Jamie")
       });
-      
+
     })
   }
 
@@ -231,7 +226,7 @@ class Dashboard extends Component{
           console.log("Error contacting Dialogflow")
       });
     })
-    
+
   }
 
   dnnAPI(params){
@@ -251,7 +246,7 @@ class Dashboard extends Component{
           console.log("Error contacting Flask server")
       })
     })
-    
+
   }
 
   miclAPI(params){
@@ -302,7 +297,7 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
-    
+
     if(this.state.comparisonDNN && this.state.comparisonJamie){
       let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
       try{
@@ -348,12 +343,12 @@ class Dashboard extends Component{
     //Bind this to variable for use in promise
     let that = this;
 
-    //Promise of Chatbot Services 
+    //Promise of Chatbot Services
     await Promise.all([this.askJamieAPI(params),this.state.checkDialog && this.dialogflowAPI(params),
-      this.state.checkDNN && this.dnnAPI(params), this.state.checkMICL && this.miclAPI(params), 
+      this.state.checkDNN && this.dnnAPI(params), this.state.checkMICL && this.miclAPI(params),
       this.state.checkRajat && this.rajatAPI(params)]).then(function(values){
       console.log(values)
-      
+
       //On successful chatbot interaction, execute comparison for each chatbot response pair
       that.comparison()
     })
@@ -396,7 +391,7 @@ class Dashboard extends Component{
     })
 
     socket.on('stream-data-google', data => {
-      
+
       if (data.results[0].isFinal) {
           this.setState(prevState => ({
           input: prevState.transcription + ' ' + data.results[0].alternatives[0].transcript,
@@ -412,7 +407,7 @@ class Dashboard extends Component{
     })
 
     socket.on('stream-data', data => {
-      
+
         if (data.result.final) {
             this.setState(prevState => ({
             input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
@@ -458,63 +453,11 @@ class Dashboard extends Component{
       status
     })
   }
-  
-  //Response comparison promises for batch query upload
-  MassResponseComparison(req){
-    return new Promise(function(resolve, reject){
-      axios.post('http://localhost:3001/flask/api/responseCompare',req)
-        .then((res)=>{
-            let probability = res.data.reply
-            if (probability !== -1){
-              resolve(probability)
-            }
-        }).catch(error=>{
-          console.log("Error Contacting API server")
-        });
-        
-    });
-        
-  }
 
-  //Handling of multiple input queries
-  async handleQueryInput(content, responseSelection){
-    this.setState({querys:content});
-    console.log(this.state.querys)
-    console.log(responseSelection)
-    let functionPostArray = []
-    let functionPostArrayModel = []
-
-    if(responseSelection === "null"){
-      console.log("Define QA engine first")
-    }else if(responseSelection === "Dialogflow"){
-        for (let i=0;i<content.length;i++){
-          let ques = {question: content[i]}
-          functionPostArrayModel.push(this.askJamieAPI(ques))
-          functionPostArray.push(this.dialogflowAPI(ques));
-        }
-
-        let that = this;
-        let promiseArray = [functionPostArrayModel,functionPostArray]
-        
-        const promiseAll = Promise.all(promiseArray.map(Promise.all.bind(Promise)))
-        promiseAll.then(function(value){
-            console.log(value)
-            let functionCompareArray = []
-            for (let i =0;i<value[0].length;i++){
-              let responsesArray = {responses:[value[0][i],value[1][i]]}
-              functionCompareArray.push(that.MassResponseComparison(responsesArray))
-            }
-            Promise.all(functionCompareArray).then(function(score){
-              that.setState({responseScoreArray:score})
-            });
-
-        })
-    }
-  }
 
   render(){
     return (
-        
+
       <div>
         <CssBaseline />
 
@@ -534,17 +477,36 @@ class Dashboard extends Component{
               <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
                     <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
-              
+
             </Grid>
 
             <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
-            
-            <Tab eventKey="dashboard" title="Dashboard">
-            
+
+            <Tab eventKey="dashboard" title="Multi-Chatbot Interface">
+
             <br/><br/>
 
             <Grid container style={{paddingBottom:"40px"}} justify="center">
-              <Banner/>
+
+            <Card>
+              <CardContent style={{width:"500px"}}>
+                <Typography color="textSecondary" gutterBottom>
+                  Mutli Chatbot Interface for Response Comparisons
+                </Typography>
+                <Typography color="textSecondary">
+
+                </Typography>
+                <Typography variant="body2" component="p">
+                  1. Selection of Chatbot Services
+                  <br />
+                  2. Choose between Text(Default) or Realtime Speech Input
+                  <br />
+                  3. Real-time Speech allows choice of Google or AISG Transcription Services
+                </Typography>
+              </CardContent>
+
+            </Card>
+
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
@@ -565,11 +527,11 @@ class Dashboard extends Component{
                 </Grid>
 
                 <Grid item xs={12} md={8} lg={6}>
-                  
-                  {this.state.switch && 
+
+                  {this.state.switch &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Text Input Disabled. 
+                      Text Input Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable text
@@ -590,13 +552,13 @@ class Dashboard extends Component{
                   <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
                   </FormControl>
                   }
-                  
-                
+
+
                 </Grid>
-                
+
                 <Grid item xs={12} md={4} lg={6}>
 
-                  {this.state.switch && 
+                  {this.state.switch &&
 
                   <Record
                   input= {this.state.input}
@@ -614,21 +576,21 @@ class Dashboard extends Component{
                   {this.state.switch ===false &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Speech to Text Disabled. 
+                      Speech to Text Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable speech
                     </Typography>
                   </Paper>
                   }
-                  
+
                 </Grid>
-                
+
                 <Grid item xs={12} md={12}>
-                <h3>Select Chatbot Services:</h3>
-                
+                <h5>Select Chatbot Services:</h5>
+
                 <FormGroup row>
-                  
+
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
                     label="Dialogflow"
@@ -641,7 +603,7 @@ class Dashboard extends Component{
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
                     label="Rajat"
-                  /> 
+                  />
 
                 </FormGroup>
 
@@ -666,8 +628,8 @@ class Dashboard extends Component{
                     scoreDNN = {this.state.scoreDNN}
                   />
                 </Grid>
-                } 
-                
+                }
+
                 {this.state.checkDialog &&
                 <Grid item xs={12} md={4}>
                   <Dialogflow
@@ -701,23 +663,32 @@ class Dashboard extends Component{
                 </Grid>
                 }
 
-                
+
             </Grid>
 
             </Tab>
 
-            <Tab eventKey="chart" title="Chart">
+            <Tab eventKey="chart" title="Performance Analysis">
             <br/><br/>
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
-              <Grid item xs={12} md={6} lg={6}>
-                <Charts responseScoreArray={this.state.responseScoreArray}/>
-              </Grid>
 
-              <Grid item xs={12} md={6} lg={6}>
-                <UploadBox handleQueryInput={this.handleQueryInput}/>
+              <Grid item xs={12} md={12}>
+                <UploadBox
+                handleQueryInput={this.handleQueryInput}
+                askJamieAPI={this.askJamieAPI}
+                dialogflowAPI={this.dialogflowAPI}
+                miclAPI={this.miclAPI}
+                rajatAPI={this.rajatAPI}/>
+
               </Grid>
             </Grid>
-              
+
+            </Tab>
+
+            {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
+            <Tab eventKey="Audio" title="Transcription Comparison">
+            <br/><br/>
+              <AudioUpload/>
             </Tab>
 
             <Tab eventKey="chart2" title="Chart2">
@@ -730,12 +701,12 @@ class Dashboard extends Component{
                   <UploadBox handleQueryInput={this.handleQueryInput}/>
                 </Grid>
               </Grid>
-              
+
             </Tab>
 
             </Tabs>
             </Container>
-            
+
         </main>
       </div>
     );
