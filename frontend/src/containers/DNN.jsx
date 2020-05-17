@@ -4,7 +4,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 // import InputLabel from '@material-ui/core/InputLabel';
-const form={width:'400px'};
+const form={display:'block'};
 
 class DNN extends Component{
   
@@ -15,6 +15,7 @@ class DNN extends Component{
       <div>
         <FormControl variant="outlined" style={form}>
           <TextField
+              style={{width: '100%'}}
               id="outlined-multiline-static"
               label="Text Classification Model"
               multiline

@@ -29,8 +29,14 @@ import LastPageIcon from '@material-ui/icons/LastPage';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-// import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 import Charts from "./Charts";
 
@@ -62,15 +68,14 @@ const useStyles = makeStyles(theme => ({
   },
   modeSelect: {
     paddingLeft: '50px',
+    paddingBottom: '30px',
     minWidth: 120,
   },
   tableContainer: {
-    paddingTop: '50px',
+    paddingTop: '30px',
   }
 
 }));
-
-let fileReader;
 
 function TablePaginationActions(props){
     const classes = useStyles();
@@ -142,12 +147,14 @@ export default function CustomizedInputBase(props) {
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
     const [graph, setGraph] = React.useState(false);
     const [open, setOpen] = React.useState(false);
+    const [load, setLoad] = React.useState(false);
     const [scoreArray, setscoreArray] = React.useState([]);
+    const [completed, setCompleted] = React.useState(0);
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
     
-    const tablecontent = []
-    const scorecontent = []
+    let tablecontent = []
+    let scorecontent = []
 
     //---------------------------Generate Report Pop Up Handler-------------------------------
     const handleClickOpen = () =>{
@@ -196,7 +203,7 @@ export default function CustomizedInputBase(props) {
       return summary 
     }
 
-    //----------------------------Similarity Comparison---------------------------------------
+    //---------------------------------Similarity Comparison---------------------------------------
     function ResponseComparison(req){
 
       return new Promise(function(resolve, reject){
@@ -212,23 +219,24 @@ export default function CustomizedInputBase(props) {
           
     }
 
-    //----------------------Recursive function to return results one at a time----------------
+    //----------------------Recursive function to return results one at a time--------------------
     async function handleSingleInput(textArray, i, textArrayLength){
 
       if(i === textArrayLength -1 ){
         setscoreArray(scorecontent)
         setGraph(true)
-        return
+        setLoad(false)
+        return 
       }else{
         let query = textArray[i]
         let ques = {question: query}
         let service = ""
 
-        if(value === 'dialogflowAPI'){
+        if(value === 'Dialogflow'){
             service = props.dialogflowAPI(ques)
-        }else if (value === 'miclAPI'){
+        }else if (value === 'Andrew'){
             service = props.miclAPI(ques)
-        }else if (value === 'rajatAPI'){
+        }else if (value === 'Rajat'){
             service = props.rajatAPI(ques)
         }
 
@@ -245,15 +253,16 @@ export default function CustomizedInputBase(props) {
         }).then(()=>{
           i = i + 1
           handleSingleInput(textArray, i, textArrayLength)
+          setCompleted((i/(textArrayLength-1))*100)
         })
 
       }
-      
     }
 
     //----------------------Read file contents for computing response comparison----------------------
     const handleFileRead = (e)=>{
-      const content = fileReader.result;
+      
+      const content = e.target.result;
       let textArray = content.split('\n');
       handleSingleInput(textArray,0,textArray.length)
     }
@@ -263,7 +272,8 @@ export default function CustomizedInputBase(props) {
         let file = e.target.files[0];
         fileName = file.name
         setFilename(fileName);
-        fileReader = new FileReader();
+        let fileReader = new FileReader();
+        setLoad(true)
         fileReader.onloadend = handleFileRead;
         fileReader.readAsText(file)
     };
@@ -276,6 +286,30 @@ export default function CustomizedInputBase(props) {
   return (
     <div>
     {/* File Upload Form */}
+    <Grid container style={{paddingBottom:"40px"}} justify="center">
+    <Card>
+
+        <CardContent style={{width:"500px"}}>
+          <Typography color="textSecondary" gutterBottom>
+            Performance Analysis of Chatbot Service
+          </Typography>
+          <Typography color="textSecondary">
+            
+          </Typography>
+          <Typography variant="body2" component="p">
+            1. Selection of Chatbot Service for Analysis
+            <br />
+            2. Upload Text File of Line-Seperated Queries
+            <br />
+            3. View Table Listing of Responses and Accuracy Score
+            <br />
+            4. Graphical Report available after all responses are processed
+          </Typography>
+        </CardContent>
+            
+    </Card>
+    </Grid>
+
     <FormControl component="fieldset">
       <Paper component="form" className={classes.root}>
         <InputBase
@@ -311,9 +345,9 @@ export default function CustomizedInputBase(props) {
         value={value}
         onChange={handleChange}
       >
-        <MenuItem value="dialogflowAPI">Dialogflow</MenuItem>
-        <MenuItem value="miclAPI">Andrew</MenuItem>
-        <MenuItem value="rajatAPI">Rajat</MenuItem>
+        <MenuItem value="Dialogflow">Dialogflow</MenuItem>
+        <MenuItem value="Andrew">Andrew</MenuItem>
+        <MenuItem value="Rajat">Rajat</MenuItem>
       </Select>
       <FormHelperText>Chat Model Selection</FormHelperText>
     </FormControl>
@@ -327,6 +361,10 @@ export default function CustomizedInputBase(props) {
         }
     </FormControl>
     
+    {load === true &&
+    <LinearProgress variant="determinate" value={completed} style={{marginBottom:"5px",width:"100%"}}/>
+    }
+
     {/* Table for response display and page management */}
     <FormControl className={classes.tableContainer}>
       <Paper variant="outlined">
@@ -335,7 +373,10 @@ export default function CustomizedInputBase(props) {
               <TableRow>
                 <TableCell>Input</TableCell>
                 <TableCell>Ask Jamie Response</TableCell>
-                <TableCell>Dialogflow Response</TableCell>
+                {value === ''
+                ?<TableCell>Chatbot Response</TableCell>
+                :<TableCell>{value} Response</TableCell>
+                }
                 <TableCell align="right">Similarity Score</TableCell>
               </TableRow>
             </TableHead>
