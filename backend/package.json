@@ -27,7 +27,7 @@
     "request": "^2.88.0",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "socket.io": "^2.2.0",
-    "websocket": "^1.0.29"
+    "websocket": "^1.0.31"
   },
   "devDependencies": {
     "eslint": "^6.3.0",

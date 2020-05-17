@@ -671,7 +671,10 @@ class Dashboard extends Component{
             {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
             <Tab eventKey="Audio" title="Audio">
             <br/><br/>
-              <AudioUpload/>
+              <AudioUpload
+              token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlYWY2YzEwNjczNDQ4MDAyOWUzZWI1YSIsImlhdCI6MTU4ODU1NDc3MywiZXhwIjoxNTkxMTQ2NzczfQ.mbS3GGjRn2sCNjwPBUXneqpZN5_ze6GnHyUh56cn3hM"
+              backendUrl={this.state.backendUrl}
+              />
             </Tab>
 
             </Tabs>

@@ -22,6 +22,8 @@ app.use('/rajat', rajatRouter);
 app.post('/stream/google', STT.googlestreamByRecording)
 app.post('/stream/record', STT.streamByRecording)
 app.post('/stream/import', upload.single('file'), STT.streamByImport)
+app.post('/api/speechlabs', upload.single('file'), STT.speechLabsHTTPRequest)
+app.post('/api/google', upload.single('file'), STT.googleHTTPRequest)
 
 module.exports = app
 

@@ -12,7 +12,7 @@ router.post("/api/dialogflow", (req,res)=> {
 async function dialoflowConnection(query, res) {
     
     const sessionId = uuid.v4();
-    const projectId = 'chatbot-development-250810'
+    const projectId = 'chatbotframework-qmylfo'
   
     const sessionClient = new dialogflow.SessionsClient();
     const sessionPath = sessionClient.sessionPath(projectId, sessionId);
