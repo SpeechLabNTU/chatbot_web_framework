@@ -21,6 +21,7 @@ import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
 import Charts from "./Charts";
+import Chartplotly from "./Chartplotly";
 import UploadBox from "./UploadBox";
 import Rajat from "./Rajat";
 import AISG from "../img/AISG.png";
@@ -716,6 +717,19 @@ class Dashboard extends Component{
                 <UploadBox handleQueryInput={this.handleQueryInput}/>
               </Grid>
             </Grid>
+              
+            </Tab>
+
+            <Tab eventKey="chart2" title="Chart2">
+              <br/><br/>
+              <Grid container spacing={3} style={{paddingBottom:"40px"}}>
+                <Grid item xs={12} md={6} lg={6}>
+                  <Chartplotly responseScoreArray={this.state.responseScoreArray}/>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6}>
+                  <UploadBox handleQueryInput={this.handleQueryInput}/>
+                </Grid>
+              </Grid>
               
             </Tab>
 
