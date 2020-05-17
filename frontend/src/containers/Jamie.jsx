@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
-const form={width:'400px'};
+const form={display:'block'};
 
 class Dialogflow extends Component{
   
@@ -11,6 +11,7 @@ class Dialogflow extends Component{
       <div>
         <FormControl variant="outlined" style={form}>
         <TextField
+            style={{width:'100%'}}
             id="outlined-multiline-static"
             label="Ask Jamie"
             multiline

@@ -26,8 +26,9 @@ import AISG from "../img/aisg.png";
 import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
 import NUS from "../img/nus.png";
-import Banner from "./Banner";
 import {Tab, Tabs} from "react-bootstrap";
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
@@ -435,12 +436,29 @@ class Dashboard extends Component{
 
             <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
             
-            <Tab eventKey="dashboard" title="Dashboard">
+            <Tab eventKey="dashboard" title="Multi-Chatbot Interface">
             
             <br/><br/>
 
             <Grid container style={{paddingBottom:"40px"}} justify="center">
-              <Banner/>
+              <Card>
+                <CardContent style={{width:"500px"}}>
+                  <Typography color="textSecondary" gutterBottom>
+                    Mutli Chatbot Interface for Response Comparisons
+                  </Typography>
+                  <Typography color="textSecondary">
+                    
+                  </Typography>
+                  <Typography variant="body2" component="p">
+                    1. Selection of Chatbot Services 
+                    <br />
+                    2. Choose between Text(Default) or Realtime Speech Input
+                    <br />
+                    3. Real-time Speech allows choice of Google or AISG Transcription Services
+                  </Typography>
+                </CardContent>
+              
+              </Card>
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
@@ -587,7 +605,7 @@ class Dashboard extends Component{
 
             </Tab>
 
-            <Tab eventKey="chart" title="Chart">
+            <Tab eventKey="chart" title="Performance Analysis">
             <br/><br/>
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
 
@@ -605,7 +623,7 @@ class Dashboard extends Component{
               
             </Tab>
 
-            <Tab eventKey="Audio" title="Audio">
+            <Tab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
               <AudioUpload/>
             </Tab>
