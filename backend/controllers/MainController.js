@@ -247,7 +247,7 @@ class MainController {
      */
     const filename = file.path;
     const encoding = 'LINEAR16';
-    const sampleRateHertz = 16000; //wrong for wav?
+    //const sampleRateHertz = 16000;
     const languageCode = 'en-US';
 
     const config = {
@@ -269,7 +269,7 @@ class MainController {
     const transcription = response.results
       .map(result => result.alternatives[0].transcript)
       .join('\n');
-    console.log('Transcription: ', transcription);
+    // console.log('Transcription: ', transcription);
 
     if (fs.existsSync(file.path)) { // clean file after request
       fs.unlinkSync(file.path)

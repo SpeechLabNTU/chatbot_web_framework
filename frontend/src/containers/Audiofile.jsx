@@ -22,6 +22,11 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+
 const useStyles = makeStyles(theme => ({
   root: {
     padding: '2px 4px',
@@ -44,8 +49,8 @@ const useStyles = makeStyles(theme => ({
     paddingTop: '50px',
   },
   table: {
-    width: 'auto'
-    // minWidth: 1200
+    width: 'auto',
+    //minWidth: 1200
   },
 }));
 
@@ -136,39 +141,37 @@ export default function Audiofile(props) {
     }
 
     
-    //--------------------------???--------------------------
+    //--------------------------Button event handlers--------------------------
     function onChangehandler(e){
       var files = Array.from(e.target.files);
       files.sort()
-      setInputText(`${files.length} files uploaded`)
-      getTranscriptions(files)
-    };
 
-
-    function getTranscriptions(files) {
       files.forEach( file => {
         tablecontent.push(createData(file.name, "loading...", "loading..."))
       })
       updateRows(tablecontent)
+      setInputText(`${files.length} files uploaded`)
 
+      getTranscriptions(files)
+    };
+
+    //--------------------Audio file handlers-------------------
+    function getTranscriptions(files) {
       var arr1 = []
-      var arr2 =[]
+      var arr2 = []
       for (let i=0; i<files.length; i++){
         arr1.push(i)
         arr2.push(i)
-      } // array to track processing of files
+      } // arrays to track processing of files
 
-      // run 2 concurrent requests, due to Speech Lab's limit of 3
+      // make 2 concurrent requests, due to Speech Lab's limit of 3
       for (let i=0; i < 2; i++) {
-        setTimeout( () => {
-          requestToSpeechLab(files, arr1)
-        }, 500)
+        setTimeout( () => {requestToSpeechLab(files, arr1)}, 500)
       }
-      // run 2 concurrent requests
+
+      // make 5 concurrent requests (not sure what is limit)
       for (let i=0; i < 5; i++) {
-        setTimeout( () => {
-          requestToGoogleAPI(files, arr2)
-        }, 500)
+        setTimeout( () => {requestToGoogleAPI(files, arr2)}, 500)
       }
     }
 
@@ -193,35 +196,32 @@ export default function Audiofile(props) {
           },
         }).then( response => {
           var data = response.data
+          //console.log(data)
 
           // handle response from Speech Labs 
           if (data.status_code === 200 && data.status === 0) {
             let index = tablecontent.findIndex( item => item.filename === file.name )
-
             let updatedRow = tablecontent[index]
             updatedRow.speechlabs = data.text
-            tablecontent = [...tablecontent.slice(0,index), updatedRow, ...tablecontent.slice(index+1)]
 
+            tablecontent = [...tablecontent.slice(0,index), updatedRow, ...tablecontent.slice(index+1)]
             updateRows(tablecontent)
             
-            resolve(1000)  // 1s wait before next call
+            resolve(1000)  // wait 1s before next call
           }
           else {
-            array.unshift(fileIndex)  // push file back into array
-            resolve(10000)  // 10s wait before next call
+            array.unshift(fileIndex)  // push file index back into array
+            resolve(10000)  // wait 10s before next call
           }
             
-        }).catch( err =>{
-          console.log('ERROR: ')
+        }).catch( err => {
+          console.log('Error during request to backend for speechlabs: ')
           console.log(err)
           reject()
         })
-      }).then( (value)=>  {
-        setTimeout( ()=>{
-          requestToSpeechLab(files, array)
-        }, value) // wait value second before making request to allow buffer time at Speech Lab's server
-      })
-      .catch( (err)=> console.log(err) ))
+      }).then( value => {
+        setTimeout( () => {requestToSpeechLab(files, array)}, value) // wait value second before making request to allow buffer time at Speech Lab's server
+      }).catch( err => console.log(err) ))
     }
 
     function requestToGoogleAPI(files, array) {
@@ -245,26 +245,24 @@ export default function Audiofile(props) {
           },
         }).then( response => {
           let data = response.data
-          console.log(data)
-          let index = tablecontent.findIndex( item => item.filename === file.name )
+          //console.log(data)
 
+          let index = tablecontent.findIndex( item => item.filename === file.name )
           let updatedRow = tablecontent[index]
           updatedRow.googleapi = data.text
-          tablecontent = [...tablecontent.slice(0,index), updatedRow, ...tablecontent.slice(index+1)]
 
+          tablecontent = [...tablecontent.slice(0,index), updatedRow, ...tablecontent.slice(index+1)]
           updateRows(tablecontent)
 
           resolve(0)
         }).catch( err =>{
-          console.log('ERROR: ')
+          console.log('Error during request to backend for googleapi: ')
           console.log(err)
           reject()
         })
-      }).then( (value)=>  {
-        setTimeout( ()=>{
-          requestToGoogleAPI(files, array)
-        }, value) // wait before making request
-      }).catch( (err)=> console.log(err) ))
+      }).then( value =>  {
+        setTimeout( () => {requestToGoogleAPI(files, array)}, value) // wait before making request
+      }).catch( err => console.log(err) ))
     }
 
     //----------------------------Creates data contents for table listing------------------------------
@@ -273,27 +271,49 @@ export default function Audiofile(props) {
     }
 
   return (
-    <FormControl component="fieldset">
-    
-      <h4>Under Development</h4>
-      <Paper component="form" className={classes.root}>
-          <InputBase
-          className={classes.input}
-          placeholder={inputText === "" ? "No Files Uploaded" : inputText}
-          inputProps={{ 'aria-label': 'number of audio files uploaded' }}
-          disabled
-          />
-          
-          <Divider className={classes.divider} orientation="vertical" />
-          <IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
-          <input multiple accept="audio/mpeg,audio/wav" type="file" id="myFile" name="file" style={{display: 'none'}} onChange={onChangehandler}/>
-          <DirectionsIcon />
-          </IconButton>
-      </Paper>
+    <div>
 
-      {/* Table for response display and page management */}
-      <FormControl className={classes.tableContainer}>
-        <Paper variant="outlined">
+      <Grid container style={{paddingBottom:"40px"}} justify="center">
+      <Card>
+
+          <CardContent style={{width:"500px"}}>
+            <Typography color="textSecondary" gutterBottom>
+              Transcription Comparison of Speech-to-text APIs
+            </Typography>
+            <Typography color="textSecondary">
+
+            </Typography>
+            <Typography variant="body2" component="p">
+              1. Upload Audio Files (.wav, .mp3, .mp4 only)
+              <br />
+              2. View Table Listing of Transcriptions
+            </Typography>
+          </CardContent>
+
+      </Card>
+      </Grid>
+
+      <FormControl component="fieldset">
+
+        <Paper component="form" className={classes.root}>
+            <InputBase
+            className={classes.input}
+            placeholder={inputText === "" ? "No Files Uploaded" : inputText}
+            inputProps={{ 'aria-label': 'number of audio files uploaded' }}
+            disabled
+            />
+            
+            <Divider className={classes.divider} orientation="vertical" />
+            <IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
+            <input multiple accept=".mp4,.mp3,.wav" type="file" id="myFile" name="file" style={{display: 'none'}} onChange={onChangehandler}/>
+            <DirectionsIcon />
+            </IconButton>
+        </Paper>
+
+        {/* Table for response display and page management */}
+        <FormControl className={classes.tableContainer}>
+          <Paper variant="outlined">
+
             <Table className={classes.table} aria-label="simple table">
               <TableHead>
                 <TableRow>
@@ -343,9 +363,11 @@ export default function Audiofile(props) {
                 </TableRow>
               </TableFooter>
             </Table>
+
           </Paper>
-          
         </FormControl>
       </FormControl>
+
+    </div>
   );
 }
