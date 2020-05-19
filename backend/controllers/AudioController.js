@@ -18,7 +18,11 @@ class AudioController {
                 req.file.filename = file.filename.split('.')[0]+'_converted.wav'
                 req.file.path = file.path.split('.')[0]+'_converted.wav'
 
-                next()
+                res.json({
+                    path: req.file.path, 
+                    name: req.file.filename,
+                    originalname: req.file.originalname,
+                })
             })
     }
 }

@@ -200,12 +200,12 @@ class MainController {
     try {
       const token = req.body.token
 
-      var file =  req.file
+      var file =  JSON.parse(req.body.file)
 
       const ls = spawn('python3', ['speech_labs_post_req.py', '-u', speechLabsAPIUrl, '-t', token, file.path])
 
       ls.stdout.on('data', (data) => {
-        // console.log('stdout: ' + data)
+        //console.log('stdout: ' + data)
         data = JSON.parse(data)
         res.json({
           status_code: data.status_code,
@@ -218,12 +218,6 @@ class MainController {
       ls.stderr.on('data', (data) => {
         console.log('stderr: ' + data)        
       })
-
-      ls.on('exit', async (code) => {
-        if (fs.existsSync(file.path)) { // clean file after POST request
-          fs.unlinkSync(file.path)
-        }
-      })
       
     } catch (e) {
       console.log(e)
@@ -234,7 +228,7 @@ class MainController {
   }
 
   static async googleHTTPRequest (req, res, next) {
-    var file = req.file
+    var file =  JSON.parse(req.body.file)
     // Imports the Google Cloud client library
     const fs = require('fs');
     const speech = require('@google-cloud/speech');
@@ -270,10 +264,6 @@ class MainController {
       .map(result => result.alternatives[0].transcript)
       .join('\n');
     // console.log('Transcription: ', transcription);
-
-    if (fs.existsSync(file.path)) { // clean file after request
-      fs.unlinkSync(file.path)
-    }
 
     res.json({text: transcription})
   }
