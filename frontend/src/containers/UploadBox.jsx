@@ -527,7 +527,7 @@ export default function CustomizedInputBase(props) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{`Performance Analysis of ${value}`}</DialogTitle>
         <DialogContent style={{minWidth:600}}>
           <Charts responseScoreArray={scoreArray} chatbot={value}/>
           {/* <DialogContentText id="alert-dialog-description">
