@@ -84,7 +84,6 @@ class Dashboard extends Component{
         trackScore:[],
 
         //Speech to Text
-        tokenActive:false,
         audioEnable: false,
         mode: 'record',
         backendUrl: 'http://localhost:3001',
@@ -362,7 +361,10 @@ class Dashboard extends Component{
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
+
+    //Hacky method to trigger socket initiation when switch is pushed
     if(this.state.switch===false){
+      this.reset()
       this.initSockets()
     }
   }
@@ -563,7 +565,6 @@ class Dashboard extends Component{
                   partialResult = {this.state.partialResult}
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NzExNjExOCwiZXhwIjoxNTg5NzA4MTE4fQ.VuJ8nlMvftzu0FvDkKIDECsJz_CTQwsadRcWyETV__Y"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -595,7 +596,7 @@ class Dashboard extends Component{
                   />
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
-                    label="MICL"
+                    label="Andrew"
                   />
 
                   <FormControlLabel
@@ -606,6 +607,12 @@ class Dashboard extends Component{
                 </FormGroup>
 
                 </Grid>
+                
+                {this.state.switch === true &&
+                <Grid item xs={12}>
+                  <h6>Transcription: {this.state.input}</h6>
+                </Grid>
+                }
 
                 <Grid item xs={12} md={4}>
                   <Jamie

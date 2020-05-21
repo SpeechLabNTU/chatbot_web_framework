@@ -2,13 +2,15 @@ const WebSocketClient = require('websocket').client
 const io = require('../io')
 const spawn = require('child_process').spawn
 const fs = require('fs')
+const dotenv = require('dotenv');
+dotenv.config();
 
-const englishOnlineServerUrl = 'ws://40.90.170.182:8001/client/ws/speech' // this is address for english model, change it to your target model (malay, chinese,...)
+const englishOnlineServerUrl = process.env.SPEECH_API // this is address for english model, change it to your target model (malay, chinese,...)
 
 class MainController {
   static async streamByRecording (req, res, next) {
     try {
-      const token = req.body.token
+      const token = process.env.AISG_TOKEN
       
       // in this example, client doesn't join any room. so in here we need to listen on all sockets connected to backend
       Object.keys(io.sockets.connected).forEach(key => {
