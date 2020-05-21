@@ -39,6 +39,7 @@ import Grid from '@material-ui/core/Grid';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import Chartplotly from "./Chartplotly";
+import Charts from "./Charts";
 
 const useStyles = makeStyles(theme => ({
   pagination: {

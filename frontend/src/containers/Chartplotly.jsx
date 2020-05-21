@@ -22,12 +22,20 @@ export default function SplineChart(props){
     name: props.chatbot,
     showlegend:true
   }
-  
+  const layout  = {
+    width: 570, 
+    height: 570, 
+    title: 'Similarity Threshold',
+    xaxis:{ title:{text:'Question Number'}},
+    yaxis: { title:{text:'Similarity Score'}},
+    font:{ family:'Courier New, monospace', size:16, color:"#2b2d2f"}  
+  }
+
   return (
     <div className="App">
     <Plot
       data ={[trace]}
-      layout={{width: 550, height: 550, title: 'Similarity Threshold'}}
+      layout={layout}
       onRef={ref => (chart.current = ref)}
     />
     </div>
