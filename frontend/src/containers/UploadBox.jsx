@@ -38,7 +38,7 @@ import Grid from '@material-ui/core/Grid';
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import Charts from "./Charts";
+import Chartplotly from "./Chartplotly";
 
 const useStyles = makeStyles(theme => ({
   pagination: {
@@ -435,7 +435,7 @@ export default function CustomizedInputBase(props) {
       >
         <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
         <DialogContent style={{minWidth:600}}>
-          <Charts responseScoreArray={scoreArray} chatbot={value}/>
+          <Chartplotly responseScoreArray={scoreArray} chatbot={value}/>
           {/* <DialogContentText id="alert-dialog-description">
             Let Google help apps determine location. This means sending anonymous location data to
             Google, even when no apps are running.
