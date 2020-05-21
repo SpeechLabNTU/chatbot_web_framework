@@ -17,5 +17,6 @@ lib/
 others/
 
 #optional
+.env
 .vscode/
 .DS_Store

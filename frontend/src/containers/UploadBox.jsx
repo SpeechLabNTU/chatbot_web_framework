@@ -150,12 +150,17 @@ export default function CustomizedInputBase(props) {
     const [load, setLoad] = React.useState(false);
     const [scoreArray, setscoreArray] = React.useState([]);
     const [completed, setCompleted] = React.useState(0);
+    const [text, setText] = React.useState([]);
+    const [submit, setSubmit] = React.useState(false);
+
+    const [upload, setUpload] = React.useState(false);
+    const [option, setOption] = React.useState(false);
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
     
     let tablecontent = []
     let scorecontent = []
-
+    
     //---------------------------Generate Report Pop Up Handler-------------------------------
     const handleClickOpen = () =>{
       setOpen(true);
@@ -176,9 +181,57 @@ export default function CustomizedInputBase(props) {
       setPage(0);
     }
 
+    //----------------Promise to clear state and array of Chart and Table Array---------------
+    function clearContent(){
+
+      return new Promise(function(resolve, reject){
+
+        try{
+          //Clear Array content for state re-population
+          tablecontent = []
+          scorecontent = []
+          
+          //Clear Chart and Table State
+          setscoreArray([])
+          updateRows([]);
+
+          //Disable Chart
+          setGraph(false)
+
+          resolve("Ok")
+        }catch(e){
+          reject(e)
+        }
+      
+      });
+          
+    }
+
+    function handleAnalysis(){
+
+      let clear = clearContent()
+      clear.then((val)=>{
+        if (val === 'Ok'){
+          setLoad(true)
+          setSubmit(true)
+        }else{
+          console.log(val)
+        }
+      }).then(()=>{
+        handleSingleInput(text,0,text.length)
+      })
+    }
+
     //--------------------------Chatbot Service Change Handler--------------------------------
     const handleChange = event => {
-      setValue(event.target.value);
+        setValue(event.target.value);
+        setOption(true)
+        
+        //Clear Chart and Table State
+        setscoreArray([])
+        updateRows([]);
+        setGraph(false)
+        
     };
     
     const classes = useStyles();
@@ -223,9 +276,12 @@ export default function CustomizedInputBase(props) {
     async function handleSingleInput(textArray, i, textArrayLength){
 
       if(i === textArrayLength -1 ){
+        setText(textArray)
         setscoreArray(scorecontent)
         setGraph(true)
         setLoad(false)
+        setCompleted(0)
+        setSubmit(false)
         return 
       }else{
         let query = textArray[i]
@@ -264,18 +320,32 @@ export default function CustomizedInputBase(props) {
       
       const content = e.target.result;
       let textArray = content.split('\n');
-      handleSingleInput(textArray,0,textArray.length)
+      setText(textArray)
     }
 
     //---------------------------On file upload, call handleFileRead to load content------------------
     function onChangehandler(e){
+
+      //Load file content
+      try {
         let file = e.target.files[0];
         fileName = file.name
         setFilename(fileName);
         let fileReader = new FileReader();
-        setLoad(true)
         fileReader.onloadend = handleFileRead;
         fileReader.readAsText(file)
+        setUpload(true)
+
+        //Clear Chart and Table State
+        setscoreArray([])
+        updateRows([]);
+        setGraph(false)
+
+      }catch(e){
+        setFilename("No file detected, please upload a line seperated text file")
+        setUpload(false)
+      }
+        
     };
 
     //----------------------------Creates data contents for table listing------------------------------
@@ -297,13 +367,15 @@ export default function CustomizedInputBase(props) {
             
           </Typography>
           <Typography variant="body2" component="p">
-            1. Selection of Chatbot Service for Analysis
+            1. Upload Text File of Line-Seperated Queries
             <br />
-            2. Upload Text File of Line-Seperated Queries
+            2. Selection of Chatbot Service for Analysis
             <br />
-            3. View Table Listing of Responses and Accuracy Score
+            3. Click on Start Analysis
             <br />
-            4. Graphical Report available after all responses are processed
+            4. View Table Listing of Responses and Accuracy Score
+            <br />
+            5. Graphical Report available after all responses are processed
           </Typography>
         </CardContent>
             
@@ -321,7 +393,7 @@ export default function CustomizedInputBase(props) {
         
         <Divider className={classes.divider} orientation="vertical" />
 
-        {value === '' 
+        {load ===true 
         ?<IconButton disabled component="label" color="primary" className={classes.iconButton} aria-label="directions">
         <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
           <DirectionsIcon />
@@ -331,7 +403,7 @@ export default function CustomizedInputBase(props) {
           <DirectionsIcon />
         </IconButton>
         }
-
+        
       </Paper>
 
     </FormControl> 
@@ -339,20 +411,42 @@ export default function CustomizedInputBase(props) {
     {/* Chatbot Selection Field */}
     <FormControl className={classes.modeSelect}>
       
-      <Select
+      {load === false && upload === true
+      ?<Select
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         value={value}
         onChange={handleChange}
-      >
+        >
+      
         <MenuItem value="Dialogflow">Dialogflow</MenuItem>
         <MenuItem value="Andrew">Andrew</MenuItem>
         <MenuItem value="Rajat">Rajat</MenuItem>
       </Select>
+      :<Select
+        disabled
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        value={value}
+        onChange={handleChange}
+        >
+      
+        <MenuItem value="Dialogflow">Dialogflow</MenuItem>
+        <MenuItem value="Andrew">Andrew</MenuItem>
+        <MenuItem value="Rajat">Rajat</MenuItem>
+      </Select>
+      }
       <FormHelperText>Chat Model Selection</FormHelperText>
     </FormControl>
     
-    
+    {/* Start Upload Button */}
+    <FormControl className={classes.modeSelect}>
+      {upload === true && option === true && submit === false
+      ?<Button onClick={handleAnalysis} variant="contained" color="primary">Start Analysis</Button>
+      :<Button disabled variant="contained" color="primary">Start Analysis</Button>
+      }
+    </FormControl>
+
     {/* Graph Generation Button */}
     <FormControl className={classes.modeSelect}>
         {graph === false
@@ -433,7 +527,7 @@ export default function CustomizedInputBase(props) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{`Performance Analysis of ${value}`}</DialogTitle>
         <DialogContent style={{minWidth:600}}>
           <Chartplotly responseScoreArray={scoreArray} chatbot={value}/>
           {/* <DialogContentText id="alert-dialog-description">
