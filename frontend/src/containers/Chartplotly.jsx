@@ -17,10 +17,10 @@ export default function SplineChart(props){
     x: xData,
     y: yData,
     type: "scatter",
-    mode: 'lines+markers',
+    mode: 'markers',
     marker: {color: 'blue'},
     name: props.chatbot,
-    showlegend:true
+    showlegend:false
   }
   const layout  = {
     width: 570, 

@@ -22,13 +22,12 @@ import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
-import Charts from "./Charts";
 import UploadBox from "./UploadBox";
 import AudioUpload from "./Audiofile";
 import Rajat from "./Rajat";
-import AISG from "../img/AISG.png";
-import MSF from "../img/MSF.png";
-import NTU from "../img/NTU.png";
+import AISG from "../img/aisg.png";
+import MSF from "../img/msf.png";
+import NTU from "../img/ntu.png";
 import NUS from "../img/nus.png";
 import {Tab, Tabs} from "react-bootstrap";
 
