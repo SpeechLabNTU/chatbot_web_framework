@@ -133,7 +133,7 @@ export default function Audiofile(props) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
-  
+
   let tablecontent = []
 
   //---------------------------Page Change Handler-----------------------------------------
@@ -219,7 +219,6 @@ export default function Audiofile(props) {
     return (new Promise( (resolve, reject) => {
       let formData =  new FormData()
       formData.append('file', JSON.stringify(file))
-      formData.append('token', props.token)
 
       axios({
         url: `${props.backendUrl}/api/speechlabs`,
@@ -232,7 +231,7 @@ export default function Audiofile(props) {
       }).then( response => {
         var data = response.data
 
-        // handle response from Speech Labs 
+        // handle response from Speech Labs
         if (data.status_code === 200 && data.status === 0) {
           let index = tablecontent.findIndex( item => item.filename === file.originalname )
           let updatedRow = tablecontent[index]
@@ -341,7 +340,7 @@ export default function Audiofile(props) {
             inputProps={{ 'aria-label': 'number of audio files uploaded' }}
             disabled
             />
-            
+
             <Divider className={classes.divider} orientation="vertical" />
             <IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
             <input multiple accept=".mp3,.wav" type="file" id="myFile" name="file" style={{display: 'none'}} onChange={onChangehandler}/>
@@ -413,5 +412,3 @@ export default function Audiofile(props) {
     </div>
   );
 }
-
-

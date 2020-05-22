@@ -22,12 +22,13 @@ import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
+import Charts from "./Charts";
 import UploadBox from "./UploadBox";
 import AudioUpload from "./Audiofile";
 import Rajat from "./Rajat";
-import AISG from "../img/aisg.png";
-import MSF from "../img/msf.png";
-import NTU from "../img/ntu.png";
+import AISG from "../img/AISG.png";
+import MSF from "../img/MSF.png";
+import NTU from "../img/NTU.png";
 import NUS from "../img/nus.png";
 import {Tab, Tabs} from "react-bootstrap";
 
@@ -84,7 +85,6 @@ class Dashboard extends Component{
         trackScore:[],
 
         //Speech to Text
-        tokenActive:false,
         audioEnable: false,
         mode: 'record',
         backendUrl: 'http://localhost:3001',
@@ -106,7 +106,7 @@ class Dashboard extends Component{
 
     //Summarizer Method Binding
     this.summarizer = this.summarizer.bind(this);
-    
+
     //Similarity Check Method Bindings
     this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
@@ -141,8 +141,8 @@ class Dashboard extends Component{
         }
       }
     }
-    
-    return summary 
+
+    return summary
   }
 
   //User input handling
@@ -164,7 +164,7 @@ class Dashboard extends Component{
         }).catch(error=>{
           console.log("Error Contacting API server")
         });
-        
+
   }
 
   //checkSimilarity method prefix updates response comparison scores
@@ -204,7 +204,7 @@ class Dashboard extends Component{
       .catch(error=>{
           console.log("Error contacting Ask Jamie")
       });
-      
+
     })
   }
 
@@ -224,7 +224,7 @@ class Dashboard extends Component{
           console.log("Error contacting Dialogflow")
       });
     })
-    
+
   }
 
   dnnAPI(params){
@@ -244,7 +244,7 @@ class Dashboard extends Component{
           console.log("Error contacting Flask server")
       })
     })
-    
+
   }
 
   miclAPI(params){
@@ -295,7 +295,7 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
-    
+
     if(this.state.comparisonDNN && this.state.comparisonJamie){
       let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
       try{
@@ -341,12 +341,12 @@ class Dashboard extends Component{
     //Bind this to variable for use in promise
     let that = this;
 
-    //Promise of Chatbot Services 
+    //Promise of Chatbot Services
     await Promise.all([this.askJamieAPI(params),this.state.checkDialog && this.dialogflowAPI(params),
-      this.state.checkDNN && this.dnnAPI(params), this.state.checkMICL && this.miclAPI(params), 
+      this.state.checkDNN && this.dnnAPI(params), this.state.checkMICL && this.miclAPI(params),
       this.state.checkRajat && this.rajatAPI(params)]).then(function(values){
       console.log(values)
-      
+
       //On successful chatbot interaction, execute comparison for each chatbot response pair
       that.comparison()
     })
@@ -362,7 +362,10 @@ class Dashboard extends Component{
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
+
+    //Hacky method to trigger socket initiation when switch is pushed
     if(this.state.switch===false){
+      this.reset()
       this.initSockets()
     }
   }
@@ -389,7 +392,7 @@ class Dashboard extends Component{
     })
 
     socket.on('stream-data-google', data => {
-      
+
       if (data.results[0].isFinal) {
           this.setState(prevState => ({
           input: prevState.transcription + ' ' + data.results[0].alternatives[0].transcript,
@@ -405,7 +408,7 @@ class Dashboard extends Component{
     })
 
     socket.on('stream-data', data => {
-      
+
         if (data.result.final) {
             this.setState(prevState => ({
             input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
@@ -451,11 +454,11 @@ class Dashboard extends Component{
       status
     })
   }
-  
+
 
   render(){
     return (
-        
+
       <div>
         <CssBaseline />
 
@@ -475,13 +478,13 @@ class Dashboard extends Component{
               <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
                     <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
-              
+
             </Grid>
 
             <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
-            
+
             <Tab eventKey="dashboard" title="Multi-Chatbot Interface">
-            
+
             <br/><br/>
 
             <Grid container style={{paddingBottom:"40px"}} justify="center">
@@ -492,19 +495,19 @@ class Dashboard extends Component{
                   Mutli Chatbot Interface for Response Comparisons
                 </Typography>
                 <Typography color="textSecondary">
-                  
+
                 </Typography>
                 <Typography variant="body2" component="p">
-                  1. Selection of Chatbot Services 
+                  1. Selection of Chatbot Services
                   <br />
                   2. Choose between Text(Default) or Realtime Speech Input
                   <br />
                   3. Real-time Speech allows choice of Google or AISG Transcription Services
                 </Typography>
               </CardContent>
-            
+
             </Card>
-            
+
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
@@ -525,11 +528,11 @@ class Dashboard extends Component{
                 </Grid>
 
                 <Grid item xs={12} md={8} lg={6}>
-                  
-                  {this.state.switch && 
+
+                  {this.state.switch &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Text Input Disabled. 
+                      Text Input Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable text
@@ -550,20 +553,19 @@ class Dashboard extends Component{
                   <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
                   </FormControl>
                   }
-                  
-                
+
+
                 </Grid>
-                
+
                 <Grid item xs={12} md={4} lg={6}>
 
-                  {this.state.switch && 
+                  {this.state.switch &&
 
                   <Record
                   input= {this.state.input}
                   partialResult = {this.state.partialResult}
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
-                  token= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkNzBjYmE2ZjBkNmUzMDAxYzFlNjViOSIsImlhdCI6MTU4NzExNjExOCwiZXhwIjoxNTg5NzA4MTE4fQ.VuJ8nlMvftzu0FvDkKIDECsJz_CTQwsadRcWyETV__Y"
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
@@ -574,38 +576,44 @@ class Dashboard extends Component{
                   {this.state.switch ===false &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Speech to Text Disabled. 
+                      Speech to Text Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable speech
                     </Typography>
                   </Paper>
                   }
-                  
+
                 </Grid>
-                
+
                 <Grid item xs={12} md={12}>
                 <h5>Select Chatbot Services:</h5>
-                
+
                 <FormGroup row>
-                  
+
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
                     label="Dialogflow"
                   />
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
-                    label="MICL"
+                    label="Andrew"
                   />
 
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
                     label="Rajat"
-                  /> 
+                  />
 
                 </FormGroup>
 
                 </Grid>
+
+                {this.state.switch === true &&
+                <Grid item xs={12}>
+                  <h6>Transcription: {this.state.input}</h6>
+                </Grid>
+                }
 
                 <Grid item xs={12} md={4}>
                   <Jamie
@@ -626,8 +634,8 @@ class Dashboard extends Component{
                     scoreDNN = {this.state.scoreDNN}
                   />
                 </Grid>
-                } 
-                
+                }
+
                 {this.state.checkDialog &&
                 <Grid item xs={12} md={4}>
                   <Dialogflow
@@ -661,7 +669,7 @@ class Dashboard extends Component{
                 </Grid>
                 }
 
-                
+
             </Grid>
 
             </Tab>
@@ -671,30 +679,29 @@ class Dashboard extends Component{
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
 
               <Grid item xs={12} md={12}>
-                <UploadBox 
-                handleQueryInput={this.handleQueryInput} 
-                askJamieAPI={this.askJamieAPI} 
+                <UploadBox
+                handleQueryInput={this.handleQueryInput}
+                askJamieAPI={this.askJamieAPI}
                 dialogflowAPI={this.dialogflowAPI}
                 miclAPI={this.miclAPI}
                 rajatAPI={this.rajatAPI}/>
 
               </Grid>
             </Grid>
-              
+
             </Tab>
-            
+
             {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
             <Tab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
               <AudioUpload
-              token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlYWY2YzEwNjczNDQ4MDAyOWUzZWI1YSIsImlhdCI6MTU4ODU1NDc3MywiZXhwIjoxNTkxMTQ2NzczfQ.mbS3GGjRn2sCNjwPBUXneqpZN5_ze6GnHyUh56cn3hM"
               backendUrl={this.state.backendUrl}
               />
             </Tab>
 
             </Tabs>
             </Container>
-            
+
         </main>
       </div>
     );

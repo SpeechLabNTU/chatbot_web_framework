@@ -1,5 +1,6 @@
 const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
+const path = require('path')
 
 class AudioController {
 
@@ -19,12 +20,23 @@ class AudioController {
                 req.file.path = file.path.split('.')[0]+'_converted.wav'
 
                 res.json({
-                    path: req.file.path, 
+                    path: req.file.path,
                     name: req.file.filename,
                     originalname: req.file.originalname,
                 })
             })
     }
+
+    static async deleteFiles(req, res, next) {
+        fs.readdir('./storage', (err,files) => {
+          files.forEach( file => {
+            if (['.wav', '.mp3', '.mp4'].includes(path.extname(file))) {
+              fs.unlinkSync('./storage/'+file)
+            }
+          })
+        })
+        res.send('done')
+      }
 }
 
 module.exports = AudioController

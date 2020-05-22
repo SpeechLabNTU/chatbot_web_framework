@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
+const dotenv = require('dotenv');
+dotenv.config();
 
 /*Dialogflow Connection*/
 router.post("/api/dialogflow", (req,res)=> {
@@ -10,13 +12,12 @@ router.post("/api/dialogflow", (req,res)=> {
 });
 
 async function dialoflowConnection(query, res) {
-    
+
     const sessionId = uuid.v4();
-    const projectId = 'chatbotframework-qmylfo'
-  
+    const projectId = process.env.DIALOGFLOW_PROJECT_ID
     const sessionClient = new dialogflow.SessionsClient();
     const sessionPath = sessionClient.sessionPath(projectId, sessionId);
-  
+
     const request = {
       session: sessionPath,
       queryInput: {
@@ -26,7 +27,7 @@ async function dialoflowConnection(query, res) {
         },
       },
     };
-  
+
     await sessionClient.detectIntent(request).then(responses=>{
       console.log(responses)
       const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
@@ -34,7 +35,7 @@ async function dialoflowConnection(query, res) {
     }).catch(err=>{
       res.json({reply: "Unable to reach Dialogflow"})
     })
-    
+
 }
 
 module.exports = router

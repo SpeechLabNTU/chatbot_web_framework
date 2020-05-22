@@ -2,18 +2,20 @@ const WebSocketClient = require('websocket').client
 const io = require('../io')
 const spawn = require('child_process').spawn
 const fs = require('fs')
+const dotenv = require('dotenv');
+dotenv.config();
 
-const englishOnlineServerUrl = 'ws://40.90.170.182:8001/client/ws/speech' // this is address for english model, change it to your target model (malay, chinese,...)
-const speechLabsAPIUrl = 'http://40.90.170.182:8001/client/dynamic/recognize'  // address for AISpeechLab HTTP API access
+const englishOnlineServerUrl = process.env.SPEECH_API // this is address for english model, change it to your target model (malay, chinese,...)
+const speechLabsAPIUrl = process.env.SPEECH_HTTP_API  // address for AISpeechLab HTTP API access
 
 class MainController {
   static async streamByRecording (req, res, next) {
     try {
-      const token = req.body.token
-      
+      const token = process.env.AISG_TOKEN
+
       // in this example, client doesn't join any room. so in here we need to listen on all sockets connected to backend
       Object.keys(io.sockets.connected).forEach(key => {
-        
+
         io.sockets.connected[key].on('stream-input', data => {
           if (conn) {
             conn.sendBytes(data)
@@ -33,37 +35,37 @@ class MainController {
 
         let client = new WebSocketClient()
         let conn = null
-      
+
         client.on('connectFailed', (error) => {
           console.log('Connect Error: ' + error.toString())
           io.sockets.connected[key].emit('stream-close') // send close signal to client
         })
-  
+
         client.on('connect', (connection) => {
           conn = connection
           console.log('WebSocket Client Connected')
-  
+
           io.sockets.connected[key].emit('stream-ready') // tell frontend that socket is ready
-  
+
           connection.on('error', (error) => {
             console.log('Connection Error: ' + error.toString())
           })
           connection.on('close', () => {
             console.log('echo-protocol Connection Closed')
-  
+
             io.sockets.connected[key].emit('stream-close') // send close signal to client
-  
+
             client = null
           })
           connection.on('message', (message) => {
             const data = JSON.parse(message.utf8Data)
-  
+
             if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
               io.sockets.connected[key].emit(`stream-data`, data)
             }
           })
         })
-  
+
         // start connect to online server
         client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1?token=${token}`, null, null, null, null)
 
@@ -75,7 +77,6 @@ class MainController {
       return res.status(500).json({message: 'Error when streaming'})
     }
   }
-
 
   static async googlestreamByRecording (req, res, next) {
     try{
@@ -93,7 +94,7 @@ class MainController {
     }
 
     let recognizeStream = null
-        
+
     // Handle Web Socket Connection
     Object.keys(io.sockets.connected).forEach(key => {
 
@@ -109,7 +110,7 @@ class MainController {
 
         //Start Connection to GCLOUD
         io.sockets.connected[key].on('stream-input', data =>{
-          
+
           if(!recognizeStream){
             console.log('INIT GCLOUD SPEECH')
 
@@ -136,7 +137,7 @@ class MainController {
         })
 
     })
-    
+
 
     return res.json({
       success: true
@@ -147,7 +148,7 @@ class MainController {
         message: 'Error when streaming'
       })
     }
-    
+
   }
 
   static async streamByImport (req, res, next) {
@@ -198,7 +199,7 @@ class MainController {
 
   static async speechLabsHTTPRequest (req, res, next) {
     try {
-      const token = req.body.token
+      const token = process.env.AISG_TOKEN
 
       var file =  JSON.parse(req.body.file)
 
@@ -210,15 +211,15 @@ class MainController {
         res.json({
           status_code: data.status_code,
           status: data.status,
-          text: `${data.utterance}`, 
+          text: `${data.utterance}`,
           filename: file.originalname
         })
       })
 
       ls.stderr.on('data', (data) => {
-        console.log('stderr: ' + data)        
+        console.log('stderr: ' + data)
       })
-      
+
     } catch (e) {
       console.log(e)
       return res.status(500).json({
@@ -275,7 +276,7 @@ class MainController {
 
 //     let client = new WebSocketClient()
 //     let conn = null
-  
+
 //     client.on('connectFailed', (error) => {
 //       console.log('Connect Error: ' + error.toString())
 //       io.emit('stream-close') // send close signal to client
@@ -308,7 +309,7 @@ class MainController {
 
 //     // start connect to online server
 //     client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1?token=${token}`, null, null, null, null)
-    
+
 //     // in this example, client doesn't join any room. so in here we need to listen on all sockets connected to backend
 //     Object.keys(io.sockets.connected).forEach(key => {
 //       console.log(key)
@@ -329,7 +330,7 @@ class MainController {
 //         conn.close() // immediately close connection to online server
 //       })
 
-      
+
 
 //     })
 
