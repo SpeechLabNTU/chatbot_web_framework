@@ -607,7 +607,7 @@ class Dashboard extends Component{
                 </FormGroup>
 
                 </Grid>
-                
+
                 {this.state.switch === true &&
                 <Grid item xs={12}>
                   <h6>Transcription: {this.state.input}</h6>
@@ -693,7 +693,9 @@ class Dashboard extends Component{
             {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
             <Tab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
-              <AudioUpload/>
+              <AudioUpload
+              backendUrl={this.state.backendUrl}
+              />
             </Tab>
 
             </Tabs>
