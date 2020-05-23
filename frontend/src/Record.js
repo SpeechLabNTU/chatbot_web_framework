@@ -204,9 +204,7 @@ export default class Record extends Component {
 
       this.props.reset()
 
-      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`, {
-        token: this.props.token
-      })
+      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`)
 
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
@@ -248,7 +246,6 @@ export default class Record extends Component {
         }
         this.state.recorder.clear()
       }, 'audio/x-raw')
-      this.props.reset()
     } else {
       this.$emit('onError', 'Recorder undefined')
     }
