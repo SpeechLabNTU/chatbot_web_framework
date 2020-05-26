@@ -214,6 +214,7 @@ export default function CustomizedInputBase(props) {
         if (val === 'Ok'){
           setLoad(true)
           setSubmit(true)
+          setPage(0)
         }else{
           console.log(val)
         }
@@ -231,6 +232,7 @@ export default function CustomizedInputBase(props) {
         setscoreArray([])
         updateRows([]);
         setGraph(false)
+        setPage(0)
         
     };
     

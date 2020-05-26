@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const englishOnlineServerUrl = process.env.SPEECH_API // this is address for english model, change it to your target model (malay, chinese,...)
+const speechLabsAPIUrl = process.env.SPEECH_HTTP_API  // address for AISpeechLab HTTP API access
 
 class MainController {
   static async streamByRecording (req, res, next) {
@@ -195,6 +196,80 @@ class MainController {
       })
     }
   }
+
+  static async speechLabsHTTPRequest (req, res, next) {
+    try {
+      const token = process.env.AISG_TOKEN
+
+      var file =  JSON.parse(req.body.file)
+
+      const ls = spawn('python3', ['speech_labs_post_req.py', '-u', speechLabsAPIUrl, '-t', token, file.path])
+
+      ls.stdout.on('data', (data) => {
+        //console.log('stdout: ' + data)
+        data = JSON.parse(data)
+        res.json({
+          status_code: data.status_code,
+          status: data.status,
+          text: `${data.utterance}`,
+          filename: file.originalname
+        })
+      })
+
+      ls.stderr.on('data', (data) => {
+        console.log('stderr: ' + data)
+      })
+
+    } catch (e) {
+      console.log(e)
+      return res.status(500).json({
+        message: 'Error during POST request'
+      })
+    }
+  }
+
+  static async googleHTTPRequest (req, res, next) {
+    var file =  JSON.parse(req.body.file)
+    // Imports the Google Cloud client library
+    const fs = require('fs');
+    const speech = require('@google-cloud/speech');
+
+    // Creates a client
+    const client = new speech.SpeechClient();
+
+    /**
+     * TODO(developer): Uncomment the following lines before running the sample.
+     */
+    const filename = file.path;
+    const encoding = 'LINEAR16';
+    //const sampleRateHertz = 16000;
+    const languageCode = 'en-US';
+
+    const config = {
+      encoding: encoding,
+      //sampleRateHertz: sampleRateHertz,
+      languageCode: languageCode,
+    };
+    const audio = {
+      content: fs.readFileSync(filename).toString('base64'),
+    };
+
+    const request = {
+      config: config,
+      audio: audio,
+    };
+
+    // Detects speech in the audio file
+    const [response] = await client.recognize(request);
+    const transcription = response.results
+      .map(result => result.alternatives[0].transcript)
+      .join('\n');
+    // console.log('Transcription: ', transcription);
+
+    res.json({text: transcription})
+  }
+
+
 }
 
 module.exports = MainController

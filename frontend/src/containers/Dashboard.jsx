@@ -629,7 +629,9 @@ class Dashboard extends Component{
 
             <Tab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
-              <AudioUpload/>
+              <AudioUpload
+                backendUrl={this.state.backendUrl}
+              />
             </Tab>
 
             </Tabs>

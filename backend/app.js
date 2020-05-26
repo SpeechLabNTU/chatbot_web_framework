@@ -6,6 +6,7 @@ const askJamieRouter = require('./routes/askJamie');
 const rajatRouter = require('./routes/rajat.js');
 const STT = require('./controllers/MainController');
 const upload = require('./upload');
+const AC = require('./controllers/AudioController')
 
 const app = express();
 
@@ -23,8 +24,9 @@ app.post('/stream/google', STT.googlestreamByRecording)
 app.post('/stream/record', STT.streamByRecording)
 app.post('/stream/import', upload.single('file'), STT.streamByImport)
 
+app.post('/api/upload', upload.single('file'), AC.convertToWAV)
+app.post('/api/speechlabs', upload.none(), STT.speechLabsHTTPRequest)
+app.post('/api/google', upload.none(), STT.googleHTTPRequest)
+app.get('/api/deletestorage', AC.deleteFiles)
+
 module.exports = app
-
-
-
-

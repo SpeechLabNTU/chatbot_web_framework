@@ -26,7 +26,9 @@
     "request": "^2.88.0",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "socket.io": "^2.2.0",
-    "websocket": "^1.0.29"
+    "websocket": "^1.0.29",
+    "ffmpeg-static": "^2.3.0",
+    "fluent-ffmpeg": "^2.1.2"
   },
   "devDependencies": {
     "eslint": "^6.3.0",

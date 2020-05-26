@@ -16,6 +16,7 @@ services:
         - FLASK_ENDPOINT=${FLASK_ENDPOINT}
         - AISG_TOKEN=${AISG_TOKEN}
         - SPEECH_API=${SPEECH_API}
+        - SPEECH_HTTP_API=${SPEECH_HTTP_API}
     # expose: 
     #   - ${APP_SERVER_PORT}
     ports:
@@ -27,21 +28,21 @@ services:
   ##################
   # Flask Container
   ##################
-  # api:
-  #   build: ../comparison
-  #   # expose:
-  #   #   - ${FLASK_SERVER_PORT}
-  #   ports:
-  #     - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
-  #   environment:
-  #     PORT: ${CONTAINER_PORT}
-  #   # volumes:
-  #   #   - ../production:/api
-  #   # command: python flaskApp.py
-  #   # environment:
-  #   #   - FLASK_ENV=development
-  #   #   - FLASK_APP=flaskApp.py
-  #   #   - FLASK_DEBUG=1
+  api:
+    build: ../comparison
+    # expose:
+    #   - ${FLASK_SERVER_PORT}
+    ports:
+      - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
+    environment:
+      PORT: ${CONTAINER_PORT}
+    # volumes:
+    #   - ../production:/api
+    # command: python flaskApp.py
+    # environment:
+    #   - FLASK_ENV=development
+    #   - FLASK_APP=flaskApp.py
+    #   - FLASK_DEBUG=1
 
   ##################
   # Client Container
