@@ -215,6 +215,7 @@ export default function CustomizedInputBase(props) {
         if (val === 'Ok'){
           setLoad(true)
           setSubmit(true)
+          setPage(0)
         }else{
           console.log(val)
         }
@@ -232,6 +233,7 @@ export default function CustomizedInputBase(props) {
         setscoreArray([])
         updateRows([]);
         setGraph(false)
+        setPage(0)
         
     };
     
@@ -383,78 +385,82 @@ export default function CustomizedInputBase(props) {
     </Card>
     </Grid>
 
-    <FormControl component="fieldset">
-      <Paper component="form" className={classes.root}>
-        <InputBase
-          className={classes.input}
-          placeholder={fileName === "" ? "No Files Uploaded": fileName}
-          inputProps={{ 'aria-label': 'Accuracy Plot' }}
+      
+      <FormControl component="fieldset">
+        <Paper component="form" className={classes.root}>
+          <InputBase
+            className={classes.input}
+            placeholder={fileName === "" ? "No Files Uploaded": fileName}
+            inputProps={{ 'aria-label': 'Accuracy Plot' }}
+            disabled
+          />
+          
+          <Divider className={classes.divider} orientation="vertical" />
+
+          {load ===true 
+          ?<IconButton disabled component="label" color="primary" className={classes.iconButton} aria-label="directions">
+          <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
+            <DirectionsIcon />
+          </IconButton>
+          :<IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
+          <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
+            <DirectionsIcon />
+          </IconButton>
+          }
+          
+        </Paper>
+
+      </FormControl> 
+
+      {/* Chatbot Selection Field */}
+      <FormControl className={classes.modeSelect}>
+        
+        {load === false && upload === true
+        ?<Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={value}
+          onChange={handleChange}
+          >
+        
+          <MenuItem value="Dialogflow">Dialogflow</MenuItem>
+          <MenuItem value="Andrew">Andrew</MenuItem>
+          <MenuItem value="Rajat">Rajat</MenuItem>
+        </Select>
+        :<Select
           disabled
-        />
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={value}
+          onChange={handleChange}
+          >
         
-        <Divider className={classes.divider} orientation="vertical" />
-
-        {load ===true 
-        ?<IconButton disabled component="label" color="primary" className={classes.iconButton} aria-label="directions">
-        <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
-          <DirectionsIcon />
-        </IconButton>
-        :<IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
-        <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
-          <DirectionsIcon />
-        </IconButton>
+          <MenuItem value="Dialogflow">Dialogflow</MenuItem>
+          <MenuItem value="Andrew">Andrew</MenuItem>
+          <MenuItem value="Rajat">Rajat</MenuItem>
+        </Select>
         }
-        
-      </Paper>
-
-    </FormControl> 
-
-    {/* Chatbot Selection Field */}
-    <FormControl className={classes.modeSelect}>
+        <FormHelperText>Chat Model Selection</FormHelperText>
+      </FormControl>
       
-      {load === false && upload === true
-      ?<Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        value={value}
-        onChange={handleChange}
-        >
       
-        <MenuItem value="Dialogflow">Dialogflow</MenuItem>
-        <MenuItem value="Andrew">Andrew</MenuItem>
-        <MenuItem value="Rajat">Rajat</MenuItem>
-      </Select>
-      :<Select
-        disabled
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        value={value}
-        onChange={handleChange}
-        >
-      
-        <MenuItem value="Dialogflow">Dialogflow</MenuItem>
-        <MenuItem value="Andrew">Andrew</MenuItem>
-        <MenuItem value="Rajat">Rajat</MenuItem>
-      </Select>
-      }
-      <FormHelperText>Chat Model Selection</FormHelperText>
-    </FormControl>
-    
-    {/* Start Upload Button */}
-    <FormControl className={classes.modeSelect}>
-      {upload === true && option === true && submit === false
-      ?<Button onClick={handleAnalysis} variant="contained" color="primary">Start Analysis</Button>
-      :<Button disabled variant="contained" color="primary">Start Analysis</Button>
-      }
-    </FormControl>
-
-    {/* Graph Generation Button */}
-    <FormControl className={classes.modeSelect}>
-        {graph === false
-        ?<Button disabled variant="contained" color="primary">Generate Graph</Button>
-        :<Button onClick={handleClickOpen} variant="contained" color="primary">Generate Graph</Button>
+      {/* Start Upload Button */}
+      <FormControl className={classes.modeSelect}>
+        {upload === true && option === true && submit === false
+        ?<Button onClick={handleAnalysis} variant="contained" color="primary">Start Analysis</Button>
+        :<Button disabled variant="contained" color="primary">Start Analysis</Button>
         }
-    </FormControl>
+      </FormControl>
+
+      {/* Graph Generation Button */}
+      <FormControl className={classes.modeSelect}>
+          {graph === false
+          ?<Button disabled variant="contained" color="primary">Generate Graph</Button>
+          :<Button onClick={handleClickOpen} variant="contained" color="primary">Generate Graph</Button>
+          }
+      </FormControl>
+      
+
     
     {load === true &&
     <LinearProgress variant="determinate" value={completed} style={{marginBottom:"5px",width:"100%"}}/>

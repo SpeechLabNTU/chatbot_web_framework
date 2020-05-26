@@ -471,10 +471,10 @@ class Dashboard extends Component{
               <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                   <img src={NTU} style={{width: '160px', height:'70px'}} alt="NTU Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                     <img src={NUS} style={{width: '160px', height:'70px'}} alt="NUS Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                     <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
 
