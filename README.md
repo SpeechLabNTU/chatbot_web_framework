@@ -43,9 +43,9 @@ Following directories must be executed in seperate terminals to run application
 **Additional Requirement**<br/>
 Create a (.env) file in the Backend Directory with the following:<br/>
 
-DIALOGFLOW_PROJECT_ID= XXX
-AISG_TOKEN= XXX
-SPEECH_API= ws://40.90.170.182:8001/client/ws/speech
-SPEECH_HTTP_API= http://40.90.170.182:8001/client/dynamic/recognize 
+DIALOGFLOW_PROJECT_ID= XXX<br/>
+AISG_TOKEN= XXX<br/>
+SPEECH_API= ws://40.90.170.182:8001/client/ws/speech<br/>
+SPEECH_HTTP_API= http://40.90.170.182:8001/client/dynamic/recognize <br/>
 
 # Installation/setup instructions will be provided in each directory.
