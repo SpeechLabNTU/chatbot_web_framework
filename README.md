@@ -1,7 +1,7 @@
 # Final Year Project FAQ Chatbot Framework for Response Comparisons and Performance Analysis
 
 # Project Summary
-The objective of this project is to design a full stack web application to compare a variable set of FAQ Chatbot API endpoints. The chatbot platform includes a text input and a speech input for intuitiveness and to cater for real live scenarios(Speech feature for public deployment). For the context of this project, MSF's Baby Bonus is used as a test bed for FAQ question and answer matching. The current APIs used are as follows:<br/>
+The objective of this project is to design a full stack web application to compare a variable set of FAQ Chatbot API endpoints. The chatbot platform includes a text input and a speech input for intuitiveness and to cater for real live scenarios. For the context of this project, MSF's Baby Bonus is used as a test bed for FAQ question and answer matching. The current APIs used are as follows:<br/>
 
 # FAQ Matching APIs
 1. Govtech's askJamie (Benchmark for accuracy comparison)<br/>
@@ -28,7 +28,8 @@ Docker is used to set up 3 microservices React Frontend, Node Backend and Flask 
 **frontend directory**: Written on ReactJS, provides the view of the application<br/>
 **backend directory**: Written on NodeJS, provides API endpoints for frontend<br/>
 **comparison directory**: Written on Flask, provides API service for response comparisons<br/>
-**dialogflowfunctions**: Written on NodeJS, used to upload intentions ot dialogflow for NLP training<br/>
+**dialogflowfunctions**: Written on NodeJS, used to upload intentions to dialogflow for NLP training<br/>
+**flaskservice directory**: Written on Flask, provides Text Classification Model Training and response comparisons<br/>
 
 # Master Branch
 
@@ -38,5 +39,13 @@ Following directories must be executed in seperate terminals to run application
 1. Frontend Directory<br/>
 2. Backend Directory<br/>
 3. flaskservice Directory(Deep Neural Network + Similarity) or comparison Directory(Similarity only)<br/>
+
+**Additional Requirement**<br/>
+Create a (.env) file in the Backend Directory with the following:<br/>
+
+DIALOGFLOW_PROJECT_ID= XXX
+AISG_TOKEN= XXX
+SPEECH_API= ws://40.90.170.182:8001/client/ws/speech
+SPEECH_HTTP_API= http://40.90.170.182:8001/client/dynamic/recognize 
 
 # Installation/setup instructions will be provided in each directory.
