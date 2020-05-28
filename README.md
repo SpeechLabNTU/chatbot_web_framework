@@ -8,6 +8,10 @@ Each image build folder will contain its respective Dockerfiles configured for p
 # Requirements
 To build/configure a production image, Docker client must be present on the local system to be able to spawn a docker image. Download Docker client here https://www.docker.com/
 
+# Additional Requirements: Backend directory requires the following before building
+1. GLOUD SDK installation file (Create folder named 'gcloud' to store installation file)
+2. Dialogflow Service account Private Key (Create folder named 'key' to store private key file)
+
 # Docker basic commands
 **docker image ls**: List available/downloaded Docker images<br/>
 **docker container ls -a**: List containers(runnable images)<br/>
@@ -29,3 +33,4 @@ To build/configure a production image, Docker client must be present on the loca
 # Pushing production build to dockerhub for sharing
 1. **docker tag [build image ID] dockerid/dockerhubrepo:tag**: Tags image for naming in Dockerhub
 2. **docker push dockerid/dockerhubrepo:tag**: Push image to Dockerhub
+
