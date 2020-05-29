@@ -1,7 +1,7 @@
 # Final Year Project FAQ Chatbot Framework for Response Comparisons and Performance Analysis
 
 # Project Summary
-The objective of this project is to design a full stack web application to compare a variable set of FAQ Chatbot API endpoints. The chatbot platform includes a text input and a speech input for intuitiveness and to cater for real live scenarios. For the context of this project, MSF's Baby Bonus is used as a test bed for FAQ question and answer matching. The current APIs used are as follows:<br/>
+The objective of this project is to design a full stack web application to compare a variable set of FAQ Chatbot API endpoints. The chatbot platform includes a text input and a speech input for intuitiveness and to cater for real live scenarios. For the context of this project, MSF's Baby Bonus is used as a test bed for FAQ question and answer matching.<br/>
 
 # FAQ Matching APIs
 1. Govtech's askJamie (Benchmark for accuracy comparison)<br/>
