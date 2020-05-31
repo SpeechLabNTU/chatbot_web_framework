@@ -1,6 +1,16 @@
 version: '3'
 
 services:
+  ##################
+  # Dialogflow Container
+  ##################
+  dialogflowserver:
+    image: berrywonder/chatbotplatform:dialogflowserver
+    environment:
+        - KEY=${KEY} 
+        - PROJECTID=${PROJECTID}
+    ports:
+      - ${DIALOGFLOW_SERVER_PORT}:${DIALOGFLOW_SERVER_PORT} 
 
   ##################
   # Node Container

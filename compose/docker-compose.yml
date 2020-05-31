@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+  ##################
+  # Dialogflow Container
+  ##################
+  dialogflowserver:
+    build:
+      context: ../dialogflowenv
+      args:
+        - KEY=${KEY} 
+        - PROJECTID=${PROJECTID}
+    ports:
+      - ${DIALOGFLOW_SERVER_PORT}:${DIALOGFLOW_SERVER_PORT} 
 
   ##################
   # Node Container
