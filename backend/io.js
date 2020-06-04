@@ -13,6 +13,10 @@ io.on('connection', (socket) => {
     socket.join(socket.id)
     // socket.emit('room',socket.id)
   })
+
+  socket.on('disconnect', () => {
+    console.log('user '+ socket.id +' disconnected')
+  })
 })
 
 module.exports = io

@@ -22,15 +22,22 @@ class MainController {
           }
         })
 
-        io.sockets.connected[key].on('stream-stop', data => {
+        io.sockets.connected[key].once('stream-stop', data => {
           if (conn) {
             conn.sendBytes(data) // send remained data in buffer before closing
             conn.sendUTF('EOS') // after this conn.close() will be called because server will stop the connection
+            conn.close() // close conn immediately instead of waiting for server to close it
           }
+          // cleanup eventListeners on exit
+          io.sockets.connected[key].removeAllListeners(['stream-input'])
+          io.sockets.connected[key].removeAllListeners(['stream-cancel'])
         })
 
-        io.sockets.connected[key].on('stream-cancel', () => {
+        io.sockets.connected[key].once('stream-cancel', () => {
           conn.close() // immediately close connection to online server
+          // cleanup eventListeners on exit
+          io.sockets.connected[key].removeAllListeners(['stream-input'])
+          io.sockets.connected[key].removeAllListeners(['stream-stop'])
         })
 
         let client = new WebSocketClient()
@@ -50,16 +57,15 @@ class MainController {
           connection.on('error', (error) => {
             console.log('Connection Error: ' + error.toString())
           })
+
           connection.on('close', () => {
             console.log('echo-protocol Connection Closed')
-
             io.sockets.connected[key].emit('stream-close') // send close signal to client
-
             client = null
           })
+
           connection.on('message', (message) => {
             const data = JSON.parse(message.utf8Data)
-
             if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
               io.sockets.connected[key].emit(`stream-data`, data)
             }
@@ -97,7 +103,6 @@ class MainController {
 
     // Handle Web Socket Connection
     Object.keys(io.sockets.connected).forEach(key => {
-
         console.log('Connection Initiated')
         io.emit('stream-ready') // tell frontend that socket is ready
 
@@ -106,7 +111,9 @@ class MainController {
           console.log('Connection Error: ' + error.toString())
         })
 
-        const googleclient = new speech.SpeechClient();
+        const keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}` // use babybonus projectid for STT
+
+        const googleclient = new speech.SpeechClient({'keyFilename':keyFiledir});
 
         //Start Connection to GCLOUD
         io.sockets.connected[key].on('stream-input', data =>{
@@ -122,22 +129,21 @@ class MainController {
                 // io.emit('stream-data-google', data.results[0].alternatives[0].transcript)
               })
           }
-
-          recognizeStream.write(new Uint8Array(data))
-
+          recognizeStream.write(data)
         })
 
         //Signal on socket close
-        io.sockets.connected[key].on('stream-stop', () => {
+        io.sockets.connected[key].once('stream-stop', () => {
           console.log('echo-protocol Connection Closed')
           recognizeStream.destroy()
           recognizeStream = null
           io.emit('stream-close') // send close signal to client
 
+          // cleanup eventListeners on exit
+          io.sockets.connected[key].removeAllListeners(['error'])
+          io.sockets.connected[key].removeAllListeners(['stream-input'])
         })
-
     })
-
 
     return res.json({
       success: true
@@ -234,8 +240,11 @@ class MainController {
     const fs = require('fs');
     const speech = require('@google-cloud/speech');
 
+    // use babybonus projectid for STT
+    const keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}`
+
     // Creates a client
-    const client = new speech.SpeechClient();
+    const client = new speech.SpeechClient({'keyFilename':keyFiledir});
 
     /**
      * TODO(developer): Uncomment the following lines before running the sample.

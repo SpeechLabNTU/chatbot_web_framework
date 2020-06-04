@@ -41,6 +41,10 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 // import Chartplotly from "./Chartplotly";
 import Charts from "./Charts";
 
+import AppBar from '@material-ui/core/AppBar';
+import TabMatUI from '@material-ui/core/Tab';
+import TabsMatUI from '@material-ui/core/Tabs';
+
 const useStyles = makeStyles(theme => ({
   pagination: {
     flexShrink: 0,
@@ -68,12 +72,10 @@ const useStyles = makeStyles(theme => ({
     // minWidth: 1200
   },
   modeSelect: {
-    paddingLeft: '50px',
-    paddingBottom: '30px',
     minWidth: 120,
   },
   tableContainer: {
-    paddingTop: '30px',
+    paddingTop: '10px',
   }
 
 }));
@@ -157,11 +159,16 @@ export default function CustomizedInputBase(props) {
     const [upload, setUpload] = React.useState(false);
     const [option, setOption] = React.useState(false);
 
+    const [topic, setTopic] = React.useState('babybonus')
+    const [availableMICL, setAvailableMICL] = React.useState(true)
+    const [availableDialog, setAvailableDialog] = React.useState(true)
+    const [availableRajat, setAvailableRajat] = React.useState(true)
+
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
-    
+
     let tablecontent = []
     let scorecontent = []
-    
+
     //---------------------------Generate Report Pop Up Handler-------------------------------
     const handleClickOpen = () =>{
       setOpen(true);
@@ -191,7 +198,7 @@ export default function CustomizedInputBase(props) {
           //Clear Array content for state re-population
           tablecontent = []
           scorecontent = []
-          
+
           //Clear Chart and Table State
           setscoreArray([])
           updateRows([]);
@@ -203,9 +210,9 @@ export default function CustomizedInputBase(props) {
         }catch(e){
           reject(e)
         }
-      
+
       });
-          
+
     }
 
     function handleAnalysis(){
@@ -228,15 +235,15 @@ export default function CustomizedInputBase(props) {
     const handleChange = event => {
         setValue(event.target.value);
         setOption(true)
-        
+
         //Clear Chart and Table State
         setscoreArray([])
         updateRows([]);
         setGraph(false)
         setPage(0)
-        
+
     };
-    
+
     const classes = useStyles();
 
     //------------------------------Response Summarizer---------------------------------------
@@ -255,8 +262,8 @@ export default function CustomizedInputBase(props) {
           }
         }
       }
-      
-      return summary 
+
+      return summary
     }
 
     //---------------------------------Similarity Comparison---------------------------------------
@@ -270,9 +277,9 @@ export default function CustomizedInputBase(props) {
           }).catch(error=>{
             reject(error)
           });
-          
+
       });
-          
+
     }
 
     //----------------------Recursive function to return results one at a time--------------------
@@ -285,22 +292,26 @@ export default function CustomizedInputBase(props) {
         setLoad(false)
         setCompleted(0)
         setSubmit(false)
-        return 
+        return
       }else{
         let query = textArray[i]
-        let ques = {question: query}
+        let params = {
+          question: query,
+          topic: topic,
+        }
         let service = ""
 
         if(value === 'Dialogflow'){
-            service = props.dialogflowAPI(ques)
+            service = props.dialogflowAPI(params)
         }else if (value === 'Andrew'){
-            service = props.miclAPI(ques)
+            service = props.miclAPI(params)
         }else if (value === 'Rajat'){
-            service = props.rajatAPI(ques)
+            service = props.rajatAPI(params)
         }
 
-        await Promise.all([props.askJamieAPI(ques),service]).then(function(val){
-            
+        await Promise.all(
+          [props.askJamieAPI(params), service]
+        ).then( val => {
             let req = {responses:[summarizer(val[0]),summarizer(val[1])]}
             let prob = ResponseComparison(req)
             prob.then((probval)=>{
@@ -308,7 +319,7 @@ export default function CustomizedInputBase(props) {
               tablecontent.push(createData(query, summarizer(val[0]), summarizer(val[1]), probval))
               updateRows(tablecontent)
             })
-            
+
         }).then(()=>{
           i = i + 1
           handleSingleInput(textArray, i, textArrayLength)
@@ -320,7 +331,7 @@ export default function CustomizedInputBase(props) {
 
     //----------------------Read file contents for computing response comparison----------------------
     const handleFileRead = (e)=>{
-      
+
       const content = e.target.result;
       let textArray = content.split('\n');
       setText(textArray)
@@ -348,13 +359,39 @@ export default function CustomizedInputBase(props) {
         setFilename("No file detected, please upload a line seperated text file")
         setUpload(false)
       }
-        
+
     };
 
     //----------------------------Creates data contents for table listing------------------------------
     function createData(input, jamie, dialogflow, score){
       return {input, jamie, dialogflow, score}
     }
+
+    //Handle question topic change
+    function handleTopicChange(e, value) {
+      setTopic(value)
+      let clear = clearContent()
+      clear.then((val)=>{
+        if (val === 'Ok'){
+          setPage(0)
+        }
+      })
+      switch (value) {
+        case 'babybonus':
+          setAvailableDialog(true)
+          setAvailableMICL(true)
+          setAvailableRajat(true)
+          break
+        case 'covid19':
+          setAvailableDialog(true)
+          setAvailableMICL(false)
+          setAvailableRajat(true)
+          break
+        default:
+          break
+      }
+    }
+
 
   return (
     <div>
@@ -367,7 +404,7 @@ export default function CustomizedInputBase(props) {
             Performance Analysis of Chatbot Service
           </Typography>
           <Typography color="textSecondary">
-            
+
           </Typography>
           <Typography variant="body2" component="p">
             1. Upload Text File of Line-Seperated Queries
@@ -381,87 +418,108 @@ export default function CustomizedInputBase(props) {
             5. Graphical Report available after all responses are processed
           </Typography>
         </CardContent>
-            
+
     </Card>
     </Grid>
 
-      
-      <FormControl component="fieldset">
-        <Paper component="form" className={classes.root}>
-          <InputBase
+    <Grid container spacing={3}>
+      <Grid item container spacing={4} >
+        {/* File uploading field */}
+        <Grid item>
+        <FormControl component="fieldset">
+          <Paper component="form" className={classes.root}>
+            <InputBase
             className={classes.input}
             placeholder={fileName === "" ? "No Files Uploaded": fileName}
             inputProps={{ 'aria-label': 'Accuracy Plot' }}
             disabled
-          />
-          
-          <Divider className={classes.divider} orientation="vertical" />
+            />
 
-          {load ===true 
-          ?<IconButton disabled component="label" color="primary" className={classes.iconButton} aria-label="directions">
-          <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
-            <DirectionsIcon />
-          </IconButton>
-          :<IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
-          <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
-            <DirectionsIcon />
-          </IconButton>
+            <Divider className={classes.divider} orientation="vertical" />
+
+            {load ===true
+            ?<IconButton disabled component="label" color="primary" className={classes.iconButton} aria-label="directions">
+            <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
+              <DirectionsIcon />
+            </IconButton>
+            :<IconButton component="label" color="primary" className={classes.iconButton} aria-label="directions">
+            <input type="file" id="myFile" name="filename" style={{display: 'none'}} onChange={onChangehandler}/>
+              <DirectionsIcon />
+            </IconButton>
+            }
+          </Paper>
+        </FormControl>
+        </Grid>
+
+        <Grid item >
+        {/* Chatbot Selection Field */}
+        <FormControl className={classes.modeSelect}>
+          <Select
+          disabled={!upload || load}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={value}
+          onChange={handleChange}
+          >
+            {availableDialog && <MenuItem value="Dialogflow">Dialogflow</MenuItem>}
+            {availableMICL && <MenuItem value="Andrew">Andrew</MenuItem>}
+            {availableRajat && <MenuItem value="Rajat">Rajat</MenuItem>}
+          </Select>
+
+          <FormHelperText>Chat Model Selection</FormHelperText>
+        </FormControl>
+        </Grid>
+
+        <Grid item >
+        {/* Start Upload Button */}
+        <FormControl className={classes.modeSelect}>
+          {upload === true && option === true && submit === false
+          ?<Button onClick={handleAnalysis} variant="contained" color="primary">Start Analysis</Button>
+          :<Button disabled variant="contained" color="primary">Start Analysis</Button>
           }
-          
+        </FormControl>
+        </Grid>
+
+        <Grid item >
+        {/* Graph Generation Button */}
+        <FormControl className={classes.modeSelect}>
+            {graph === false
+            ?<Button disabled variant="contained" color="primary">Generate Graph</Button>
+            :<Button onClick={handleClickOpen} variant="contained" color="primary">Generate Graph</Button>
+            }
+        </FormControl>
+        </Grid>
+      </Grid>
+
+      {/* Question Topic Selection */}
+      <Grid item container spacing={2} alignItems='center'>
+        <Grid item><h5>Question Topic:</h5></Grid>
+
+        <Grid item>
+        <Paper elevation={0} variant='outlined'>
+          <AppBar position="static" color="default">
+            <TabsMatUI
+              value={topic}
+              onChange={handleTopicChange}
+              indicatorColor="primary"
+              textColor="primary"
+              variant="scrollable"
+              scrollButtons="auto"
+            >
+              <TabMatUI label="Baby Bonus" value="babybonus" />
+              <TabMatUI label="Covid-19" value="covid19"/>
+            </TabsMatUI>
+          </AppBar>
         </Paper>
+        </Grid>
 
-      </FormControl> 
+      </Grid>
 
-      {/* Chatbot Selection Field */}
-      <FormControl className={classes.modeSelect}>
-        
-        {load === false && upload === true
-        ?<Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={value}
-          onChange={handleChange}
-          >
-        
-          <MenuItem value="Dialogflow">Dialogflow</MenuItem>
-          <MenuItem value="Andrew">Andrew</MenuItem>
-          <MenuItem value="Rajat">Rajat</MenuItem>
-        </Select>
-        :<Select
-          disabled
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={value}
-          onChange={handleChange}
-          >
-        
-          <MenuItem value="Dialogflow">Dialogflow</MenuItem>
-          <MenuItem value="Andrew">Andrew</MenuItem>
-          <MenuItem value="Rajat">Rajat</MenuItem>
-        </Select>
-        }
-        <FormHelperText>Chat Model Selection</FormHelperText>
-      </FormControl>
-      
-      
-      {/* Start Upload Button */}
-      <FormControl className={classes.modeSelect}>
-        {upload === true && option === true && submit === false
-        ?<Button onClick={handleAnalysis} variant="contained" color="primary">Start Analysis</Button>
-        :<Button disabled variant="contained" color="primary">Start Analysis</Button>
-        }
-      </FormControl>
+      <Grid item>
 
-      {/* Graph Generation Button */}
-      <FormControl className={classes.modeSelect}>
-          {graph === false
-          ?<Button disabled variant="contained" color="primary">Generate Graph</Button>
-          :<Button onClick={handleClickOpen} variant="contained" color="primary">Generate Graph</Button>
-          }
-      </FormControl>
-      
+      </Grid>
+    </Grid>
 
-    
     {load === true &&
     <LinearProgress variant="determinate" value={completed} style={{marginBottom:"5px",width:"100%"}}/>
     }
@@ -469,85 +527,84 @@ export default function CustomizedInputBase(props) {
     {/* Table for response display and page management */}
     <FormControl className={classes.tableContainer}>
       <Paper variant="outlined">
-          <Table className={classes.table} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Input</TableCell>
-                <TableCell>Ask Jamie Response</TableCell>
-                {value === ''
-                ?<TableCell>Chatbot Response</TableCell>
-                :<TableCell>{value} Response</TableCell>
-                }
-                <TableCell align="right">Similarity Score</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        <Table className={classes.table} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Input</TableCell>
+              <TableCell>Ask Jamie Response</TableCell>
+              {value === ''
+              ?<TableCell>Chatbot Response</TableCell>
+              :<TableCell>{value} Response</TableCell>
+              }
+              <TableCell align="right">Similarity Score</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
 
-              {(rowsPerPage > 0
-                ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                :rows
-              ).map((row) => (
-                <TableRow key={row.input}>
-                  <TableCell component="th" scope="row">
-                    {row.input}
-                  </TableCell>
-                  <TableCell>{row.jamie}</TableCell>
-                  <TableCell>{row.dialogflow}</TableCell>
-                  <TableCell align="right">{row.score}</TableCell>
-                </TableRow>
-              ))}
+          {(rowsPerPage > 0
+            ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            :rows
+          ).map((row) => (
+            <TableRow key={row.input}>
+              <TableCell component="th" scope="row">
+                {row.input}
+              </TableCell>
+              <TableCell>{row.jamie}</TableCell>
+              <TableCell>{row.dialogflow}</TableCell>
+              <TableCell align="right">{row.score}</TableCell>
+            </TableRow>
+          ))}
 
-              {emptyRows > 0 && (
-                <TableRow style={{height: 53 * emptyRows}}>
-                  <TableCell colSpan={6}/>
-                </TableRow>
-              )}
+          {emptyRows > 0 && (
+            <TableRow style={{height: 53 * emptyRows}}>
+              <TableCell colSpan={6}/>
+            </TableRow>
+          )}
 
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                  colSpan={3}
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  SelectProps={{
-                    inputProps: { 'aria-label': 'rows per page' },
-                    native: true,
-                  }}
-                  onChangePage={handleChangePage}
-                  onChangeRowsPerPage={handleChangeRowsPerPage}
-                  ActionsComponent={TablePaginationActions}
-                />
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </Paper>
-        
-      </FormControl>
-      
-      {/* Popup dialog */}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{`Performance Analysis of ${value}`}</DialogTitle>
-        <DialogContent style={{minWidth:600}}>
-          <Charts responseScoreArray={scoreArray} chatbot={value}/>
-          {/* <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending anonymous location data to
-            Google, even when no apps are running.
-          </DialogContentText> */}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                colSpan={3}
+                count={rows.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                SelectProps={{
+                  inputProps: { 'aria-label': 'rows per page' },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </Paper>
+    </FormControl>
+
+    {/* Popup dialog */}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">{`Performance Analysis of ${value}`}</DialogTitle>
+      <DialogContent style={{minWidth:600}}>
+        <Charts responseScoreArray={scoreArray} chatbot={value}/>
+        {/* <DialogContentText id="alert-dialog-description">
+          Let Google help apps determine location. This means sending anonymous location data to
+          Google, even when no apps are running.
+        </DialogContentText> */}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
 
 
   </div>
