@@ -8,14 +8,29 @@ dotenv.config();
 /*Dialogflow Connection*/
 router.post("/api/dialogflow", (req,res)=> {
     query = req.body.question
-    dialoflowConnection(query,res)
+    topic = req.body.topic
+    dialoflowConnection(query, topic, res)
 });
 
-async function dialoflowConnection(query, res) {
+async function dialoflowConnection(query, topic, res) {
+
+    var projectId = ""
+    var keyFiledir = ""
+    switch(topic) {
+      case 'babybonus':
+        projectId = process.env.DIALOGFLOW_PROJECT_ID_BABYBONUS;
+        keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}`
+        break
+      case 'covid19':
+        projectId = process.env.DIALOGFLOW_PROJECT_ID_COVID19;
+        keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_COVID19}`
+        break
+      default:
+        break
+    }
 
     const sessionId = uuid.v4();
-    const projectId = process.env.DIALOGFLOW_PROJECT_ID
-    const sessionClient = new dialogflow.SessionsClient();
+    const sessionClient = new dialogflow.SessionsClient({'keyFilename':keyFiledir});
     const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
     const request = {
@@ -29,7 +44,7 @@ async function dialoflowConnection(query, res) {
     };
 
     await sessionClient.detectIntent(request).then(responses=>{
-      console.log(responses)
+      // console.log(responses)
       const result = responses[0].queryResult.fulfillmentMessages[0].text.text[0];
       res.json({reply: result})
     }).catch(err=>{
