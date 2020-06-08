@@ -443,6 +443,7 @@ class Dashboard extends Component{
 
     socket.on('connect', () => {
       console.log('socket connected!')
+      this.setState({socket})
     })
 
     socket.on('stream-ready', () => {
@@ -456,8 +457,7 @@ class Dashboard extends Component{
 
       if (data.results[0].isFinal) {
         this.setState(prevState => ({
-          input: prevState.input + data.results[0].alternatives[0].transcript,
-          transcription: data.results[0].alternatives[0].transcript,
+          transcription: prevState.transcription + data.results[0].alternatives[0].transcript,
           partialResult: ''
         }))
           this.handleClick()
@@ -472,8 +472,7 @@ class Dashboard extends Component{
     socket.on('stream-data', data => {
       if (data.result.final) {
         this.setState(prevState => ({
-          input: prevState.input + data.result.hypotheses[0].transcript,
-          transcription: data.result.hypotheses[0].transcript,
+          transcription: prevState.transcription.slice(0,-1) + ' ' + data.result.hypotheses[0].transcript,
           partialResult: ''
         }))
         this.handleClick()
@@ -487,13 +486,13 @@ class Dashboard extends Component{
     })
 
     socket.on('stream-close', () => {
-      this.setState({
+      this.setState(prevState => ({
         status: 0,
-        isBusy: false
-      })
-    })
-    this.setState({
-      socket
+        isBusy: false,
+        input: prevState.transcription,
+        transcription: "",
+        partialResult: ""
+      }))
     })
   }
 

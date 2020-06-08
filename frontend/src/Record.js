@@ -219,7 +219,9 @@ export default class Record extends Component {
 
       this.props.reset()
 
-      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`)
+      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`, {
+        socketid: this.props.socket.id,
+      })
 
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
@@ -324,6 +326,7 @@ export default class Record extends Component {
       }}
       variant="filled"
       name="input"
+      multiline
       />
 
       {this.state.start &&
