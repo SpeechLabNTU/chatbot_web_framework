@@ -9,22 +9,27 @@ import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import Radio from '@material-ui/core/Radio'
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid'
+
 
 const textField={width:'auto'};
-const buttonStyle={width:'350px'}
+const buttonStyle={width:'50%'}
 
 export default class Record extends Component {
   constructor (props) {
     super(props)
     this.state = {
+      browserSupported: true,
       recorder: {},
       recordInterval: 0,
       isRecording: false,
-      stopRecording: true,
-      service: 'record',
+      service: '',
       start: false
     }
     this.handleChange = this.handleChange.bind(this);
+    this.sendTranscription = this.sendTranscription.bind(this);
   }
 
   async componentDidMount () {
@@ -38,24 +43,33 @@ export default class Record extends Component {
   componentWillUnmount() {
     // cancel recorder from browser
     // window.cancelAnimationFrame(this.drawVisual)
-    const track = this.mediaStream.getTracks()[0]
-    track.stop()
-
-    this.cancel() // cancel stream
+    if (this.state.browserSupported){
+      const track = this.mediaStream.getTracks()[0]
+      track.stop()
+      // Closes the audio context, releasing any system audio resources that it uses.
+      this.audioCtx.close()
+      this.cancel() // cancel stream
+    }
   }
-  
+
 
   async recorderWithoutCanvas () {
-    
-    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    let source
 
     if (!navigator.mediaDevices) {
       console.log('browser doesn\'t support')
-    }
+      this.setState({browserSupported:false})
+      this.props.setState({
+        transcriptionAISG:"Media input is not support on this browser",
+        transcriptionGoogle:"Media input is not support on this browser",
+      })
 
-    if (navigator.mediaDevices.getUserMedia) {
+    } else if (navigator.mediaDevices.getUserMedia) {
+
       console.log('getUserMedia supported.')
+
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+      let source
+
       const constraints = { audio: true }
       try {
         this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
@@ -73,6 +87,11 @@ export default class Record extends Component {
       } catch (e) {
         console.log('The following error occured: ' + e)
         // this.$emit('onError', e.toString())
+        this.setState({browserSupported:false})
+        this.props.setState({
+          transcriptionAISG:"Media input is not possible",
+          transcriptionGoogle:"Media input is not possible",
+        })
       }
     } else {
       // this.$emit('onError', 'getUserMedia not supported on your browser!')
@@ -196,7 +215,7 @@ export default class Record extends Component {
   // -------IMPORTANT------
   // Function below
   start = async () => {
-    this.setState({start:true})
+
     try {
       if (this.props.isBusy) {
         return
@@ -204,7 +223,23 @@ export default class Record extends Component {
 
       this.props.reset()
 
-      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`)
+      await axios.post(`${this.props.backendUrl}/stream/google`, {
+        socketid: this.props.socket.id,
+      })
+      await axios.post(`${this.props.backendUrl}/stream/aisg`, {
+        socketid: this.props.socket.id,
+      })
+
+      // Start recording
+      this.setState({start:true})
+      this.state.recorder.record()
+      this.props.setState({
+        isBusy: true,
+      })
+      this.setState({
+        service: "",
+        isRecording: true,
+      })
 
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
@@ -215,15 +250,26 @@ export default class Record extends Component {
         }, 'audio/x-raw')
       }, 250)
 
+      // set a limit on how long user can speak for
+      const maxTimeout = setTimeout(() => {
+        if (this.state.start) {
+          this.stop()
+          setTimeout(() => {
+            this.props.setState({
+              partialResultAISG: "Stopped: 2 minute maximum stream duration reached",
+              partialResultGoogle: "Stopped: 2 minute maximum stream duration reached",
+            })
+          },1000)
+          // delay in set text to allow buffer for last message from backend
+        }
+      }, 120000)
+      // 2 min maximum as google api will raise error if streaming for too long
+
       this.setState({
-        recordInterval
+        recordInterval,
+        maxTimeout
       })
 
-      // Start recording
-      this.state.recorder.record()
-      this.props.setBusy()
-      this.setState({ isRecording: true })
-      this.setState({ stopRecording: false })
     } catch (err) {
       console.log(err)
     }
@@ -233,12 +279,15 @@ export default class Record extends Component {
   // Function below
   stop = () => {
     this.setState({start:false})
+
     clearInterval(this.state.recordInterval)
+    clearTimeout(this.state.maxTimeout)
     // Stop recording
     if (this.state.recorder) {
       this.state.recorder.stop()
-      this.setState({ isRecording: false })
-      this.setState({ stopRecording: true})
+      this.setState({
+        isRecording: false,
+      })
       // Push the remaining audio to the server
       this.state.recorder.export16kMono((blob) => {
         if (this.props.isSocketReady) {
@@ -250,12 +299,14 @@ export default class Record extends Component {
       this.$emit('onError', 'Recorder undefined')
     }
   }
-  
+
   // -------IMPORTANT------
   // Function below
   cancel = () => {
     // Stop the regular sending of audio (if present)
     clearInterval(this.state.recordInterval)
+    clearTimeout(this.state.maxTimeout)
+
     if (this.state.recorder) {
       this.state.recorder.stop()
       this.state.recorder.clear()
@@ -268,69 +319,108 @@ export default class Record extends Component {
   handleChange(e){
     let option = e.target.value
     this.setState({service: option})
-    
+
+  }
+
+  sendTranscription(){
+    if (this.state.service === "aisg"){
+      this.props.setState({
+        input: this.props.transcriptionAISG,
+      })
+    }
+    else if (this.state.service === "google"){
+      this.props.setState({
+        input: this.props.transcriptionGoogle,
+      })
+    }
+
+    // set timeout so that handleClick will use updated input rather than prevState input
+    setTimeout( () => {
+      this.props.handleClick()
+    }, 100)
   }
 
   render () {
     return (
-      <div>
-      <FormControl fullWidth variant="outlined">
+      <Grid item container spacing={2} direction='column'>
 
-      <TextField
+        <Grid item>
+          <FormControl fullWidth variant="outlined">
+          <TextField
           style={textField}
-          id="filled-read-only-input"
-          label="Read"
-          value={this.props.input + ' ' + this.props.partialResult}
+          id="aisgResults"
+          label="AISG Speech Labs"
+          value={this.props.transcriptionAISG + ' ' + this.props.partialResultAISG}
           InputProps={{
             readOnly: true,
           }}
           variant="filled"
           name="input"
-      />
+          multiline
+          />
 
-      <ButtonGroup variant="contained" color="primary">
-        <Button style={buttonStyle} onClick={this.start} disabled={this.state.isRecording}>Start</Button>
-        <Button style={buttonStyle} onClick={this.stop} disabled={this.state.stopRecording}>Stop</Button>
-      </ButtonGroup>
+          <TextField
+          style={textField}
+          id="googleResults"
+          label="Google Cloud Speech-to-Text"
+          value={this.props.transcriptionGoogle + ' ' + this.props.partialResultGoogle}
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="filled"
+          name="input"
+          multiline
+          />
 
-      <RadioGroup aria-label="position" name="position" value={this.state.service} onChange={this.handleChange} row>
-        
-        
-        {this.state.start === true && this.state.service === 'google'
-          ?<FormControlLabel
-          disabled
-          value="record"
-          control={<Radio color="primary" />}
+          {this.state.start &&
+            <LinearProgress color="secondary" />}
+
+          <ButtonGroup variant="contained">
+            <Button
+            style={buttonStyle}
+            color="primary"
+            onClick={this.start}
+            disabled={!this.state.browserSupported || this.props.isBusy}
+            >Start
+            </Button>
+            <Button
+            style={buttonStyle}
+            color="secondary"
+            onClick={this.stop}
+            disabled={!this.state.browserSupported || !this.state.isRecording}
+            >Stop
+            </Button>
+          </ButtonGroup>
+          </FormControl>
+        </Grid>
+
+
+        <Grid item>
+        <Typography variant="h5">
+          Select transcription to use:
+        </Typography>
+        <RadioGroup aria-label="speechService" name="speechService" value={this.state.service} onChange={this.handleChange} row>
+          <FormControlLabel
+          disabled={this.state.start && this.state.service === 'google'}
+          value="aisg"
           label="AISG"
-          />
-          :<FormControlLabel
-          value="record"
           control={<Radio color="primary" />}
-          label="AISG"
           />
-        }
-
-        {this.state.start === true && this.state.service === 'record'
-          ?<FormControlLabel
-            disabled
-            value="google"
-            control={<Radio color="primary" />}
-            label="Google"
-          />
-          :<FormControlLabel
+          <FormControlLabel
+          disabled={this.state.start && this.state.service === 'aisg'}
           value="google"
-          control={<Radio color="primary" />}
           label="Google"
-        />
-        }
-        
-      </RadioGroup>
+          control={<Radio color="primary" />}
+          />
+        </RadioGroup>
+        <Button onClick={this.sendTranscription}
+        variant="contained" color="primary" disabled={this.state.service==="" || this.props.isBusy}>
+        Submit
+        </Button>
+        </Grid>
 
-      </FormControl>
-      
-      
-      </div>
-      
+
+      </Grid>
     )
   }
 }

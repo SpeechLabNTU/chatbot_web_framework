@@ -2,8 +2,7 @@
 node_modules/
 
 #backend
-google-cloud-sdk-281.0.0-linux-x86_64.tar.gz
-chatbot-development-250810-f7f99844f386.json
+keys/
 
 #python directory
 __pycache__/
@@ -13,3 +12,4 @@ others/
 #optional
 .vscode/
 .DS_Store
+.DS_Store~master

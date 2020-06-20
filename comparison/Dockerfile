@@ -14,4 +14,6 @@ RUN pip install -r requirements.txt
 
 RUN python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt')"
 
+EXPOSE 5000
+
 CMD ["python", "flaskApp.py"]
