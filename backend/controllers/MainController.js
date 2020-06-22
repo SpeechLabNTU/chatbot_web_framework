@@ -11,7 +11,7 @@ const speechLabsAPIUrl = process.env.SPEECH_HTTP_API  // address for AISpeechLab
 class MainController {
   static async streamByRecordingAISG (req, res, next) {
     try {
-      const token = process.env.AISG_TOKEN
+      const token = fs.readFileSync(process.env.AISG_TOKEN, 'utf-8')
       const socket_id = req.body.socketid
       var isFinal = true
       var isWaitingToClose = false
@@ -134,7 +134,7 @@ class MainController {
           console.log('Connection Error: ' + error.toString())
         })
 
-        const keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}` // use babybonus projectid for STT
+        const keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS // use babybonus projectid for STT
 
         const googleclient = new speech.SpeechClient({'keyFilename':keyFiledir});
 
@@ -250,7 +250,7 @@ class MainController {
 
   static async speechLabsHTTPRequest (req, res, next) {
     try {
-      const token = process.env.AISG_TOKEN
+      const token = fs.readFileSync(process.env.AISG_TOKEN, 'utf-8')
 
       var file =  JSON.parse(req.body.file)
 
@@ -286,7 +286,7 @@ class MainController {
     const speech = require('@google-cloud/speech');
 
     // use babybonus projectid for STT
-    const keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}`
+    const keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS
 
     // Creates a client
     const client = new speech.SpeechClient({'keyFilename':keyFiledir});
