@@ -30,9 +30,8 @@ import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
 import NUS from "../img/nus.png";
 import {Tab, Tabs} from "react-bootstrap";
-import AppBar from '@material-ui/core/AppBar';
-import TabMatUI from '@material-ui/core/Tab';
-import TabsMatUI from '@material-ui/core/Tabs';
+import RadioGroup from '@material-ui/core/RadioGroup'
+import Radio from '@material-ui/core/Radio'
 
 
 
@@ -47,7 +46,6 @@ class Dashboard extends Component{
     this.state = {
         //Direct Query
         input:"",
-        query:"",
 
         responseDialogflow:"",
         responseDNN:"",
@@ -73,10 +71,10 @@ class Dashboard extends Component{
 
         choice: "",
         reccommendation: [],
-        checkDialog: false,
+        checkDialog: true,
         checkDNN: false,
-        checkMICL: false,
-        checkRajat: false,
+        checkMICL: true,
+        checkRajat: true,
 
         topic: "babybonus", // babybonus, covid19,
         availableDialog: true,
@@ -84,19 +82,20 @@ class Dashboard extends Component{
         availableRajat: true,
         // set availability at handleTopicChange() function
 
-        querys : [],
         responseScoreArray: [],
         trackScore:[],
 
         //Speech to Text
-        audioEnable: false,
-        mode: 'record',
-        backendUrl: 'http://localhost:3001',
+        backendUrl: process.env.REACT_APP_API,
         isSocketReady: false,
-        partialResult: '',
-        status: 0, // 0: idle, 1: streaming
         isBusy: false,
         socket: null,
+        partialResultAISG: "",
+        partialResultGoogle: "",
+        transcriptionAISG: "",
+        transcriptionGoogle: "",
+        streamOpenAISG: false,
+        streamOpenGoogle: false,
 
         //Switch
         switch: false,
@@ -164,7 +163,7 @@ class Dashboard extends Component{
 
   //Response comparison function. Parameters(Array of Response Pair)
   async APICallResponseCompare(req, callback){
-    await axios.post('http://localhost:3001/flask/api/responseCompare',req)
+    await axios.post(`${process.env.REACT_APP_API}/flask/api/responseCompare`,req)
         .then((res)=>{
             let probability = res.data.reply
             if (probability !== -1){
@@ -200,7 +199,7 @@ class Dashboard extends Component{
   //API Chatbot services for interation simulation
   askJamieAPI(params){
     return new Promise(function(resolve,reject){
-      axios.post('http://localhost:3001/jamie/api/askJamieFast', params)
+      axios.post(`${process.env.REACT_APP_API}/jamie/api/askJamieFast`, params)
       .then((res)=>{
           resolve(res.data.reply)
       })
@@ -212,7 +211,7 @@ class Dashboard extends Component{
 
   dialogflowAPI(params){
     return new Promise(function(resolve,reject){
-      axios.post("http://localhost:3001/dialog/api/dialogflow", params)
+      axios.post(`${process.env.REACT_APP_API}/dialog/api/dialogflow`, params)
       .then((res)=>{
         resolve(res.data.reply)
       })
@@ -224,7 +223,7 @@ class Dashboard extends Component{
 
   dnnAPI(params){
     return new Promise(function(resolve, reject){
-      axios.post("http://localhost:3001/flask/api/russ_query", params)
+      axios.post(`${process.env.REACT_APP_API}/flask/api/russ_query`, params)
       .then((res)=>{
         resolve(res.data.reply)
       })
@@ -236,7 +235,7 @@ class Dashboard extends Component{
 
   miclAPI(params){
     return new Promise(function(resolve, reject){
-      axios.post("http://localhost:3001/micl/api/directQuery", params)
+      axios.post(`${process.env.REACT_APP_API}/micl/api/directQuery`, params)
       .then((res)=>{
         // that.setState({reccommendation: res.data.queries})
         resolve(res.data.reply)
@@ -249,7 +248,7 @@ class Dashboard extends Component{
 
   rajatAPI(params){
     return new Promise(function(resolve, reject){
-      axios.post("http://localhost:3001/rajat/api/queryEndpoint", params)
+      axios.post(`${process.env.REACT_APP_API}/rajat/api/queryEndpoint`, params)
       .then((res)=>{
         console.log(res)
         resolve(res.data.reply)
@@ -303,12 +302,13 @@ class Dashboard extends Component{
   // On input submit action handler
   async handleClick(){
 
+    if (this.state.input === "") return;
+
     // Reset comparison score value
     this.setState({
       similarityDialog: false,
       similarityMICL: false,
       similarityDNN: false,
-      query: this.state.input,
     })
 
     // Construct input object
@@ -419,10 +419,10 @@ class Dashboard extends Component{
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
+    this.reset()
 
     //Hacky method to trigger socket initiation when switch is pushed
     if(this.state.switch===false){
-      this.reset()
       this.initSockets()
     }
 
@@ -443,55 +443,61 @@ class Dashboard extends Component{
 
     socket.on('connect', () => {
       console.log('socket connected!')
-      this.setState({socket})
+      this.setState({
+        socket: socket,
+        isSocketReady: true,
+      })
     })
 
-    socket.on('stream-ready', () => {
-      this.setState({
-        isSocketReady: true,
-        status: 1
-      })
+    socket.on('stream-ready-aisg', () => {
+      this.setState({streamOpenAISG: true,})
+    })
+
+    socket.on('stream-ready-google', () => {
+      this.setState({streamOpenGoogle: true,})
     })
 
     socket.on('stream-data-google', data => {
 
       if (data.results[0].isFinal) {
         this.setState(prevState => ({
-          transcription: prevState.transcription + data.results[0].alternatives[0].transcript,
-          partialResult: ''
+          transcriptionGoogle: prevState.transcriptionGoogle + data.results[0].alternatives[0].transcript,
+          partialResultGoogle: ''
         }))
-          this.handleClick()
 
         } else {
           this.setState(prevState => ({
-            partialResult: '[...' + data.results[0].alternatives[0].transcript + ']'
+            partialResultGoogle: '[...' + data.results[0].alternatives[0].transcript + ']'
           }))
         }
     })
 
-    socket.on('stream-data', data => {
+    socket.on('stream-data-aisg', data => {
       if (data.result.final) {
         this.setState(prevState => ({
-          transcription: prevState.transcription.slice(0,-1) + ' ' + data.result.hypotheses[0].transcript,
-          partialResult: ''
+          transcriptionAISG: prevState.transcriptionAISG.slice(0,-1) + ' ' + data.result.hypotheses[0].transcript,
+          partialResultAISG: ''
         }))
-        this.handleClick()
 
       } else {
         // this.setState({input:""})
         this.setState(prevState => ({
-          partialResult: '[...' + data.result.hypotheses[0].transcript + ']'
+          partialResultAISG: '[...' + data.result.hypotheses[0].transcript + ']'
         }))
       }
     })
 
-    socket.on('stream-close', () => {
+    socket.on('stream-close-aisg', () => {
       this.setState(prevState => ({
-        status: 0,
-        isBusy: false,
-        input: prevState.transcription,
-        transcription: "",
-        partialResult: ""
+        streamOpenAISG: false,
+        isBusy: prevState.streamOpenGoogle,
+      }))
+    })
+
+    socket.on('stream-close-google', () => {
+      this.setState(prevState => ({
+        streamOpenGoogle: false,
+        isBusy: prevState.streamOpenAISG,
       }))
     })
   }
@@ -499,14 +505,19 @@ class Dashboard extends Component{
   reset = () => {
     this.setState({
       input: '',
-      transcription: '',
-      partialResult: ''
-    })
-  }
-
-  setBusy = () => {
-    this.setState({
-      isBusy: true
+      partialResultAISG: '',
+      partialResultGoogle: '',
+      transcriptionAISG: '',
+      transcriptionGoogle: '',
+      responseDialogflow:"",
+      responseDNN:"",
+      responseJamie:"",
+      responseMICL:"",
+      responseRajat: "",
+      similarityDialog: false,
+      similarityDNN: false,
+      similarityMICL: false,
+      similarityRajat: false,
     })
   }
 
@@ -514,28 +525,27 @@ class Dashboard extends Component{
   handleTopicChange(e, value) {
     this.setState({topic:value})
     // reset input and responses
-    this.setState({
-      input:"",
-      responseDialogflow:"",
-      responseDNN:"",
-      responseJamie:"",
-      responseMICL:"",
-      responseRajat: "",
-    })
+    this.reset()
+
     switch (value) {
       case 'babybonus':
         this.setState({
           availableDialog: true,
           availableMICL: true,
           availableRajat: true,
+          checkDialog: true,
+          checkMICL: true,
+          checkRajat: true,
         })
         break
       case 'covid19':
         this.setState({
           availableDialog: true,
           availableMICL: false,
-          checkMICL: false,
           availableRajat: true,
+          checkDialog: true,
+          checkMICL: false,
+          checkRajat: true,
         })
         break
       default:
@@ -579,7 +589,7 @@ class Dashboard extends Component{
             <Card>
               <CardContent style={{width:"500px"}}>
                 <Typography color="textSecondary" gutterBottom>
-                  Mutli Chatbot Interface for Response Comparisons
+                  Multi Chatbot Interface for Response Comparisons
                 </Typography>
                 <Typography color="textSecondary">
 
@@ -650,16 +660,18 @@ class Dashboard extends Component{
 
                   {this.state.switch &&
                   <Record
-                  transcription= {this.state.transcription}
-                  partialResult = {this.state.partialResult}
+                  transcriptionAISG= {this.state.transcriptionAISG}
+                  transcriptionGoogle = {this.state.transcriptionGoogle}
+                  partialResultAISG = {this.state.partialResultAISG}
+                  partialResultGoogle = {this.state.partialResultGoogle}
+                  input = {this.state.input}
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
-                  setBusy={this.setBusy}
-                  audio={this.state.audio}
                   setState={this.setState}
+                  handleClick = {this.handleClick}
                   />
                   }
 
@@ -676,33 +688,11 @@ class Dashboard extends Component{
 
                 </Grid>
 
-                {/* Question Topic Selection */}
-                <Grid item container spacing={2} alignItems='center'>
-                  <Grid item ><h5>Question Topic:</h5></Grid>
-
-                  <Grid item>
-                  <Paper elevation={0} variant='outlined'>
-                    <AppBar position="static" color="default">
-                      <TabsMatUI
-                        value={this.state.topic}
-                        onChange={this.handleTopicChange}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        variant="scrollable"
-                        scrollButtons="auto"
-                      >
-                        <TabMatUI label="Baby Bonus" value="babybonus" />
-                        <TabMatUI label="Covid-19" value="covid19"/>
-                      </TabsMatUI>
-                    </AppBar>
-                  </Paper>
-                  </Grid>
-
-                </Grid>
-
                 {/* Chatbot Selection */}
-                <Grid item xs={12} md={12}>
-                <h5>Select Chatbot Services:</h5>
+                <Grid item xs={6}>
+                <Typography variant='h5'>
+                Select Chatbot Services:
+                </Typography>
 
                 <FormGroup row>
 
@@ -723,6 +713,31 @@ class Dashboard extends Component{
                   />}
 
                 </FormGroup>
+
+                </Grid>
+
+                {/* Question Topic Selection */}
+                <Grid item xs={6}>
+
+                  <Typography variant='h5'>
+                  Question Topic:
+                  </Typography>
+
+                  <RadioGroup aria-label="topic selection" name="topic selection"
+                  value={this.state.topic} onChange={this.handleTopicChange} row>
+                    <FormControlLabel
+                    value="babybonus"
+                    label="Baby Bonus"
+                    control={<Radio color="primary" />}
+                    />
+                    <FormControlLabel
+                    value="covid19"
+                    label="Covid-19"
+                    control={<Radio color="primary" />}
+                    />
+                  </RadioGroup>
+
+
 
                 </Grid>
 
@@ -796,7 +811,6 @@ class Dashboard extends Component{
 
               <Grid item xs={12} md={12}>
                 <UploadBox
-                handleQueryInput={this.handleQueryInput}
                 askJamieAPI={this.askJamieAPI}
                 dialogflowAPI={this.dialogflowAPI}
                 miclAPI={this.miclAPI}

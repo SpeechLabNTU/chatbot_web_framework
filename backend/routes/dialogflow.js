@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const fs = require('fs')
 const dialogflow = require('dialogflow');
 const uuid = require('uuid');
 const dotenv = require('dotenv');
@@ -18,16 +19,16 @@ async function dialoflowConnection(query, topic, res) {
     var keyFiledir = ""
     switch(topic) {
       case 'babybonus':
-        projectId = process.env.DIALOGFLOW_PROJECT_ID_BABYBONUS;
-        keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS}`
+        keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS
         break
       case 'covid19':
-        projectId = process.env.DIALOGFLOW_PROJECT_ID_COVID19;
-        keyFiledir = `keys/${process.env.DIALOGFLOW_KEYFILENAME_COVID19}`
+        keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_COVID19
         break
       default:
         break
     }
+
+    projectId = JSON.parse(fs.readFileSync(keyFiledir, 'utf-8')).project_id
 
     const sessionId = uuid.v4();
     const sessionClient = new dialogflow.SessionsClient({'keyFilename':keyFiledir});

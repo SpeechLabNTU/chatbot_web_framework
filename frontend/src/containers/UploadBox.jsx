@@ -1,17 +1,25 @@
 import React, { useState }from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import DirectionsIcon from '@material-ui/icons/Directions';
 import FormControl from '@material-ui/core/FormControl'
-import axios from "axios";
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import PropTypes from 'prop-types';
+import RadioGroup from '@material-ui/core/RadioGroup'
+import Radio from '@material-ui/core/Radio'
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import Button from '@material-ui/core/Button';
+import LinearProgress from '@material-ui/core/LinearProgress';
+
+import IconButton from '@material-ui/core/IconButton';
+import DirectionsIcon from '@material-ui/icons/Directions';
+
+import PropTypes from 'prop-types';
+import axios from "axios";
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -33,17 +41,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-
-import LinearProgress from '@material-ui/core/LinearProgress';
 
 // import Chartplotly from "./Chartplotly";
 import Charts from "./Charts";
-
-import AppBar from '@material-ui/core/AppBar';
-import TabMatUI from '@material-ui/core/Tab';
-import TabsMatUI from '@material-ui/core/Tabs';
 
 const useStyles = makeStyles(theme => ({
   pagination: {
@@ -270,7 +270,7 @@ export default function CustomizedInputBase(props) {
     function ResponseComparison(req){
 
       return new Promise(function(resolve, reject){
-        axios.post('http://localhost:3001/flask/api/responseCompare',req)
+        axios.post(`${process.env.REACT_APP_API}/flask/api/responseCompare`,req)
           .then((res)=>{
               let probability = res.data.reply
               resolve(probability)
@@ -493,24 +493,26 @@ export default function CustomizedInputBase(props) {
 
       {/* Question Topic Selection */}
       <Grid item container spacing={2} alignItems='center'>
-        <Grid item><h5>Question Topic:</h5></Grid>
+        <Grid item>
+          <Typography variant='h5' gutterBottom>
+          Question Topic:
+          </Typography>
+        </Grid>
 
         <Grid item>
-        <Paper elevation={0} variant='outlined'>
-          <AppBar position="static" color="default">
-            <TabsMatUI
-              value={topic}
-              onChange={handleTopicChange}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <TabMatUI label="Baby Bonus" value="babybonus" />
-              <TabMatUI label="Covid-19" value="covid19"/>
-            </TabsMatUI>
-          </AppBar>
-        </Paper>
+        <RadioGroup aria-label="topic selection" name="topic selection"
+        value={topic} onChange={handleTopicChange} row>
+          <FormControlLabel
+          value="babybonus"
+          label="Baby Bonus"
+          control={<Radio color="primary" />}
+          />
+          <FormControlLabel
+          value="covid19"
+          label="Covid-19"
+          control={<Radio color="primary" />}
+          />
+        </RadioGroup>
         </Grid>
 
       </Grid>
