@@ -307,8 +307,9 @@ class Dashboard extends Component{
     // Reset comparison score value
     this.setState({
       similarityDialog: false,
-      similarityMICL: false,
       similarityDNN: false,
+      similarityMICL: false,
+      similarityRajat: false,
     })
 
     // Construct input object
@@ -524,8 +525,18 @@ class Dashboard extends Component{
   //Handle question topic change
   handleTopicChange(e, value) {
     this.setState({topic:value})
-    // reset input and responses
-    this.reset()
+    // reset responses only
+    this.setState({
+      responseDialogflow:"",
+      responseDNN:"",
+      responseJamie:"",
+      responseMICL:"",
+      responseRajat: "",
+      similarityDialog: false,
+      similarityDNN: false,
+      similarityMICL: false,
+      similarityRajat: false,
+    })
 
     switch (value) {
       case 'babybonus':
