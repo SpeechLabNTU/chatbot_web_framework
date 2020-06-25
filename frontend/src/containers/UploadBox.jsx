@@ -316,7 +316,7 @@ export default function CustomizedInputBase(props) {
             let prob = ResponseComparison(req)
             prob.then((probval)=>{
               scorecontent.push(probval)
-              tablecontent.push(createData(query, summarizer(val[0]), summarizer(val[1]), probval))
+              tablecontent = [...tablecontent, createData(query, summarizer(val[0]), summarizer(val[1]), probval)]
               updateRows(tablecontent)
             })
 

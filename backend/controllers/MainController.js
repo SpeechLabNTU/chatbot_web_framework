@@ -104,14 +104,16 @@ class MainController {
   static async streamByRecordingGoogle (req, res, next) {
     try{
     // Imports the Google Cloud client library
-    const speech = require('@google-cloud/speech');
+    const speech = require('@google-cloud/speech').v1p1beta1;
 
     //Configure transcription Request
     const request = {
       config:{
           encoding: "LINEAR16",
           sampleRateHertz: 16000,
-          languageCode: "en-US"
+          languageCode: "en-US",
+          useEnhanced: true,
+          model: "video",
       },
       interimResults: true
     }

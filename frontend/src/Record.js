@@ -362,7 +362,7 @@ export default class Record extends Component {
           <TextField
           style={textField}
           id="googleResults"
-          label="Google Cloud Speech-to-Text"
+          label="Google Cloud Speech-to-Text (Enhanced Model)"
           value={this.props.transcriptionGoogle + ' ' + this.props.partialResultGoogle}
           InputProps={{
             readOnly: true,
@@ -409,7 +409,7 @@ export default class Record extends Component {
           <FormControlLabel
           disabled={this.state.start && this.state.service === 'aisg'}
           value="google"
-          label="Google"
+          label="Google Premium"
           control={<Radio color="primary" />}
           />
         </RadioGroup>
