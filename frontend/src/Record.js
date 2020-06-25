@@ -10,6 +10,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import Radio from '@material-ui/core/Radio'
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid'
 
 
 const textField={width:'auto'};
@@ -23,11 +25,11 @@ export default class Record extends Component {
       recorder: {},
       recordInterval: 0,
       isRecording: false,
-      stopRecording: true,
-      service: 'record',
+      service: '',
       start: false
     }
     this.handleChange = this.handleChange.bind(this);
+    this.sendTranscription = this.sendTranscription.bind(this);
   }
 
   async componentDidMount () {
@@ -57,7 +59,8 @@ export default class Record extends Component {
       console.log('browser doesn\'t support')
       this.setState({browserSupported:false})
       this.props.setState({
-        transcription:"Media input is not support on this browser"
+        transcriptionAISG:"Media input is not support on this browser",
+        transcriptionGoogle:"Media input is not support on this browser",
       })
 
     } else if (navigator.mediaDevices.getUserMedia) {
@@ -86,7 +89,8 @@ export default class Record extends Component {
         // this.$emit('onError', e.toString())
         this.setState({browserSupported:false})
         this.props.setState({
-          transcription:"Media input is not possible"
+          transcriptionAISG:"Media input is not possible",
+          transcriptionGoogle:"Media input is not possible",
         })
       }
     } else {
@@ -219,7 +223,23 @@ export default class Record extends Component {
 
       this.props.reset()
 
-      await axios.post(`${this.props.backendUrl}/stream/${this.state.service}`)
+      await axios.post(`${this.props.backendUrl}/stream/google`, {
+        socketid: this.props.socket.id,
+      })
+      await axios.post(`${this.props.backendUrl}/stream/aisg`, {
+        socketid: this.props.socket.id,
+      })
+
+      // Start recording
+      this.setState({start:true})
+      this.state.recorder.record()
+      this.props.setState({
+        isBusy: true,
+      })
+      this.setState({
+        service: "",
+        isRecording: true,
+      })
 
       const recordInterval = setInterval(() => {
         this.state.recorder.export16kMono((blob) => {
@@ -236,7 +256,8 @@ export default class Record extends Component {
           this.stop()
           setTimeout(() => {
             this.props.setState({
-              transcription: "Stopped: 2 minute maximum stream duration reached"
+              partialResultAISG: "Stopped: 2 minute maximum stream duration reached",
+              partialResultGoogle: "Stopped: 2 minute maximum stream duration reached",
             })
           },1000)
           // delay in set text to allow buffer for last message from backend
@@ -249,14 +270,6 @@ export default class Record extends Component {
         maxTimeout
       })
 
-      // Start recording
-      this.setState({start:true})
-      this.state.recorder.record()
-      this.props.setBusy()
-      this.setState({
-        isRecording: true,
-        stopRecording: false
-      })
     } catch (err) {
       console.log(err)
     }
@@ -274,7 +287,6 @@ export default class Record extends Component {
       this.state.recorder.stop()
       this.setState({
         isRecording: false,
-        stopRecording: true,
       })
       // Push the remaining audio to the server
       this.state.recorder.export16kMono((blob) => {
@@ -283,7 +295,6 @@ export default class Record extends Component {
         }
         this.state.recorder.clear()
       }, 'audio/x-raw')
-      // this.props.reset()
     } else {
       this.$emit('onError', 'Recorder undefined')
     }
@@ -294,6 +305,7 @@ export default class Record extends Component {
   cancel = () => {
     // Stop the regular sending of audio (if present)
     clearInterval(this.state.recordInterval)
+    clearTimeout(this.state.maxTimeout)
 
     if (this.state.recorder) {
       this.state.recorder.stop()
@@ -310,59 +322,105 @@ export default class Record extends Component {
 
   }
 
+  sendTranscription(){
+    if (this.state.service === "aisg"){
+      this.props.setState({
+        input: this.props.transcriptionAISG,
+      })
+    }
+    else if (this.state.service === "google"){
+      this.props.setState({
+        input: this.props.transcriptionGoogle,
+      })
+    }
+
+    // set timeout so that handleClick will use updated input rather than prevState input
+    setTimeout( () => {
+      this.props.handleClick()
+    }, 100)
+  }
+
   render () {
     return (
-      <div>
-      <FormControl fullWidth variant="outlined">
-      <TextField
-      style={textField}
-      id="filled-read-only-input"
-      label="Read"
-      value={this.props.transcription + ' ' + this.props.partialResult}
-      InputProps={{
-        readOnly: true,
-      }}
-      variant="filled"
-      name="input"
-      />
+      <Grid item container spacing={2} direction='column'>
 
-      {this.state.start &&
-        <LinearProgress color="secondary" />}
+        <Grid item>
+          <FormControl fullWidth variant="outlined">
+          <TextField
+          style={textField}
+          id="aisgResults"
+          label="AISG Speech Labs"
+          value={this.props.transcriptionAISG + ' ' + this.props.partialResultAISG}
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="filled"
+          name="input"
+          multiline
+          />
 
-      <ButtonGroup variant="contained">
-        <Button
-        style={buttonStyle}
-        color="primary"
-        onClick={this.start}
-        disabled={!this.state.browserSupported || this.state.isRecording}
-        >Start
+          <TextField
+          style={textField}
+          id="googleResults"
+          label="Google Cloud Speech-to-Text"
+          value={this.props.transcriptionGoogle + ' ' + this.props.partialResultGoogle}
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="filled"
+          name="input"
+          multiline
+          />
+
+          {this.state.start &&
+            <LinearProgress color="secondary" />}
+
+          <ButtonGroup variant="contained">
+            <Button
+            style={buttonStyle}
+            color="primary"
+            onClick={this.start}
+            disabled={!this.state.browserSupported || this.props.isBusy}
+            >Start
+            </Button>
+            <Button
+            style={buttonStyle}
+            color="secondary"
+            onClick={this.stop}
+            disabled={!this.state.browserSupported || !this.state.isRecording}
+            >Stop
+            </Button>
+          </ButtonGroup>
+          </FormControl>
+        </Grid>
+
+
+        <Grid item>
+        <Typography variant="h5">
+          Select transcription to use:
+        </Typography>
+        <RadioGroup aria-label="speechService" name="speechService" value={this.state.service} onChange={this.handleChange} row>
+          <FormControlLabel
+          disabled={this.state.start && this.state.service === 'google'}
+          value="aisg"
+          label="AISG"
+          control={<Radio color="primary" />}
+          />
+          <FormControlLabel
+          disabled={this.state.start && this.state.service === 'aisg'}
+          value="google"
+          label="Google"
+          control={<Radio color="primary" />}
+          />
+        </RadioGroup>
+        <Button onClick={this.sendTranscription}
+        variant="contained" color="primary" disabled={this.state.service==="" || this.props.isBusy}>
+        Submit
         </Button>
-        <Button
-        style={buttonStyle}
-        color="secondary"
-        onClick={this.stop}
-        disabled={!this.state.browserSupported || this.state.stopRecording}
-        >Stop
-        </Button>
-      </ButtonGroup>
+        </Grid>
 
-      <RadioGroup aria-label="position" name="position" value={this.state.service} onChange={this.handleChange} row>
-        <FormControlLabel
-        disabled={this.state.start && this.state.service === 'google'}
-        value="record"
-        label="AISG"
-        control={<Radio color="primary" />}
-        />
-        <FormControlLabel
-        disabled={this.state.start && this.state.service === 'record'}
-        value="google"
-        label="Google"
-        control={<Radio color="primary" />}
-        />
-      </RadioGroup>
 
-      </FormControl>
-      </div>
+      </Grid>
     )
   }
 }

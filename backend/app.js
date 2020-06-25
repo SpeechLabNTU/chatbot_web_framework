@@ -20,8 +20,8 @@ app.use('/flask', flaskRouter);
 app.use('/jamie', askJamieRouter);
 app.use('/rajat', rajatRouter);
 
-app.post('/stream/google', STT.googlestreamByRecording)
-app.post('/stream/record', STT.streamByRecording)
+app.post('/stream/google', STT.streamByRecordingGoogle)
+app.post('/stream/aisg', STT.streamByRecordingAISG)
 app.post('/stream/import', upload.single('file'), STT.streamByImport)
 
 app.post('/api/upload', upload.single('file'), AC.convertToWAV)
