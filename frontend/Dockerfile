@@ -11,9 +11,7 @@ RUN npm install
 
 COPY . /srv/app/client
 
-ARG API_ENDPOINT
-
-RUN echo "REACT_APP_API=$API_ENDPOINT" > .env
+ARG REACT_APP_API
 
 RUN npm run build
 

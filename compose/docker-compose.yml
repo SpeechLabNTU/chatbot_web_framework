@@ -1,74 +1,80 @@
-version: '3'
+version: '3.1'
 
 services:
-  ##################
-  # Dialogflow Container
-  ##################
-  dialogflowserver:
-    build:
-      context: ../dialogflowenv
-      args:
-        - KEY=${KEY} 
-        - PROJECTID=${PROJECTID}
-    ports:
-      - ${DIALOGFLOW_SERVER_PORT}:${DIALOGFLOW_SERVER_PORT} 
 
   ##################
   # Node Container
   ##################
   server:
-    build: 
+    image: demonicmushy/chatbotplatform:server
+    build:
       context: ../backend
-      args:
-        - KEY=${KEY} 
-        - PROJECTID=${PROJECTID}
-        - MICL_ENDPOINT=${MICL_ENDPOINT}
-        - RAJAT_ENDPOINT=${RAJAT_ENDPOINT}
-        - FLASK_ENDPOINT=${FLASK_ENDPOINT}
-        - AISG_TOKEN=${AISG_TOKEN}
-        - SPEECH_API=${SPEECH_API}
-        - SPEECH_HTTP_API=${SPEECH_HTTP_API}
-    # expose: 
-    #   - ${APP_SERVER_PORT}
+    environment:
+      - MICL_ENDPOINT=http://13.76.152.232:8081
+      - FLASK_ENDPOINT=http://api:5000
+      - SPEECH_API=ws://40.90.170.182:8001/client/ws/speech
+      - SPEECH_HTTP_API=http://40.90.170.182:8001/client/dynamic/recognize
+      - DIALOGFLOW_KEYFILENAME_COVID19=/run/secrets/dialog_covid19
+      - DIALOGFLOW_KEYFILENAME_BABYBONUS=/run/secrets/dialog_babybonus
+      - RAJAT_ENDPOINT_BABYBONUS=http://13.76.152.232:1995
+      - RAJAT_ENDPOINT_COVID19=http://13.76.152.232:2995
+      - AISG_TOKEN=/run/secrets/aisg_token
     ports:
-      - ${APP_SERVER_PORT}:${APP_SERVER_PORT} 
-    # volumes:
-    #   - ../online_asr_backend/routes:/srv/app/server/routes
-    # command: npm run dev
+      - '3001:3001'
+    deploy:
+      replicas: 1
+    secrets:
+      - dialog_babybonus
+      - dialog_covid19
+      - aisg_token
+
+#    volumes:
+#      - ../online_asr_backend/routes:/srv/app/server/routes
+#    command: npm run dev
 
   ##################
   # Flask Container
   ##################
   api:
+    image: demonicmushy/chatbotplatform:api
     build: ../comparison
-    # expose:
-    #   - ${FLASK_SERVER_PORT}
-    ports:
-      - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
     environment:
-      PORT: ${CONTAINER_PORT}
-    # volumes:
-    #   - ../production:/api
-    # command: python flaskApp.py
-    # environment:
-    #   - FLASK_ENV=development
-    #   - FLASK_APP=flaskApp.py
-    #   - FLASK_DEBUG=1
+      - PORT=5000
+    deploy:
+      replicas: 1
+
+   # volumes:
+   #   - ../production:/api
+   # command: python flaskApp.py
+   # environment:
+   #   - FLASK_ENV=development
+   #   - FLASK_APP=flaskApp.py
+   #   - FLASK_DEBUG=1
 
   ##################
   # Client Container
   ##################
   client:
-    build: 
+    image: demonicmushy/chatbotplatform:client
+    build:
       context: ../frontend
       args:
-        - API_ENDPOINT=${API_ENDPOINT}
-    # expose: 
-    #   - ${REACT_APP_PORT}
+        # need to specify here because it will be complied into image
+        - REACT_APP_API=https://chatbot.speechlab.sg:3001
     ports:
-      # - ${REACT_APP_PORT}:${REACT_APP_PORT}
-      - ${REACT_APP_PORT}:${NGINX_PORT}
-    # volumes:
-    #   - ../dialogflowapp/src:/srv/app/client/src
-    #   - ../dialogflowapp/public:/srv/app/client/public
-    # command: npm run start
+      - '3000:80'
+    deploy:
+      replicas: 1
+
+#    volumes:
+#      - ../dialogflowapp/src:/srv/app/client/src
+#      - ../dialogflowapp/public:/srv/app/client/public
+#    command: npm run start
+
+secrets:
+  dialog_babybonus:
+    external: true
+  dialog_covid19:
+    external: true
+  aisg_token:
+    external: true

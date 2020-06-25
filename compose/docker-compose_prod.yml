@@ -1,44 +1,37 @@
 version: '3'
 
 services:
-  ##################
-  # Dialogflow Container
-  ##################
-  dialogflowserver:
-    image: berrywonder/chatbotplatform:dialogflowserver
-    environment:
-        - KEY=${KEY} 
-        - PROJECTID=${PROJECTID}
-    ports:
-      - ${DIALOGFLOW_SERVER_PORT}:${DIALOGFLOW_SERVER_PORT} 
 
   ##################
   # Node Container
   ##################
   server:
-    image: berrywonder/chatbotplatform:server
+    image: demonicmushy/chatbotplatform:server
     environment:
-        - KEY=${KEY}
-        - PROJECTID=${PROJECTID}
         - MICL_ENDPOINT=${MICL_ENDPOINT}
-        - RAJAT_ENDPOINT=${RAJAT_ENDPOINT}
         - FLASK_ENDPOINT=${FLASK_ENDPOINT}
         - AISG_TOKEN=${AISG_TOKEN}
         - SPEECH_API=${SPEECH_API}
         - SPEECH_HTTP_API=${SPEECH_HTTP_API}
-    #build: 
+        - DIALOGFLOW_PROJECT_ID_COVID19=${DIALOGFLOW_PROJECT_ID_COVID19}
+        - DIALOGFLOW_PROJECT_ID_BABYBONUS=${DIALOGFLOW_PROJECT_ID_BABYBONUS}
+        - DIALOGFLOW_KEYFILENAME_COVID19=${DIALOGFLOW_KEYFILENAME_COVID19}
+        - DIALOGFLOW_KEYFILENAME_BABYBONUS=${DIALOGFLOW_KEYFILENAME_BABYBONUS}
+        - RAJAT_ENDPOINT_BABYBONUS=${RAJAT_ENDPOINT_BABYBONUS}
+        - RAJAT_ENDPOINT_COVID19=${RAJAT_ENDPOINT_COVID19}
+    #build:
     #  context: ../backend
     #  args:
-    #    - KEY=${KEY} 
+    #    - KEY=${KEY}
     #    - PROJECTID=${PROJECTID}
     ports:
-      - ${APP_SERVER_PORT}:${APP_SERVER_PORT} 
+      - ${APP_SERVER_PORT_FOR_HTTPS}:${APP_SERVER_PORT}
 
   ##################
   # Flask Container
   ##################
   api:
-    image: berrywonder/chatbotplatform:flask
+    image: demonicmushy/chatbotplatform:api
     environment:
       - ${FLASK_SERVER_PORT}:${CONTAINER_PORT}
       - PORT=${CONTAINER_PORT}
@@ -52,10 +45,16 @@ services:
   # Client Container
   ##################
   client:
-    image: berrywonder/chatbotplatform:client
+    image: demonicmushy/chatbotplatform:client
     environment:
         - REACT_APP_API=${API_ENDPOINT}
-    #build: 
+    #build:
     #  context: ../frontend
     ports:
-      - ${REACT_APP_PORT}:${NGINX_PORT}
+      - ${REACT_APP_PORT_FOR_HTTPS}:${NGINX_PORT}
+
+  ####################
+  # Rajat Model Covid19
+  #####################
+  rajat:
+    image: demonicmushy/chatbotplatform:rajatcovid19

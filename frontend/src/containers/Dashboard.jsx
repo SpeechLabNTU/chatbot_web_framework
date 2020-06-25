@@ -4,6 +4,8 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
@@ -17,6 +19,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import Dialogflow from './Dialogflow';
+import DNN from './DNN';
 import Jamie from "./Jamie";
 import MICL from "./MICL";
 import UploadBox from "./UploadBox";
@@ -27,8 +30,10 @@ import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
 import NUS from "../img/nus.png";
 import {Tab, Tabs} from "react-bootstrap";
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+import RadioGroup from '@material-ui/core/RadioGroup'
+import Radio from '@material-ui/core/Radio'
+
+
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
@@ -41,54 +46,62 @@ class Dashboard extends Component{
     this.state = {
         //Direct Query
         input:"",
-        query:"",
 
         responseDialogflow:"",
+        responseDNN:"",
         responseJamie:"",
         responseMICL:"",
         responseRajat: "",
 
-        loadingDialogflow:false,
         loadingJamie:false,
+        loadingDialogflow:false,
+        loadingDNN: false,
         loadingMICL: false,
         loadingRajat: false,
 
-        comparisonJamie: false,
-        comparisonDialog: false,
-        comparisonMICL: false,
-        comparisonRajat: false,
-
         similarityDialog: false,
+        similarityDNN: false,
         similarityMICL: false,
         similarityRajat: false,
 
         scoreDialog: 0,
+        scoreDNN: 0,
         scoreMICL: 0,
         scoreRajat: 0,
 
         choice: "",
         reccommendation: [],
-        checkDialog: false,
-        checkMICL: false,
-        checkRajat: false,
+        checkDialog: true,
+        checkDNN: false,
+        checkMICL: true,
+        checkRajat: true,
 
-        querys : [],
+        topic: "babybonus", // babybonus, covid19,
+        availableDialog: true,
+        availableMICL: true,
+        availableRajat: true,
+        // set availability at handleTopicChange() function
+
         responseScoreArray: [],
         trackScore:[],
 
         //Speech to Text
-        audioEnable: false,
-        mode: 'record',
         backendUrl: process.env.REACT_APP_API,
         isSocketReady: false,
-        partialResult: '',
-        status: 0, // 0: idle, 1: streaming, 2: finish
         isBusy: false,
         socket: null,
+        partialResultAISG: "",
+        partialResultGoogle: "",
+        transcriptionAISG: "",
+        transcriptionGoogle: "",
+        streamOpenAISG: false,
+        streamOpenGoogle: false,
 
         //Switch
-        switch: false
+        switch: false,
     }
+
+    this.setState = this.setState.bind(this)
 
     //Action Listeners Method Bindings
     this.handleChange = this.handleChange.bind(this);
@@ -98,8 +111,9 @@ class Dashboard extends Component{
 
     //Summarizer Method Binding
     this.summarizer = this.summarizer.bind(this);
-    
+
     //Similarity Check Method Bindings
+    this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.checkSimilarityRajat = this.checkSimilarityRajat.bind(this);
@@ -111,9 +125,12 @@ class Dashboard extends Component{
     //API Call Method Bindings
     this.askJamieAPI = this.askJamieAPI.bind(this);
     this.dialogflowAPI = this.dialogflowAPI.bind(this);
+    this.dnnAPI = this.dnnAPI.bind(this);
     this.miclAPI = this.miclAPI.bind(this);
     this.rajatAPI = this.rajatAPI.bind(this);
 
+    // Question Topic Method Bindings
+    this.handleTopicChange = this.handleTopicChange.bind(this)
   }
 
   //Response summarizer
@@ -132,8 +149,8 @@ class Dashboard extends Component{
         }
       }
     }
-    
-    return summary 
+
+    return summary
   }
 
   //User input handling
@@ -155,13 +172,18 @@ class Dashboard extends Component{
         }).catch(error=>{
           console.log("Error Contacting API server")
         });
-        
+
   }
 
   //checkSimilarity method prefix updates response comparison scores
   checkSimilarityDialog(score){
     this.setState({scoreDialog:score})
     this.setState({similarityDialog: true})
+  }
+
+  checkSimilarityDNN(score){
+    this.setState({scoreDNN:score})
+    this.setState({similarityDNN:true})
   }
 
   checkSimilarityMICL(score){
@@ -176,84 +198,71 @@ class Dashboard extends Component{
 
   //API Chatbot services for interation simulation
   askJamieAPI(params){
-    let that = this;
-    this.setState({loadingJamie:true})
     return new Promise(function(resolve,reject){
       axios.post(`${process.env.REACT_APP_API}/jamie/api/askJamieFast`, params)
       .then((res)=>{
-          var summarized_2 = that.summarizer(res.data.reply)
-          that.setState({responseJamie:summarized_2})
-          that.setState({loadingJamie:false})
-          that.setState({comparisonJamie:true})
           resolve(res.data.reply)
       })
       .catch(error=>{
           console.log("Error contacting Ask Jamie")
       });
-      
     })
   }
 
   dialogflowAPI(params){
-    let that = this;
-    this.setState({loadingDialogflow:true})
     return new Promise(function(resolve,reject){
       axios.post(`${process.env.REACT_APP_API}/dialog/api/dialogflow`, params)
       .then((res)=>{
-          var summarized_1 = that.summarizer(res.data.reply)
-          that.setState({responseDialogflow:summarized_1})
-          that.setState({loadingDialogflow:false})
-          that.setState({comparisonDialog:true})
-          resolve(res.data.reply)
+        resolve(res.data.reply)
       })
       .catch(error=>{
-          console.log("Error contacting Dialogflow")
+        console.log("Error contacting Dialogflow")
       });
     })
-    
+  }
+
+  dnnAPI(params){
+    return new Promise(function(resolve, reject){
+      axios.post(`${process.env.REACT_APP_API}/flask/api/russ_query`, params)
+      .then((res)=>{
+        resolve(res.data.reply)
+      })
+      .catch(error=>{
+        console.log("Error contacting Flask server")
+      })
+    })
   }
 
   miclAPI(params){
-    let that = this;
-    this.setState({loadingMICL:true})
     return new Promise(function(resolve, reject){
       axios.post(`${process.env.REACT_APP_API}/micl/api/directQuery`, params)
       .then((res)=>{
-            // that.setState({reccommendation: res.data.queries})
-            var summarized_4 = that.summarizer(res.data.reply)
-            that.setState({responseMICL:summarized_4})
-            that.setState({loadingMICL:false})
-            that.setState({comparisonMICL:true})
-            resolve(res.data.reply)
+        // that.setState({reccommendation: res.data.queries})
+        resolve(res.data.reply)
       })
       .catch(error=>{
-          console.log("Error contacting MICL server")
+        console.log("Error contacting MICL server")
       })
     })
   }
 
   rajatAPI(params){
-    let that = this;
-    this.setState({loadingRajat:true})
     return new Promise(function(resolve, reject){
       axios.post(`${process.env.REACT_APP_API}/rajat/api/queryEndpoint`, params)
       .then((res)=>{
-            var summarized_5 = that.summarizer(res.data.reply)
-            that.setState({responseRajat:summarized_5})
-            that.setState({loadingRajat:false})
-            that.setState({comparisonRajat:true})
-            resolve(res.data.reply)
+        console.log(res)
+        resolve(res.data.reply)
       })
       .catch(error=>{
-          console.log("Error contacting Rajat server")
+        console.log("Error contacting Rajat server")
       })
     })
   }
 
-  //Make sure responses are present before executing response comparison
+  // Make sure responses are present before executing response comparison
   comparison(){
 
-    if(this.state.comparisonDialog && this.state.comparisonJamie ){
+    if(this.state.checkDialog){
       let req = {responses: [this.state.responseDialogflow, this.state.responseJamie]}
       try{
         this.APICallResponseCompare(req, this.checkSimilarityDialog)
@@ -262,7 +271,16 @@ class Dashboard extends Component{
       }
     }
 
-    if(this.state.comparisonMICL && this.state.comparisonJamie){
+    if(this.state.checkDNN){
+      let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityDNN);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
+
+    if(this.state.checkMICL){
       let req = {responses: [this.state.responseMICL, this.state.responseJamie]}
       try{
         this.APICallResponseCompare(req, this.checkSimilarityMICL);
@@ -271,7 +289,7 @@ class Dashboard extends Component{
       }
     }
 
-    if(this.state.comparisonRajat && this.state.comparisonJamie){
+    if(this.state.checkRajat){
       let req = {responses: [this.state.responseRajat, this.state.responseJamie]}
       try{
         this.APICallResponseCompare(req, this.checkSimilarityRajat);
@@ -281,29 +299,104 @@ class Dashboard extends Component{
     }
   }
 
-  //On input submit action handler
+  // On input submit action handler
   async handleClick(){
 
-    //Reset comparison score value
-    this.setState({similarityDialog: false})
-    this.setState({similarityMICL: false})
-    this.setState({similarityRajat: false})
-    this.setState({query: this.state.input})
+    if (this.state.input === "") return;
 
-    //Construct input object
+    // Reset comparison score value
+    this.setState({
+      similarityDialog: false,
+      similarityMICL: false,
+      similarityDNN: false,
+    })
+
+    // Construct input object
     var params = {
-      question: this.state.input
+      question: this.state.input,
+      topic: this.state.topic,
     }
 
-    //Bind this to variable for use in promise
+    var promiseArray = []
+    // make askJamie call
+    this.setState({loadingJamie: true})
+    var askJamiePromise = this.askJamieAPI(params)
+    promiseArray.push(askJamiePromise)
+
+    askJamiePromise.then( res => {
+      let summarized = this.summarizer(res)
+      this.setState({
+        responseJamie: summarized,
+        loadingJamie: false,
+      })
+    })
+
+    // make Dialogflow call
+    if (this.state.checkDialog) {
+      this.setState({loadingDialogflow: true})
+      var dialogFlowPromise = this.dialogflowAPI(params)
+      promiseArray.push(dialogFlowPromise)
+
+      dialogFlowPromise.then( res => {
+        let summarized = this.summarizer(res)
+        this.setState({
+          responseDialogflow: summarized,
+          loadingDialogflow: false,
+        })
+      })
+    }
+    // make DNN call
+    if (this.state.checkDNN){
+      this.setState({loadingDNN: true})
+      var dnnPromise = this.dnnAPI(params)
+      promiseArray.push(dnnPromise)
+
+      dnnPromise.then( res => {
+        let summarized = this.summarizer(res)
+        this.setState({
+          responseDNN: summarized,
+          loadingDNN: false,
+        })
+      })
+    }
+    // make MICL call
+    if (this.state.checkMICL){
+      this.setState({loadingMICL: true})
+      var miclPromise = this.miclAPI(params)
+      promiseArray.push(miclPromise)
+
+      miclPromise.then( res => {
+        let summarized = this.summarizer(res)
+        this.setState({
+          responseMICL: summarized,
+          loadingMICL: false,
+        })
+      })
+    }
+    // make Rajat call
+    if (this.state.checkRajat){
+      this.setState({loadingRajat: true})
+      var rajatPromise = this.rajatAPI(params)
+      promiseArray.push(rajatPromise)
+
+      rajatPromise.then( res => {
+        let summarized = this.summarizer(res)
+        this.setState({
+          responseRajat: summarized,
+          loadingRajat: false,
+        })
+      })
+    }
+
+    // Bind this to variable for use in promise
     let that = this;
 
-    //Promise of Chatbot Services 
-    await Promise.all([this.askJamieAPI(params),this.state.checkDialog && this.dialogflowAPI(params),
-      this.state.checkMICL && this.miclAPI(params), 
-      this.state.checkRajat && this.rajatAPI(params)]).then(function(values){
-      
-      //On successful chatbot interaction, execute comparison for each chatbot response pair
+    // Promise of Chatbot Services
+    await Promise.all(
+      promiseArray
+    ).then( values => {
+      console.log(values)
+      // On successful chatbot interaction, execute comparison for each chatbot response pair
       that.comparison()
     })
   }
@@ -311,15 +404,30 @@ class Dashboard extends Component{
   //Handles selection of Chatbot services through checkboxes
   handleCheck(e){
     let name = e.target.name;
+    let value = e.target.value;
     this.setState({[name]: e.target.checked})
+
+    // if unchecked, clear response
+    if (!e.target.checked) {
+      this.setState({
+        [`response${value}`]:""
+      })
+    }
   }
 
   //Handle switch mechanism for text/speech input switches
   handleChange(e) {
     let name = e.target.name;
     this.setState({[name]:e.target.checked})
+    this.reset()
+
+    //Hacky method to trigger socket initiation when switch is pushed
     if(this.state.switch===false){
       this.initSockets()
+    }
+
+    if(this.state.switch===true){
+      this.state.socket.disconnect()
     }
   }
 
@@ -335,82 +443,119 @@ class Dashboard extends Component{
 
     socket.on('connect', () => {
       console.log('socket connected!')
+      this.setState({
+        socket: socket,
+        isSocketReady: true,
+      })
     })
 
-    socket.on('stream-ready', () => {
-      this.setState({
-        isSocketReady: true,
-        status: 1
-      })
+    socket.on('stream-ready-aisg', () => {
+      this.setState({streamOpenAISG: true,})
+    })
+
+    socket.on('stream-ready-google', () => {
+      this.setState({streamOpenGoogle: true,})
     })
 
     socket.on('stream-data-google', data => {
-      
+
       if (data.results[0].isFinal) {
-          this.setState(prevState => ({
-          input: prevState.transcription + ' ' + data.results[0].alternatives[0].transcript,
-          partialResult: ''
-          }))
-          this.handleClick()
-
-      } else {
-          this.setState(prevState => ({
-          partialResult: '[...' + data.results[0].alternatives[0].transcript + ']'
-          }))
-      }
-    })
-
-    socket.on('stream-data', data => {
-      
-        if (data.result.final) {
-            this.setState(prevState => ({
-            input: prevState.transcription + ' ' + data.result.hypotheses[0].transcript,
-            partialResult: ''
-            }))
-            this.handleClick()
+        this.setState(prevState => ({
+          transcriptionGoogle: prevState.transcriptionGoogle + data.results[0].alternatives[0].transcript,
+          partialResultGoogle: ''
+        }))
 
         } else {
-            // this.setState({input:""})
-            this.setState(prevState => ({
-            partialResult: '[...' + data.result.hypotheses[0].transcript + ']'
-            }))
+          this.setState(prevState => ({
+            partialResultGoogle: '[...' + data.results[0].alternatives[0].transcript + ']'
+          }))
         }
     })
 
-    socket.on('stream-close', () => {
-      this.setState({
-        status: 2,
-        isBusy: false
-      })
+    socket.on('stream-data-aisg', data => {
+      if (data.result.final) {
+        this.setState(prevState => ({
+          transcriptionAISG: prevState.transcriptionAISG.slice(0,-1) + ' ' + data.result.hypotheses[0].transcript,
+          partialResultAISG: ''
+        }))
+
+      } else {
+        // this.setState({input:""})
+        this.setState(prevState => ({
+          partialResultAISG: '[...' + data.result.hypotheses[0].transcript + ']'
+        }))
+      }
     })
-    this.setState({
-      socket
+
+    socket.on('stream-close-aisg', () => {
+      this.setState(prevState => ({
+        streamOpenAISG: false,
+        isBusy: prevState.streamOpenGoogle,
+      }))
+    })
+
+    socket.on('stream-close-google', () => {
+      this.setState(prevState => ({
+        streamOpenGoogle: false,
+        isBusy: prevState.streamOpenAISG,
+      }))
     })
   }
 
   reset = () => {
     this.setState({
       input: '',
-      transcription: '',
-      partialResult: ''
+      partialResultAISG: '',
+      partialResultGoogle: '',
+      transcriptionAISG: '',
+      transcriptionGoogle: '',
+      responseDialogflow:"",
+      responseDNN:"",
+      responseJamie:"",
+      responseMICL:"",
+      responseRajat: "",
+      similarityDialog: false,
+      similarityDNN: false,
+      similarityMICL: false,
+      similarityRajat: false,
     })
   }
 
-  setBusy = () => {
-    this.setState({
-      isBusy: true
-    })
-  }
+  //Handle question topic change
+  handleTopicChange(e, value) {
+    this.setState({topic:value})
+    // reset input and responses
+    this.reset()
 
-  setStatus = (status) => {
-    this.setState({
-      status
-    })
+    switch (value) {
+      case 'babybonus':
+        this.setState({
+          availableDialog: true,
+          availableMICL: true,
+          availableRajat: true,
+          checkDialog: true,
+          checkMICL: true,
+          checkRajat: true,
+        })
+        break
+      case 'covid19':
+        this.setState({
+          availableDialog: true,
+          availableMICL: false,
+          availableRajat: true,
+          checkDialog: true,
+          checkMICL: false,
+          checkRajat: true,
+        })
+        break
+      default:
+        break
+    }
   }
 
   render(){
     return (
-        
+
       <div>
         <CssBaseline />
 
@@ -424,40 +569,42 @@ class Dashboard extends Component{
               <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                   <img src={NTU} style={{width: '160px', height:'70px'}} alt="NTU Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                     <img src={NUS} style={{width: '160px', height:'70px'}} alt="NUS Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center", paddingLeft:"30px"}}>
+              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
                     <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
-              
+
             </Grid>
 
             <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
-            
+
             <Tab eventKey="dashboard" title="Multi-Chatbot Interface">
-            
+
             <br/><br/>
 
             <Grid container style={{paddingBottom:"40px"}} justify="center">
-              <Card>
-                <CardContent style={{width:"500px"}}>
-                  <Typography color="textSecondary" gutterBottom>
-                    Mutli Chatbot Interface for Response Comparisons
-                  </Typography>
-                  <Typography color="textSecondary">
-                    
-                  </Typography>
-                  <Typography variant="body2" component="p">
-                    1. Selection of Chatbot Services 
-                    <br />
-                    2. Choose between Text(Default) or Realtime Speech Input
-                    <br />
-                    3. Real-time Speech allows choice of Google or AISG Transcription Services
-                  </Typography>
-                </CardContent>
-              
-              </Card>
+
+            <Card>
+              <CardContent style={{width:"500px"}}>
+                <Typography color="textSecondary" gutterBottom>
+                  Multi Chatbot Interface for Response Comparisons
+                </Typography>
+                <Typography color="textSecondary">
+
+                </Typography>
+                <Typography variant="body2" component="p">
+                  1. Selection of Chatbot Services
+                  <br />
+                  2. Choose between Text(Default) or Realtime Speech Input
+                  <br />
+                  3. Real-time Speech allows choice of Google or AISG Transcription Services
+                </Typography>
+              </CardContent>
+
+            </Card>
+
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
@@ -472,17 +619,18 @@ class Dashboard extends Component{
                                 name="switch"
                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
                                 label="Switch between Text and Speech"
+                                disabled={this.state.isBusy}
                                 />}
                     label="SWITCH BETWEEN TEXT AND SPEECH"
                   />
                 </Grid>
 
-                <Grid item xs={12} md={8} lg={6}>
-                  
-                  {this.state.switch && 
+                <Grid item xs={12} md={6} lg={6}>
+
+                  {this.state.switch &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Text Input Disabled. 
+                      Text Input Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable text
@@ -498,69 +646,103 @@ class Dashboard extends Component{
                     startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
                     labelWidth={60}
                     name="input"
+                    value={this.state.input}
                     onChange={this.handleInput}
                   />
                   <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
                   </FormControl>
                   }
-                  
-                
+
+
                 </Grid>
-                
-                <Grid item xs={12} md={4} lg={6}>
 
-                  {this.state.switch && 
+                <Grid item xs={12} md={6} lg={6}>
 
+                  {this.state.switch &&
                   <Record
-                  input= {this.state.input}
-                  partialResult = {this.state.partialResult}
+                  transcriptionAISG= {this.state.transcriptionAISG}
+                  transcriptionGoogle = {this.state.transcriptionGoogle}
+                  partialResultAISG = {this.state.partialResultAISG}
+                  partialResultGoogle = {this.state.partialResultGoogle}
+                  input = {this.state.input}
                   socket={this.state.socket}
                   isBusy={this.state.isBusy}
                   isSocketReady={this.state.isSocketReady}
                   backendUrl={this.state.backendUrl}
                   reset={this.reset}
-                  setBusy={this.setBusy}
-                  audio={this.state.audio}
+                  setState={this.setState}
+                  handleClick = {this.handleClick}
                   />
                   }
+
                   {this.state.switch ===false &&
                   <Paper style={textPosition}>
                     <Typography variant="h5" component="h3">
-                      Speech to Text Disabled. 
+                      Speech to Text Disabled.
                     </Typography>
                     <Typography component="p">
                       Select switch to enable speech
                     </Typography>
                   </Paper>
                   }
-                  
+
                 </Grid>
-                
-                <Grid item xs={12} md={12}>
-                <h3>Select Chatbot Services:</h3>
-                
+
+                {/* Chatbot Selection */}
+                <Grid item xs={6}>
+                <Typography variant='h5'>
+                Select Chatbot Services:
+                </Typography>
+
                 <FormGroup row>
-                  
+
+                  {this.state.availableDialog &&
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
                     label="Dialogflow"
-                  />
+                  />}
+                  {this.state.availableMICL &&
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
                     label="Andrew"
-                  />
-
+                  />}
+                  {this.state.availableRajat &&
                   <FormControlLabel
                     control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
                     label="Rajat"
-                  /> 
+                  />}
 
                 </FormGroup>
 
                 </Grid>
 
+                {/* Question Topic Selection */}
+                <Grid item xs={6}>
+
+                  <Typography variant='h5'>
+                  Question Topic:
+                  </Typography>
+
+                  <RadioGroup aria-label="topic selection" name="topic selection"
+                  value={this.state.topic} onChange={this.handleTopicChange} row>
+                    <FormControlLabel
+                    value="babybonus"
+                    label="Baby Bonus"
+                    control={<Radio color="primary" />}
+                    />
+                    <FormControlLabel
+                    value="covid19"
+                    label="Covid-19"
+                    control={<Radio color="primary" />}
+                    />
+                  </RadioGroup>
+
+
+
+                </Grid>
+
                 {this.state.switch === true &&
-                <Grid item xs={12}>
+                <Grid item xs={12} >
                   <h6>Transcription: {this.state.input}</h6>
                 </Grid>
                 }
@@ -571,7 +753,21 @@ class Dashboard extends Component{
                     responseJamie = {this.state.responseJamie}
                   />
                 </Grid>
-                
+
+                {this.state.checkDNN &&
+                <Grid item xs={12} md={4}>
+                  <DNN
+                    similarityDNN = {this.state.similarityDNN}
+                    loadingDNN = {this.state.loadingDNN}
+                    responseDNN = {this.state.responseDNN}
+                    choice = {this.state.choice}
+                    // handleChoice = {this.handleChoice}
+                    reccommendation = {this.state.reccommendation}
+                    scoreDNN = {this.state.scoreDNN}
+                  />
+                </Grid>
+                }
+
                 {this.state.checkDialog &&
                 <Grid item xs={12} md={4}>
                   <Dialogflow
@@ -604,7 +800,7 @@ class Dashboard extends Component{
                   />
                 </Grid>
                 }
-                
+
             </Grid>
 
             </Tab>
@@ -614,29 +810,28 @@ class Dashboard extends Component{
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
 
               <Grid item xs={12} md={12}>
-                <UploadBox 
-                handleQueryInput={this.handleQueryInput} 
-                askJamieAPI={this.askJamieAPI} 
+                <UploadBox
+                askJamieAPI={this.askJamieAPI}
                 dialogflowAPI={this.dialogflowAPI}
                 miclAPI={this.miclAPI}
-                rajatAPI={this.rajatAPI}
-                />
-              </Grid>
+                rajatAPI={this.rajatAPI}/>
 
+              </Grid>
             </Grid>
-              
+
             </Tab>
 
+            {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
             <Tab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
               <AudioUpload
-                backendUrl={this.state.backendUrl}
+              backendUrl={this.state.backendUrl}
               />
             </Tab>
 
             </Tabs>
             </Container>
-            
+
         </main>
       </div>
     );
