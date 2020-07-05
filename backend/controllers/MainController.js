@@ -1,17 +1,19 @@
 const WebSocketClient = require('websocket').client
 const io = require('../io')
 const spawn = require('child_process').spawn
+const axios = require('axios')
 const fs = require('fs')
 const dotenv = require('dotenv');
 dotenv.config();
 
 const englishOnlineServerUrl = process.env.SPEECH_API // this is address for english model, change it to your target model (malay, chinese,...)
 const speechLabsAPIUrl = process.env.SPEECH_HTTP_API  // address for AISpeechLab HTTP API access
+const speechLabAuthUrl = process.env.SPEECH_HTTP_AUTH // address for AISpeechlab Authentication
 
 class MainController {
   static async streamByRecordingAISG (req, res, next) {
     try {
-      const token = fs.readFileSync(process.env.AISG_TOKEN, 'utf-8')
+      var token = await getSpeechLabToken()
       const socket_id = req.body.socketid
       var isFinal = true
       var isWaitingToClose = false
@@ -206,7 +208,7 @@ class MainController {
 
   static async streamByImport (req, res, next) {
     try {
-      const token = req.body.token
+      var token = await getSpeechLabToken()
 
       const ls = spawn('python', ['client_2.py', '-u', englishOnlineServerUrl, '-r', '32000', '-t', token, req.file.path])
       ls.stdout.on('data', (data) => {
@@ -252,7 +254,7 @@ class MainController {
 
   static async speechLabsHTTPRequest (req, res, next) {
     try {
-      const token = fs.readFileSync(process.env.AISG_TOKEN, 'utf-8')
+      var token = await getSpeechLabToken()
 
       var file =  JSON.parse(req.body.file)
 
@@ -324,6 +326,21 @@ class MainController {
 
     res.json({text: transcription})
   }
+
+}
+
+async function getSpeechLabToken() {
+  var credentials = JSON.parse(fs.readFileSync(process.env.AISG_CREDENTIALS, 'utf-8'))
+
+  return new Promise(resolve => {
+    axios.post(`${speechLabAuthUrl}/login`, credentials)
+      .then(response => {
+        resolve(response.data.user.token)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  })
 }
 
 // static async streamByRecording (req, res, next) {

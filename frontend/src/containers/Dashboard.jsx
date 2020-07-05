@@ -620,115 +620,91 @@ class Dashboard extends Component{
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
 
-                <Grid item xs={12} md={12} style={{textAlign:"center"}}>
+              {/* Switch for text and speech */}
+              <Grid item xs={12} md={12} style={{textAlign:"center"}}>
+                <FormControlLabel
+                  control = {<Switch
+                              checked={this.state.switch}
+                              onChange={this.handleChange}
+                              value="checkedA"
+                              name="switch"
+                              inputProps={{ 'aria-label': 'secondary checkbox' }}
+                              label="Switch between Text and Speech"
+                              disabled={this.state.isBusy}
+                              />}
+                  label="SWITCH BETWEEN TEXT AND SPEECH"
+                />
+              </Grid>
 
-                  <FormControlLabel
-                    control = {<Switch
-                                checked={this.state.switch}
-                                onChange={this.handleChange}
-                                value="checkedA"
-                                name="switch"
-                                inputProps={{ 'aria-label': 'secondary checkbox' }}
-                                label="Switch between Text and Speech"
-                                disabled={this.state.isBusy}
-                                />}
-                    label="SWITCH BETWEEN TEXT AND SPEECH"
-                  />
-                </Grid>
+              {/* Text Input */}
+              <Grid item xs={12} md={6} lg={6}>
 
-                <Grid item xs={12} md={6} lg={6}>
-
-                  {this.state.switch &&
-                  <Paper style={textPosition}>
-                    <Typography variant="h5" component="h3">
-                      Text Input Disabled.
-                    </Typography>
-                    <Typography component="p">
-                      Select switch to enable text
+                {this.state.switch &&
+                <Paper style={textPosition}>
+                  <Typography variant="h5" component="h3">
+                    Text Input Disabled.
                   </Typography>
-                  </Paper>
-                  }
-
-                  {this.state.switch === false &&
-                  <FormControl fullWidth variant="outlined">
-                  <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
-                  <OutlinedInput
-                    id="outlined-adornment-amount"
-                    startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
-                    labelWidth={60}
-                    name="input"
-                    value={this.state.input}
-                    onChange={this.handleInput}
-                  />
-                  <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
-                  </FormControl>
-                  }
-
-
-                </Grid>
-
-                <Grid item xs={12} md={6} lg={6}>
-
-                  {this.state.switch &&
-                  <Record
-                  transcriptionAISG= {this.state.transcriptionAISG}
-                  transcriptionGoogle = {this.state.transcriptionGoogle}
-                  partialResultAISG = {this.state.partialResultAISG}
-                  partialResultGoogle = {this.state.partialResultGoogle}
-                  input = {this.state.input}
-                  socket={this.state.socket}
-                  isBusy={this.state.isBusy}
-                  isSocketReady={this.state.isSocketReady}
-                  backendUrl={this.state.backendUrl}
-                  reset={this.reset}
-                  setState={this.setState}
-                  handleClick = {this.handleClick}
-                  />
-                  }
-
-                  {this.state.switch ===false &&
-                  <Paper style={textPosition}>
-                    <Typography variant="h5" component="h3">
-                      Speech to Text Disabled.
-                    </Typography>
-                    <Typography component="p">
-                      Select switch to enable speech
-                    </Typography>
-                  </Paper>
-                  }
-
-                </Grid>
-
-                {/* Chatbot Selection */}
-                <Grid item xs={6}>
-                <Typography variant='h5'>
-                Select Chatbot Services:
+                  <Typography component="p">
+                    Select switch to enable text
                 </Typography>
+                </Paper>
+                }
 
-                <FormGroup row>
+                {this.state.switch === false &&
+                <FormControl fullWidth variant="outlined">
+                <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
+                <OutlinedInput
+                  id="outlined-adornment-amount"
+                  startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
+                  labelWidth={60}
+                  name="input"
+                  value={this.state.input}
+                  onChange={this.handleInput}
+                />
+                <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
+                </FormControl>
+                }
 
-                  {this.state.availableDialog &&
-                  <FormControlLabel
-                    control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
-                    label="Dialogflow"
-                  />}
-                  {this.state.availableMICL &&
-                  <FormControlLabel
-                    control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
-                    label="Andrew"
-                  />}
-                  {this.state.availableRajat &&
-                  <FormControlLabel
-                    control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
-                    label="Rajat"
-                  />}
 
-                </FormGroup>
+              </Grid>
 
-                </Grid>
+              {/* Speech-to-Text */}
+              <Grid item xs={12} md={6} lg={6}>
 
+                {this.state.switch &&
+                <Record
+                transcriptionAISG= {this.state.transcriptionAISG}
+                transcriptionGoogle = {this.state.transcriptionGoogle}
+                partialResultAISG = {this.state.partialResultAISG}
+                partialResultGoogle = {this.state.partialResultGoogle}
+                input = {this.state.input}
+                socket={this.state.socket}
+                isBusy={this.state.isBusy}
+                isSocketReady={this.state.isSocketReady}
+                backendUrl={this.state.backendUrl}
+                reset={this.reset}
+                setState={this.setState}
+                handleClick = {this.handleClick}
+                />
+                }
+
+                {this.state.switch ===false &&
+                <Paper style={textPosition}>
+                  <Typography variant="h5" component="h3">
+                    Speech to Text Disabled.
+                  </Typography>
+                  <Typography component="p">
+                    Select switch to enable speech
+                  </Typography>
+                </Paper>
+                }
+
+              </Grid>
+
+              {/* Question topic and Chatbot services */}
+              <Grid item container xs={12} spacing={0}>
                 {/* Question Topic Selection */}
-                <Grid item xs={6}>
+                <Grid item xs={12}>
 
                   <Typography variant='h5'>
                   Question Topic:
@@ -748,69 +724,95 @@ class Dashboard extends Component{
                     />
                   </RadioGroup>
 
-
-
                 </Grid>
 
-                {this.state.switch === true &&
-                <Grid item xs={12} >
-                  <h6>Transcription: {this.state.input}</h6>
-                </Grid>
-                }
+                {/* Chatbot Selection */}
+                <Grid item xs={12}>
 
-                <Grid item xs={12} md={4}>
-                  <Jamie
-                    loadingJamie = {this.state.loadingJamie}
-                    responseJamie = {this.state.responseJamie}
-                  />
-                </Grid>
+                  <Typography variant='h5'>
+                  Select Chatbot Services:
+                  </Typography>
 
-                {this.state.checkDNN &&
-                <Grid item xs={12} md={4}>
-                  <DNN
-                    similarityDNN = {this.state.similarityDNN}
-                    loadingDNN = {this.state.loadingDNN}
-                    responseDNN = {this.state.responseDNN}
-                    choice = {this.state.choice}
-                    // handleChoice = {this.handleChoice}
-                    reccommendation = {this.state.reccommendation}
-                    scoreDNN = {this.state.scoreDNN}
-                  />
-                </Grid>
-                }
+                  <FormGroup row>
+                    {this.state.availableDialog &&
+                    <FormControlLabel
+                      control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
+                      label="Dialogflow"
+                    />}
+                    {this.state.availableMICL &&
+                    <FormControlLabel
+                      control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
+                      label="Andrew"
+                    />}
+                    {this.state.availableRajat &&
+                    <FormControlLabel
+                      control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
+                      label="Rajat"
+                    />}
+                  </FormGroup>
 
-                {this.state.checkDialog &&
-                <Grid item xs={12} md={4}>
-                  <Dialogflow
-                    similarityDialog = {this.state.similarityDialog}
-                    loadingDialogflow = {this.state.loadingDialogflow}
-                    responseDialogflow = {this.state.responseDialogflow}
-                    scoreDialog = {this.state.scoreDialog}
-                  />
                 </Grid>
-                }
+              </Grid>
 
-                {this.state.checkMICL &&
-                <Grid item xs={12} md={4}>
-                  <MICL
-                    similarityMICL = {this.state.similarityMICL}
-                    loadingMICL = {this.state.loadingMICL}
-                    responseMICL = {this.state.responseMICL}
-                    scoreMICL = {this.state.scoreMICL}
-                  />
-                </Grid>
-                }
+              {this.state.switch === true &&
+              <Grid item xs={12} >
+                <h6>Transcription: {this.state.input}</h6>
+              </Grid>
+              }
 
-                {this.state.checkRajat &&
-                <Grid item xs={12} md={4}>
-                  <Rajat
-                    similarityRajat = {this.state.similarityRajat}
-                    loadingRajat = {this.state.loadingRajat}
-                    responseRajat = {this.state.responseRajat}
-                    scoreRajat = {this.state.scoreRajat}
-                  />
-                </Grid>
-                }
+              <Grid item xs={12} md={4}>
+                <Jamie
+                  loadingJamie = {this.state.loadingJamie}
+                  responseJamie = {this.state.responseJamie}
+                />
+              </Grid>
+
+              {this.state.checkDNN &&
+              <Grid item xs={12} md={4}>
+                <DNN
+                  similarityDNN = {this.state.similarityDNN}
+                  loadingDNN = {this.state.loadingDNN}
+                  responseDNN = {this.state.responseDNN}
+                  choice = {this.state.choice}
+                  // handleChoice = {this.handleChoice}
+                  reccommendation = {this.state.reccommendation}
+                  scoreDNN = {this.state.scoreDNN}
+                />
+              </Grid>
+              }
+
+              {this.state.checkDialog &&
+              <Grid item xs={12} md={4}>
+                <Dialogflow
+                  similarityDialog = {this.state.similarityDialog}
+                  loadingDialogflow = {this.state.loadingDialogflow}
+                  responseDialogflow = {this.state.responseDialogflow}
+                  scoreDialog = {this.state.scoreDialog}
+                />
+              </Grid>
+              }
+
+              {this.state.checkMICL &&
+              <Grid item xs={12} md={4}>
+                <MICL
+                  similarityMICL = {this.state.similarityMICL}
+                  loadingMICL = {this.state.loadingMICL}
+                  responseMICL = {this.state.responseMICL}
+                  scoreMICL = {this.state.scoreMICL}
+                />
+              </Grid>
+              }
+
+              {this.state.checkRajat &&
+              <Grid item xs={12} md={4}>
+                <Rajat
+                  similarityRajat = {this.state.similarityRajat}
+                  loadingRajat = {this.state.loadingRajat}
+                  responseRajat = {this.state.responseRajat}
+                  scoreRajat = {this.state.scoreRajat}
+                />
+              </Grid>
+              }
 
             </Grid>
 
