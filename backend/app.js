@@ -4,6 +4,7 @@ const miclRouter = require('./routes/micl');
 const flaskRouter = require('./routes/flask');
 const askJamieRouter = require('./routes/askJamie');
 const rajatRouter = require('./routes/rajat.js');
+const rushiRouter = require('./routes/rushi.js')
 const STT = require('./controllers/MainController');
 const upload = require('./upload');
 const AC = require('./controllers/AudioController')
@@ -19,6 +20,9 @@ app.use('/micl', miclRouter);
 app.use('/flask', flaskRouter);
 app.use('/jamie', askJamieRouter);
 app.use('/rajat', rajatRouter);
+app.use('/rushi', rushiRouter);
+
+app.get('/', (req, res, next)=>{res.json({'status':'success'})})
 
 app.post('/stream/google', STT.streamByRecordingGoogle)
 app.post('/stream/aisg', STT.streamByRecordingAISG)

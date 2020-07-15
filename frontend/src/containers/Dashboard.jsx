@@ -25,6 +25,7 @@ import MICL from "./MICL";
 import UploadBox from "./UploadBox";
 import AudioUpload from "./Audiofile";
 import Rajat from "./Rajat";
+import Rushi from "./Rushi";
 import AISG from "../img/aisg.png";
 import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
@@ -52,22 +53,26 @@ class Dashboard extends Component{
         responseJamie:"",
         responseMICL:"",
         responseRajat: "",
+        responseRushi: "",
 
         loadingJamie:false,
         loadingDialogflow:false,
         loadingDNN: false,
         loadingMICL: false,
         loadingRajat: false,
+        loadingRushi: false,
 
         similarityDialog: false,
         similarityDNN: false,
         similarityMICL: false,
         similarityRajat: false,
+        similarityRushi: false,
 
         scoreDialog: 0,
         scoreDNN: 0,
         scoreMICL: 0,
         scoreRajat: 0,
+        scoreRushi: 0,
 
         choice: "",
         reccommendation: [],
@@ -75,11 +80,13 @@ class Dashboard extends Component{
         checkDNN: false,
         checkMICL: true,
         checkRajat: true,
+        checkRushi: true,
 
         topic: "babybonus", // babybonus, covid19,
         availableDialog: true,
         availableMICL: true,
         availableRajat: true,
+        availableRushi: true,
         // set availability at handleTopicChange() function
 
         responseScoreArray: [],
@@ -117,6 +124,7 @@ class Dashboard extends Component{
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.checkSimilarityRajat = this.checkSimilarityRajat.bind(this);
+    this.checkSimilarityRushi = this.checkSimilarityRushi.bind(this);
 
     //Response Comparison Method Bindings
     this.APICallResponseCompare = this.APICallResponseCompare.bind(this);
@@ -128,6 +136,7 @@ class Dashboard extends Component{
     this.dnnAPI = this.dnnAPI.bind(this);
     this.miclAPI = this.miclAPI.bind(this);
     this.rajatAPI = this.rajatAPI.bind(this);
+    this.rushiAPI = this.rushiAPI.bind(this);
 
     // Question Topic Method Bindings
     this.handleTopicChange = this.handleTopicChange.bind(this)
@@ -196,6 +205,11 @@ class Dashboard extends Component{
     this.setState({similarityRajat:true})
   }
 
+  checkSimilarityRushi(score){
+    this.setState({scoreRushi:score})
+    this.setState({similarityRushi:true})
+  }
+
   //API Chatbot services for interation simulation
   askJamieAPI(params){
     return new Promise(function(resolve,reject){
@@ -259,6 +273,19 @@ class Dashboard extends Component{
     })
   }
 
+  rushiAPI(params){
+    return new Promise(function(resolve, reject){
+      axios.post(`${process.env.REACT_APP_API}/rushi/api/queryEndpoint`, params)
+      .then((res)=>{
+        console.log(res)
+        resolve(res.data.reply)
+      })
+      .catch(error=>{
+        console.log("Error contacting Rushi server")
+      })
+    })
+  }
+
   // Make sure responses are present before executing response comparison
   comparison(){
 
@@ -297,6 +324,15 @@ class Dashboard extends Component{
         console.log("Comparison Error")
       }
     }
+
+    if(this.state.checkRushi){
+      let req = {responses: [this.state.responseRushi, this.state.responseJamie]}
+      try{
+        this.APICallResponseCompare(req, this.checkSimilarityRushi);
+      }catch(e){
+        console.log("Comparison Error")
+      }
+    }
   }
 
   // On input submit action handler
@@ -310,6 +346,7 @@ class Dashboard extends Component{
       similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
+      similarityRushi: false,
     })
 
     // Construct input object
@@ -385,6 +422,20 @@ class Dashboard extends Component{
         this.setState({
           responseRajat: summarized,
           loadingRajat: false,
+        })
+      })
+    }
+    // make Rushi call
+    if (this.state.checkRushi){
+      this.setState({loadingRushi: true})
+      var rushiPromise = this.rushiAPI(params)
+      promiseArray.push(rushiPromise)
+
+      rushiPromise.then( res => {
+        let summarized = this.summarizer(res)
+        this.setState({
+          responseRushi: summarized,
+          loadingRushi: false,
         })
       })
     }
@@ -515,10 +566,12 @@ class Dashboard extends Component{
       responseJamie:"",
       responseMICL:"",
       responseRajat: "",
+      responseRushi: "",
       similarityDialog: false,
       similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
+      similarityRushi: false,
     })
   }
 
@@ -527,15 +580,17 @@ class Dashboard extends Component{
     this.setState({topic:value})
     // reset responses only
     this.setState({
-      responseDialogflow:"",
-      responseDNN:"",
-      responseJamie:"",
-      responseMICL:"",
+      responseDialogflow: "",
+      responseDNN: "",
+      responseJamie: "",
+      responseMICL: "",
       responseRajat: "",
+      responseRushi: "",
       similarityDialog: false,
       similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
+      similarityRushi: false,
     })
 
     switch (value) {
@@ -544,9 +599,11 @@ class Dashboard extends Component{
           availableDialog: true,
           availableMICL: true,
           availableRajat: true,
+          availableRushi: true,
           checkDialog: true,
           checkMICL: true,
           checkRajat: true,
+          checkRushi: true,
         })
         break
       case 'covid19':
@@ -554,9 +611,11 @@ class Dashboard extends Component{
           availableDialog: true,
           availableMICL: false,
           availableRajat: true,
+          availableRushi: true,
           checkDialog: true,
           checkMICL: false,
           checkRajat: true,
+          checkRushi: true,
         })
         break
       default:
@@ -749,6 +808,11 @@ class Dashboard extends Component{
                       control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
                       label="Rajat"
                     />}
+                    {this.state.availableRushi &&
+                    <FormControlLabel
+                      control={<Checkbox checked={this.state.checkRushi} name="checkRushi" value="Rushi" onChange={this.handleCheck}/>}
+                      label="Rushi"
+                    />}
                   </FormGroup>
 
                 </Grid>
@@ -814,6 +878,17 @@ class Dashboard extends Component{
               </Grid>
               }
 
+              {this.state.checkRushi &&
+              <Grid item xs={12} md={4}>
+                <Rushi
+                  similarityRushi = {this.state.similarityRushi}
+                  loadingRushi = {this.state.loadingRushi}
+                  responseRushi = {this.state.responseRushi}
+                  scoreRushi = {this.state.scoreRushi}
+                />
+              </Grid>
+              }
+
             </Grid>
 
             </Tab>
@@ -827,7 +902,8 @@ class Dashboard extends Component{
                 askJamieAPI={this.askJamieAPI}
                 dialogflowAPI={this.dialogflowAPI}
                 miclAPI={this.miclAPI}
-                rajatAPI={this.rajatAPI}/>
+                rajatAPI={this.rajatAPI}
+                rushiAPI={this.rushiAPI}/>
 
               </Grid>
             </Grid>

@@ -163,6 +163,7 @@ export default function CustomizedInputBase(props) {
     const [availableMICL, setAvailableMICL] = React.useState(true)
     const [availableDialog, setAvailableDialog] = React.useState(true)
     const [availableRajat, setAvailableRajat] = React.useState(true)
+    const [availableRushi, setAvailableRushi] = React.useState(true)
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
@@ -307,6 +308,8 @@ export default function CustomizedInputBase(props) {
             service = props.miclAPI(params)
         }else if (value === 'Rajat'){
             service = props.rajatAPI(params)
+        }else if (value === 'Rushi'){
+            service = props.rushiAPI(params)
         }
 
         await Promise.all(
@@ -381,11 +384,13 @@ export default function CustomizedInputBase(props) {
           setAvailableDialog(true)
           setAvailableMICL(true)
           setAvailableRajat(true)
+          setAvailableRushi(true)
           break
         case 'covid19':
           setAvailableDialog(true)
           setAvailableMICL(false)
           setAvailableRajat(true)
+          setAvailableRushi(true)
           break
         default:
           break
@@ -464,6 +469,7 @@ export default function CustomizedInputBase(props) {
             {availableDialog && <MenuItem value="Dialogflow">Dialogflow</MenuItem>}
             {availableMICL && <MenuItem value="Andrew">Andrew</MenuItem>}
             {availableRajat && <MenuItem value="Rajat">Rajat</MenuItem>}
+            {availableRushi && <MenuItem value="Rushi">Rushi</MenuItem>}
           </Select>
 
           <FormHelperText>Chat Model Selection</FormHelperText>
