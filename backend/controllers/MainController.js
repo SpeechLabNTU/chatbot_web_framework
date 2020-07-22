@@ -131,7 +131,7 @@ class MainController {
     Object.keys(io.sockets.connected).forEach(key => {
       if (socket_id === key){
         console.log('Connection Initiated')
-        io.emit('stream-ready-google') // tell frontend that socket is ready
+        io.sockets.connected[key].emit('stream-ready-google') // tell frontend that socket is ready
 
         // //Signal on socket error
         io.sockets.connected[key].on('error', (error) => {
@@ -155,15 +155,15 @@ class MainController {
               })
               .on('data', data => {
                 isFinal = data.results[0].isFinal
-                io.emit('stream-data-google', data)
-                // io.emit('stream-data-google', data.results[0].alternatives[0].transcript)
+                io.sockets.connected[key].emit('stream-data-google', data)
+                // io.sockets.connected[key].emit('stream-data-google', data.results[0].alternatives[0].transcript)
 
                 if (isWaitingToClose && isFinal){
                   console.log('Google echo-protocol Connection Closed')
                   clearInterval(emptyBufferInterval)
                   recognizeStream.destroy()
                   recognizeStream = null
-                  io.emit('stream-close-google') // send close signal to client
+                  io.sockets.connected[key].emit('stream-close-google') // send close signal to client
                 }
               })
           }
@@ -178,7 +178,7 @@ class MainController {
             console.log('Google echo-protocol Connection Closed')
             recognizeStream.destroy()
             recognizeStream = null
-            io.emit('stream-close-google') // send close signal to client
+            io.sockets.connected[key].emit('stream-close-google') // send close signal to client
           }
           else {
             emptyBufferInterval = setInterval( () => {
