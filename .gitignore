@@ -14,8 +14,13 @@ training_data
 
 #python directory
 __pycache__/
+bin/
+include/
 lib/
+share/
 others/
+pyvenv.cfg
+lib64
 
 #optional
 .env
