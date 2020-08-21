@@ -15,6 +15,7 @@ training_data
 #python directory
 __pycache__/
 bin/
+!backend/bin/
 include/
 lib/
 share/
