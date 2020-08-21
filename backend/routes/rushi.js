@@ -17,6 +17,9 @@ router.post("/api/queryEndpoint", (req, res) => {
       case 'covid19':
         apiEndpoint = process.env.RUSHI_ENDPOINT_COVID19
         break
+      case 'comcare':
+        apiEndpoint = process.env.RUSHI_ENDPOINT_COMCARE
+        break
       default:
         break
     }

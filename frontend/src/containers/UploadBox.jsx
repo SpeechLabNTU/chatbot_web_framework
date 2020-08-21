@@ -392,6 +392,12 @@ export default function CustomizedInputBase(props) {
           setAvailableRajat(true)
           setAvailableRushi(true)
           break
+        case 'comcare':
+          setAvailableDialog(false)
+          setAvailableMICL(false)
+          setAvailableRajat(false)
+          setAvailableRushi(true)
+          break
         default:
           break
       }
@@ -516,6 +522,11 @@ export default function CustomizedInputBase(props) {
           <FormControlLabel
           value="covid19"
           label="Covid-19"
+          control={<Radio color="primary" />}
+          />
+          <FormControlLabel
+          value="comcare"
+          label="ComCare"
           control={<Radio color="primary" />}
           />
         </RadioGroup>
