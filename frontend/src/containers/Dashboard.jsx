@@ -18,14 +18,11 @@ import Button from '@material-ui/core/Button';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
-import Dialogflow from './Dialogflow';
 import DNN from './DNN';
 import Jamie from "./Jamie";
-import MICL from "./MICL";
+import AnswerModel from "./AnswerModel";
 import UploadBox from "./UploadBox";
 import AudioUpload from "./Audiofile";
-import Rajat from "./Rajat";
-import Rushi from "./Rushi";
 import AISG from "../img/aisg.png";
 import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
@@ -33,7 +30,6 @@ import NUS from "../img/nus.png";
 import {Tab, Tabs} from "react-bootstrap";
 import RadioGroup from '@material-ui/core/RadioGroup'
 import Radio from '@material-ui/core/Radio'
-
 
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
@@ -82,7 +78,7 @@ class Dashboard extends Component{
         checkRajat: true,
         checkRushi: true,
 
-        topic: "babybonus", // babybonus, covid19,
+        topic: "babybonus", // babybonus, covid19, comcare
         availableDialog: true,
         availableMICL: true,
         availableRajat: true,
@@ -146,7 +142,7 @@ class Dashboard extends Component{
   summarizer(result){
     var array = []
     var summary = "";
-    array = result.split(" ")
+    array = result.split(" ").filter(i => i !== "")
     if (array.length < 40){
       summary = result
     }else{
@@ -864,44 +860,48 @@ class Dashboard extends Component{
 
               {this.state.checkDialog &&
               <Grid item xs={12} md={4}>
-                <Dialogflow
-                  similarityDialog = {this.state.similarityDialog}
-                  loadingDialogflow = {this.state.loadingDialogflow}
-                  responseDialogflow = {this.state.responseDialogflow}
-                  scoreDialog = {this.state.scoreDialog}
+                <AnswerModel
+                  value = "Dialogflow"
+                  similarity = {this.state.similarityDialog}
+                  loading = {this.state.loadingDialogflow}
+                  response = {this.state.responseDialogflow}
+                  score = {this.state.scoreDialog}
                 />
               </Grid>
               }
 
               {this.state.checkMICL &&
               <Grid item xs={12} md={4}>
-                <MICL
-                  similarityMICL = {this.state.similarityMICL}
-                  loadingMICL = {this.state.loadingMICL}
-                  responseMICL = {this.state.responseMICL}
-                  scoreMICL = {this.state.scoreMICL}
+                <AnswerModel
+                  value = "Andrew"
+                  similarity = {this.state.similarityMICL}
+                  loading = {this.state.loadingMICL}
+                  response = {this.state.responseMICL}
+                  score = {this.state.scoreMICL}
                 />
               </Grid>
               }
 
               {this.state.checkRajat &&
               <Grid item xs={12} md={4}>
-                <Rajat
-                  similarityRajat = {this.state.similarityRajat}
-                  loadingRajat = {this.state.loadingRajat}
-                  responseRajat = {this.state.responseRajat}
-                  scoreRajat = {this.state.scoreRajat}
+                <AnswerModel
+                  value = "Rajat"
+                  similarity = {this.state.similarityRajat}
+                  loading = {this.state.loadingRajat}
+                  response = {this.state.responseRajat}
+                  score = {this.state.scoreRajat}
                 />
               </Grid>
               }
 
               {this.state.checkRushi &&
               <Grid item xs={12} md={4}>
-                <Rushi
-                  similarityRushi = {this.state.similarityRushi}
-                  loadingRushi = {this.state.loadingRushi}
-                  responseRushi = {this.state.responseRushi}
-                  scoreRushi = {this.state.scoreRushi}
+                <AnswerModel
+                  value = "Rushi"
+                  similarity = {this.state.similarityRushi}
+                  loading = {this.state.loadingRushi}
+                  response = {this.state.responseRushi}
+                  score = {this.state.scoreRushi}
                 />
               </Grid>
               }
