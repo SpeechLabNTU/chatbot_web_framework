@@ -1,19 +1,19 @@
 const express = require('express')
 const router = express.Router()
 const request = require('request')
-// const dotenv = require('dotenv');
-// dotenv.config();
+const dotenv = require('dotenv');
+dotenv.config();
 
 /*Deep Neural Network Python API*/
 router.post("/api/russ_query", (req, res) => {
-    
+
     let query = req.body.question
 
     request({
         method:'POST',
-        url: "http://localhost:5000/api/query",
+        url: `${process.env.FLASK_ENDPOINT}/api/query`,
         json: {"request":query}
-    }, (error, response, body) =>{ 
+    }, (error, response, body) =>{
 
         if(error !== null){
             if (error.errno === "ECONNREFUSED"){
@@ -28,13 +28,13 @@ router.post("/api/russ_query", (req, res) => {
 
 /*Response Comparison*/
 router.post("/api/responseCompare", (req,res)=>{
-    
+
     let query = req.body.responses
     // console.log(query)
-    
+
     request({
         method:'POST',
-        url: "http://localhost:5000/api/similarityCheck",
+        url: `${process.env.FLASK_ENDPOINT}/api/similarityCheck`,
         json: {"request":query}
     }, (error, response, body) =>{
         if (error !== null){

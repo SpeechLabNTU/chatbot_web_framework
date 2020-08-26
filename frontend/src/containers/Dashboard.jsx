@@ -18,7 +18,6 @@ import Button from '@material-ui/core/Button';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
-import DNN from './DNN';
 import Jamie from "./Jamie";
 import AnswerModel from "./AnswerModel";
 import UploadBox from "./UploadBox";
@@ -45,7 +44,6 @@ class Dashboard extends Component{
         input:"",
 
         responseDialogflow:"",
-        responseDNN:"",
         responseJamie:"",
         responseMICL:"",
         responseRajat: "",
@@ -53,19 +51,16 @@ class Dashboard extends Component{
 
         loadingJamie:false,
         loadingDialogflow:false,
-        loadingDNN: false,
         loadingMICL: false,
         loadingRajat: false,
         loadingRushi: false,
 
         similarityDialog: false,
-        similarityDNN: false,
         similarityMICL: false,
         similarityRajat: false,
         similarityRushi: false,
 
         scoreDialog: 0,
-        scoreDNN: 0,
         scoreMICL: 0,
         scoreRajat: 0,
         scoreRushi: 0,
@@ -73,7 +68,6 @@ class Dashboard extends Component{
         choice: "",
         reccommendation: [],
         checkDialog: true,
-        checkDNN: false,
         checkMICL: true,
         checkRajat: true,
         checkRushi: true,
@@ -116,7 +110,6 @@ class Dashboard extends Component{
     this.summarizer = this.summarizer.bind(this);
 
     //Similarity Check Method Bindings
-    this.checkSimilarityDNN = this.checkSimilarityDNN.bind(this);
     this.checkSimilarityDialog = this.checkSimilarityDialog.bind(this);
     this.checkSimilarityMICL = this.checkSimilarityMICL.bind(this);
     this.checkSimilarityRajat = this.checkSimilarityRajat.bind(this);
@@ -129,7 +122,6 @@ class Dashboard extends Component{
     //API Call Method Bindings
     this.askJamieAPI = this.askJamieAPI.bind(this);
     this.dialogflowAPI = this.dialogflowAPI.bind(this);
-    this.dnnAPI = this.dnnAPI.bind(this);
     this.miclAPI = this.miclAPI.bind(this);
     this.rajatAPI = this.rajatAPI.bind(this);
     this.rushiAPI = this.rushiAPI.bind(this);
@@ -143,19 +135,12 @@ class Dashboard extends Component{
     var array = []
     var summary = "";
     array = result.split(" ").filter(i => i !== "")
-    if (array.length < 40){
-      summary = result
-    }else{
-      for (var i = 0;i<40;i++){
-        if (i === 39){
-          summary += array[i] + "..."
-        }else{
-          summary += array[i] + " "
-        }
-      }
+
+    for (var i = 0; i < array.length; i++){
+      summary += array[i] + " "
     }
 
-    return summary
+    return summary.trim()
   }
 
   //User input handling
@@ -184,11 +169,6 @@ class Dashboard extends Component{
   checkSimilarityDialog(score){
     this.setState({scoreDialog:score})
     this.setState({similarityDialog: true})
-  }
-
-  checkSimilarityDNN(score){
-    this.setState({scoreDNN:score})
-    this.setState({similarityDNN:true})
   }
 
   checkSimilarityMICL(score){
@@ -228,18 +208,6 @@ class Dashboard extends Component{
       .catch(error=>{
         console.log("Error contacting Dialogflow")
       });
-    })
-  }
-
-  dnnAPI(params){
-    return new Promise(function(resolve, reject){
-      axios.post(`${process.env.REACT_APP_API}/flask/api/russ_query`, params)
-      .then((res)=>{
-        resolve(res.data.reply)
-      })
-      .catch(error=>{
-        console.log("Error contacting Flask server")
-      })
     })
   }
 
@@ -294,15 +262,6 @@ class Dashboard extends Component{
       }
     }
 
-    if(this.state.checkDNN){
-      let req = {responses: [this.state.responseDNN, this.state.responseJamie]}
-      try{
-        this.APICallResponseCompare(req, this.checkSimilarityDNN);
-      }catch(e){
-        console.log("Comparison Error")
-      }
-    }
-
     if(this.state.checkMICL){
       let req = {responses: [this.state.responseMICL, this.state.responseJamie]}
       try{
@@ -334,12 +293,11 @@ class Dashboard extends Component{
   // On input submit action handler
   async handleClick(){
 
-    if (this.state.input === "") return;
+    if (this.state.input.trim() === "") return;
 
     // Reset comparison score value
     this.setState({
       similarityDialog: false,
-      similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
       similarityRushi: false,
@@ -376,20 +334,6 @@ class Dashboard extends Component{
         this.setState({
           responseDialogflow: summarized,
           loadingDialogflow: false,
-        })
-      })
-    }
-    // make DNN call
-    if (this.state.checkDNN){
-      this.setState({loadingDNN: true})
-      var dnnPromise = this.dnnAPI(params)
-      promiseArray.push(dnnPromise)
-
-      dnnPromise.then( res => {
-        let summarized = this.summarizer(res)
-        this.setState({
-          responseDNN: summarized,
-          loadingDNN: false,
         })
       })
     }
@@ -558,13 +502,11 @@ class Dashboard extends Component{
       transcriptionAISG: '',
       transcriptionGoogle: '',
       responseDialogflow:"",
-      responseDNN:"",
       responseJamie:"",
       responseMICL:"",
       responseRajat: "",
       responseRushi: "",
       similarityDialog: false,
-      similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
       similarityRushi: false,
@@ -577,13 +519,11 @@ class Dashboard extends Component{
     // reset responses only
     this.setState({
       responseDialogflow: "",
-      responseDNN: "",
       responseJamie: "",
       responseMICL: "",
       responseRajat: "",
       responseRushi: "",
       similarityDialog: false,
-      similarityDNN: false,
       similarityMICL: false,
       similarityRajat: false,
       similarityRushi: false,
@@ -843,20 +783,6 @@ class Dashboard extends Component{
                   responseJamie = {this.state.responseJamie}
                 />
               </Grid>
-
-              {this.state.checkDNN &&
-              <Grid item xs={12} md={4}>
-                <DNN
-                  similarityDNN = {this.state.similarityDNN}
-                  loadingDNN = {this.state.loadingDNN}
-                  responseDNN = {this.state.responseDNN}
-                  choice = {this.state.choice}
-                  // handleChoice = {this.handleChoice}
-                  reccommendation = {this.state.reccommendation}
-                  scoreDNN = {this.state.scoreDNN}
-                />
-              </Grid>
-              }
 
               {this.state.checkDialog &&
               <Grid item xs={12} md={4}>
