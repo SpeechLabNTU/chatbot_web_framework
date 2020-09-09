@@ -15,6 +15,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
+import Fade from '@material-ui/core/Fade';
+
 const drawerWidth = 180;
 
 const useStyles = makeStyles((theme) => ({
@@ -22,20 +24,20 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   drawer: {
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       width: drawerWidth,
       flexShrink: 0,
     },
   },
   appBar: {
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       width: `calc(100% - ${drawerWidth}px)`,
       marginLeft: drawerWidth,
     },
   },
   menuButton: {
     marginRight: theme.spacing(2),
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'none',
     },
   },
@@ -107,7 +109,7 @@ export default function Main(props) {
       </AppBar>
       <nav className={classes.drawer}>
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        <Hidden smUp >
+        <Hidden mdUp >
           <Drawer
             container={container}
             variant="temporary"
@@ -124,7 +126,7 @@ export default function Main(props) {
             {drawer}
           </Drawer>
         </Hidden>
-        <Hidden xsDown >
+        <Hidden smDown >
           <Drawer
             classes={{
               paper: classes.drawerPaper,
@@ -138,7 +140,9 @@ export default function Main(props) {
       </nav>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        {currentContext === "Questions" && <Questions />}
+          <Fade in={currentContext==="Questions"}>
+            <Questions />
+          </Fade>
       </main>
     </div>
   )
