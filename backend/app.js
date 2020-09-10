@@ -8,6 +8,7 @@ const rushiRouter = require('./routes/rushi.js')
 const STT = require('./controllers/MainController');
 const upload = require('./upload');
 const AC = require('./controllers/AudioController')
+const FAQ = require('./controllers/FAQDataController')
 
 const app = express();
 
