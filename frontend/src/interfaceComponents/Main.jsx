@@ -93,7 +93,7 @@ export default function Main(props) {
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar>
+        <Toolbar variant="dense">
           <IconButton
             color="inherit"
             edge="start"

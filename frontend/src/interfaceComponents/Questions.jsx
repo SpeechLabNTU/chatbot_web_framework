@@ -1,20 +1,51 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import QuestionsTable from "./QuestionsTable.jsx";
 
-import Fade from '@material-ui/core/Fade';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import InputBase from '@material-ui/core/InputBase';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Popper from '@material-ui/core/Popper';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
+import SearchIcon from '@material-ui/icons/Search';
+import Grow from '@material-ui/core/Grow';
+import Fade from '@material-ui/core/Fade';
+
 
 
 const useStyles = makeStyles((theme) => ({
   editBar: {
     marginBottom: theme.spacing(2),
+    height: 50,
     display: "flex",
     justifyContent: "flex-end",
 
   },
   button: {
     margin: "10px"
+  },
+  topBarPaper: {
+    marginBottom: theme.spacing(2),
+    height: 60,
+    width: '100%',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  barItems: {
+    margin: 30,
+  },
+  searchBar: {
+    marginBottom: theme.spacing(2),
+    display: "flex",
+    height: 50,
+    alignItems: "center",
   }
 }))
 const sample = [
@@ -46,7 +77,8 @@ var columns = [
     dataKey: 'id',
   },
   {
-    width: 1600,
+    width: 500,
+    flexGrow: 1,
     label: 'Questions',
     dataKey: 'question',
   },
@@ -58,6 +90,8 @@ export default function Questions(props) {
   const [data, setData] = React.useState(rows)
   const [checkboxes, setCheckboxes] = React.useState(temp)
   const [showEditBar, setShowEditBar] = React.useState(false)
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const menuAnchorRef = React.useRef(null)
 
   React.useEffect( ()=>{
     if (checkboxes.includes(true)) setShowEditBar(true)
@@ -76,10 +110,6 @@ export default function Questions(props) {
         temp.push(false)
         i++
       }
-      else {
-        console.log(idx)
-        console.log(data[idx])
-      }
     })
     setData(tempData)
     setCheckboxes(temp)
@@ -87,6 +117,46 @@ export default function Questions(props) {
 
   return (
     <div {...props}>
+      <Paper className={classes.topBarPaper}>
+        <Typography variant='h5' className={classes.barItems}>Questions</Typography>
+        <div className={classes.barItems}>
+          <Button variant="contained" color="primary">
+          Add Question
+          </Button>
+
+          <IconButton ref={menuAnchorRef} onClick={()=>setIsMenuOpen((prev)=>!prev)}>
+          <MoreHorizIcon/>
+          </IconButton>
+
+          <Popper open={isMenuOpen} anchorEl={menuAnchorRef.current} transition>
+          { ({TransitionProps, placement }) => (
+            <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
+            <Paper>
+            <ClickAwayListener onClickAway={()=>{setIsMenuOpen(false)}}>
+            <MenuList autoFocusItem={isMenuOpen}>
+              <MenuItem>Upload Questions</MenuItem>
+              <MenuItem>Delete All</MenuItem>
+            </MenuList>
+            </ClickAwayListener>
+            </Paper>
+            </Grow>
+          )}
+          </Popper>
+        </div>
+      </Paper>
+
+      { !showEditBar ?
+      <Fade in={!showEditBar}>
+        <Paper className={classes.searchBar}>
+        <div className={classes.barItems}>
+        <SearchIcon />
+        </div>
+        <InputBase
+        placeholder="Search questions"
+        />
+        </Paper>
+      </Fade>
+      :
       <Fade in={showEditBar}>
         <div className={classes.editBar}>
           <Button variant="contained" className={classes.button}
@@ -100,6 +170,7 @@ export default function Questions(props) {
           </Button>
         </div>
       </Fade>
+      }
 
       <QuestionsTable
       rows = {data}

@@ -39,7 +39,7 @@ const styles = (theme) => ({
 
 class MuiVirtualizedTable extends React.PureComponent {
   static defaultProps = {
-    headerHeight: 48,
+    headerHeight: 0,
     rowHeight: 48,
   };
 
@@ -85,7 +85,6 @@ class MuiVirtualizedTable extends React.PureComponent {
 
   headerRenderer = ({ label, columnIndex }) => {
     const { headerHeight, columns, classes } = this.props;
-
     return (
       <TableCell
         component="div"
