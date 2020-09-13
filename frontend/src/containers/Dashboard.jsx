@@ -566,6 +566,18 @@ class Dashboard extends Component{
           checkRushi: true,
         })
         break
+      case 'adoption':
+        this.setState({
+          availableDialog: false,
+          availableMICL: false,
+          availableRajat: false,
+          availableRushi: true,
+          checkDialog: false,
+          checkMICL: false,
+          checkRajat: false,
+          checkRushi: true,
+        })
+        break
       default:
         break
     }
@@ -732,6 +744,11 @@ class Dashboard extends Component{
                     <FormControlLabel
                     value="comcare"
                     label="ComCare"
+                    control={<Radio color="primary" />}
+                    />
+                    <FormControlLabel
+                    value="adoption"
+                    label="Adoption"
                     control={<Radio color="primary" />}
                     />
                   </RadioGroup>

@@ -20,6 +20,9 @@ router.post("/api/queryEndpoint", (req, res) => {
       case 'comcare':
         apiEndpoint = process.env.RUSHI_ENDPOINT_COMCARE
         break
+      case 'adoption':
+        apiEndpoint = process.env.RUSHI_ENDPOINT_ADOPTION
+        break
       default:
         break
     }
