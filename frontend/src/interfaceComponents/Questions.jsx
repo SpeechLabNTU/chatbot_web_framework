@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import QuestionsTable from "./QuestionsTable.jsx";
 
@@ -88,6 +88,8 @@ export default function Questions(props) {
 
   const classes = useStyles()
   const [data, setData] = React.useState(rows)
+  const [searchValue, setSearchValue] = React.useState("")
+  const [searchData, setSearchData] = React.useState(undefined)
   const [checkboxes, setCheckboxes] = React.useState(temp)
   const [showEditBar, setShowEditBar] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
@@ -110,9 +112,28 @@ export default function Questions(props) {
         temp.push(false)
         i++
       }
+      return undefined
     })
     setData(tempData)
     setCheckboxes(temp)
+  }
+
+  const handleSearch = (e) => {
+    let value = e.target.value.toLowerCase()
+    setSearchValue(value)
+    if (value === "") {
+      setSearchData(undefined)
+    }
+    else {
+      let temp = []
+      data.forEach((val) => {
+        let q = val.question.toLowerCase()
+        if (q.search(value) !== -1) {
+          temp.push(val)
+        }
+      })
+      setSearchData(temp)
+    }
   }
 
   return (
@@ -153,6 +174,8 @@ export default function Questions(props) {
         </div>
         <InputBase
         placeholder="Search questions"
+        onChange={handleSearch}
+        value={searchValue}
         />
         </Paper>
       </Fade>
@@ -173,7 +196,7 @@ export default function Questions(props) {
       }
 
       <QuestionsTable
-      rows = {data}
+      rows = {searchData ? searchData : data}
       columns = {columns}
       checkboxes = {checkboxes}
       setCheckboxes = {setCheckboxes}
