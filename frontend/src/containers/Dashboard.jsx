@@ -17,7 +17,6 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
 import Jamie from "./Jamie";
 import AnswerModel from "./AnswerModel";
 import UploadBox from "./UploadBox";
@@ -26,14 +25,40 @@ import AISG from "../img/aisg.png";
 import MSF from "../img/msf.png";
 import NTU from "../img/ntu.png";
 import NUS from "../img/nus.png";
-import {Tab, Tabs} from "react-bootstrap";
-import RadioGroup from '@material-ui/core/RadioGroup'
-import Radio from '@material-ui/core/Radio'
+import ReactTab from "react-bootstrap/Tab"
+import ReactTabs from "react-bootstrap/Tabs"
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
+import Box from '@material-ui/core/Box';
 
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
 const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
+
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
 
 class Dashboard extends Component{
 
@@ -71,8 +96,10 @@ class Dashboard extends Component{
         checkMICL: true,
         checkRajat: true,
         checkRushi: true,
+        chatbotMenuRef: null,
 
-        topic: "babybonus", // babybonus, covid19, comcare
+        topicMenuRef: null,
+        topic: "Baby Bonus", // Baby Bonus, Covid 19, ComCare
         availableDialog: true,
         availableMICL: true,
         availableRajat: true,
@@ -96,12 +123,12 @@ class Dashboard extends Component{
 
         //Switch
         switch: false,
+        inputMethod: 0,
     }
 
     this.setState = this.setState.bind(this)
 
     //Action Listeners Method Bindings
-    this.handleChange = this.handleChange.bind(this);
     this.handleCheck = this.handleCheck.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.handleInput = this.handleInput.bind(this);
@@ -128,6 +155,7 @@ class Dashboard extends Component{
 
     // Question Topic Method Bindings
     this.handleTopicChange = this.handleTopicChange.bind(this)
+    this.handleInputMethodChange = this.handleInputMethodChange.bind(this)
   }
 
   //Response summarizer
@@ -407,19 +435,15 @@ class Dashboard extends Component{
     }
   }
 
-  //Handle switch mechanism for text/speech input switches
-  handleChange(e) {
-    let name = e.target.name;
-    this.setState({[name]:e.target.checked})
+  //Handle tab mechanism for text/speech input switches
+  handleInputMethodChange(e, newValue) {
+    this.setState({inputMethod: newValue})
     this.reset()
 
-    //Hacky method to trigger socket initiation when switch is pushed
-    if(this.state.switch===false){
+    if (newValue===0){
+      if (this.state.socket)this.state.socket.disconnect()
+    } else if (newValue===1){
       this.initSockets()
-    }
-
-    if(this.state.switch===true){
-      this.state.socket.disconnect()
     }
   }
 
@@ -514,7 +538,7 @@ class Dashboard extends Component{
   }
 
   //Handle question topic change
-  handleTopicChange(e, value) {
+  handleTopicChange(value) {
     this.setState({topic:value})
     // reset responses only
     this.setState({
@@ -530,7 +554,7 @@ class Dashboard extends Component{
     })
 
     switch (value) {
-      case 'babybonus':
+      case 'Baby Bonus':
         this.setState({
           availableDialog: true,
           availableMICL: true,
@@ -542,7 +566,7 @@ class Dashboard extends Component{
           checkRushi: true,
         })
         break
-      case 'covid19':
+      case 'Covid 19':
         this.setState({
           availableDialog: true,
           availableMICL: false,
@@ -554,7 +578,7 @@ class Dashboard extends Component{
           checkRushi: true,
         })
         break
-      case 'comcare':
+      case 'ComCare':
         this.setState({
           availableDialog: false,
           availableMICL: false,
@@ -566,7 +590,7 @@ class Dashboard extends Component{
           checkRushi: true,
         })
         break
-      case 'adoption':
+      case 'Adoption':
         this.setState({
           availableDialog: false,
           availableMICL: false,
@@ -608,9 +632,9 @@ class Dashboard extends Component{
 
             </Grid>
 
-            <Tabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
+            <ReactTabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
 
-            <Tab eventKey="dashboard" title="Multi-Chatbot Interface">
+            <ReactTab eventKey="dashboard" title="Multi-Chatbot Interface">
 
             <br/><br/>
 
@@ -639,37 +663,19 @@ class Dashboard extends Component{
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
 
-              {/* Switch for text and speech */}
-              <Grid item xs={12} md={12} style={{textAlign:"center"}}>
-                <FormControlLabel
-                  control = {<Switch
-                              checked={this.state.switch}
-                              onChange={this.handleChange}
-                              value="checkedA"
-                              name="switch"
-                              inputProps={{ 'aria-label': 'secondary checkbox' }}
-                              label="Switch between Text and Speech"
-                              disabled={this.state.isBusy}
-                              />}
-                  label="SWITCH BETWEEN TEXT AND SPEECH"
-                />
-              </Grid>
-
-              {/* Text Input */}
-              <Grid item xs={12} md={6} lg={6}>
-
-                {this.state.switch &&
-                <Paper style={textPosition}>
-                  <Typography variant="h5" component="h3">
-                    Text Input Disabled.
-                  </Typography>
-                  <Typography component="p">
-                    Select switch to enable text
-                </Typography>
-                </Paper>
-                }
-
-                {this.state.switch === false &&
+              <Grid item container xs={12} style={{flexGrow: 1}}>
+              <Paper><Tabs
+                orientation="vertical"
+                variant="fullWidth"
+                value={this.state.inputMethod}
+                onChange={this.handleInputMethodChange}
+              >
+                <Tab label="Text" />
+                <Tab label="Speech" />
+              </Tabs></Paper>
+              <Paper>
+              <Grid item xs={10}>
+              <TabPanel value={this.state.inputMethod} index={0}>
                 <FormControl fullWidth variant="outlined">
                 <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
                 <OutlinedInput
@@ -680,17 +686,10 @@ class Dashboard extends Component{
                   value={this.state.input}
                   onChange={this.handleInput}
                 />
-                <Button onClick={this.handleClick}  variant="contained" color="primary">Submit</Button>
+                <Button onClick={this.handleClick} variant="contained" color="primary">Submit</Button>
                 </FormControl>
-                }
-
-
-              </Grid>
-
-              {/* Speech-to-Text */}
-              <Grid item xs={12} md={6} lg={6}>
-
-                {this.state.switch &&
+              </TabPanel>
+              <TabPanel value={this.state.inputMethod} index={1}>
                 <Record
                 transcriptionAISG= {this.state.transcriptionAISG}
                 transcriptionGoogle = {this.state.transcriptionGoogle}
@@ -705,94 +704,87 @@ class Dashboard extends Component{
                 setState={this.setState}
                 handleClick = {this.handleClick}
                 />
-                }
-
-                {this.state.switch ===false &&
-                <Paper style={textPosition}>
-                  <Typography variant="h5" component="h3">
-                    Speech to Text Disabled.
-                  </Typography>
-                  <Typography component="p">
-                    Select switch to enable speech
-                  </Typography>
-                </Paper>
-                }
-
+                <h6>Transcription: {this.state.input}</h6>
+              </TabPanel>
+              </Grid>
+              </Paper>
               </Grid>
 
               {/* Question topic and Chatbot services */}
-              <Grid item container xs={12} spacing={0}>
-                {/* Question Topic Selection */}
-                <Grid item xs={12}>
+              <Grid item container xs={12} spacing={1}>
 
-                  <Typography variant='h5'>
-                  Question Topic:
-                  </Typography>
+                <Grid item><Paper elevation={1}><List component="nav">
+                <ListItem button onClick={(event)=>{this.setState({topicMenuRef: event.currentTarget})}}>
+                <ListItemText primary="Question Topic" secondary={this.state.topic} />
+                </ListItem>
+                </List></Paper>
+                <Menu
+                  anchorEl={this.state.topicMenuRef}
+                  keepMounted
+                  open={Boolean(this.state.topicMenuRef)}
+                  onClose={()=>{this.setState({topicMenuRef:null})}}
+                >
+                <MenuItem id={"Baby Bonus"}
+                onClick={(e)=>{
+                  this.handleTopicChange(e.target.id)
+                  this.setState({topicMenuRef:null})
+                }}
+                >Baby Bonus</MenuItem>
+                <MenuItem id={"Covid 19"}
+                onClick={(e)=>{
+                  this.handleTopicChange(e.target.id)
+                  this.setState({topicMenuRef:null})
+                }}
+                >Covid 19</MenuItem>
+                <MenuItem id={"ComCare"}
+                onClick={(e)=>{
+                  this.handleTopicChange(e.target.id)
+                  this.setState({topicMenuRef:null})
+                }}
+                >ComCare</MenuItem>
+                <MenuItem id={"Adoption"}
+                onClick={(e)=>{
+                  this.handleTopicChange(e.target.id)
+                  this.setState({topicMenuRef:null})
+                }}
+                >Adoption</MenuItem>
+                </Menu></Grid>
 
-                  <RadioGroup aria-label="topic selection" name="topic selection"
-                  value={this.state.topic} onChange={this.handleTopicChange} row>
-                    <FormControlLabel
-                    value="babybonus"
-                    label="Baby Bonus"
-                    control={<Radio color="primary" />}
-                    />
-                    <FormControlLabel
-                    value="covid19"
-                    label="Covid-19"
-                    control={<Radio color="primary" />}
-                    />
-                    <FormControlLabel
-                    value="comcare"
-                    label="ComCare"
-                    control={<Radio color="primary" />}
-                    />
-                    <FormControlLabel
-                    value="adoption"
-                    label="Adoption"
-                    control={<Radio color="primary" />}
-                    />
-                  </RadioGroup>
+                <Grid item><Paper elevation={1}><List component="nav">
+                <ListItem button onClick={(event)=>{this.setState({chatbotMenuRef: event.currentTarget})}}>
+                <ListItemText primary="Chatbot Services" secondary={
+                  (this.state.checkDialog ? "Dialogflow " : "") +
+                  (this.state.checkMICL ? "Andrew " : "") +
+                  (this.state.checkRajat ? "Rajat " : "") +
+                  (this.state.checkRushi ? "Rushi " : "")
+                } />
+                </ListItem>
+                </List></Paper>
+                <Menu
+                  anchorEl={this.state.chatbotMenuRef}
+                  keepMounted
+                  open={Boolean(this.state.chatbotMenuRef)}
+                  onClose={()=>{this.setState({chatbotMenuRef:null})}}
+                >
+                {this.state.availableDialog &&
+                <MenuItem style={{display:'flex', justifyContent: "space-between"}}>
+                Dialogflow<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>
+                </MenuItem> }
+                {this.state.availableMICL &&
+                <MenuItem style={{display:'flex', justifyContent: "space-between"}}>
+                Andrew<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>
+                </MenuItem> }
+                {this.state.availableRajat &&
+                <MenuItem style={{display:'flex', justifyContent: "space-between"}}>
+                Rajat<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>
+                </MenuItem> }
+                {this.state.availableRushi &&
+                <MenuItem style={{display:'flex', justifyContent: "space-between"}}>
+                Rushi<Checkbox checked={this.state.checkRushi} name="checkRushi" value="Rushi" onChange={this.handleCheck}/>
+                </MenuItem> }
+                </Menu></Grid>
 
-                </Grid>
-
-                {/* Chatbot Selection */}
-                <Grid item xs={12}>
-
-                  <Typography variant='h5'>
-                  Select Chatbot Services:
-                  </Typography>
-
-                  <FormGroup row>
-                    {this.state.availableDialog &&
-                    <FormControlLabel
-                      control={<Checkbox checked={this.state.checkDialog} name="checkDialog" value="Dialogflow" onChange={this.handleCheck}/>}
-                      label="Dialogflow"
-                    />}
-                    {this.state.availableMICL &&
-                    <FormControlLabel
-                      control={<Checkbox checked={this.state.checkMICL} name="checkMICL" value="MICL" onChange={this.handleCheck}/>}
-                      label="Andrew"
-                    />}
-                    {this.state.availableRajat &&
-                    <FormControlLabel
-                      control={<Checkbox checked={this.state.checkRajat} name="checkRajat" value="Rajat" onChange={this.handleCheck}/>}
-                      label="Rajat"
-                    />}
-                    {this.state.availableRushi &&
-                    <FormControlLabel
-                      control={<Checkbox checked={this.state.checkRushi} name="checkRushi" value="Rushi" onChange={this.handleCheck}/>}
-                      label="Rushi"
-                    />}
-                  </FormGroup>
-
-                </Grid>
               </Grid>
-
-              {this.state.switch === true &&
-              <Grid item xs={12} >
-                <h6>Transcription: {this.state.input}</h6>
-              </Grid>
-              }
 
               <Grid item xs={12} md={4}>
                 <Jamie
@@ -851,9 +843,9 @@ class Dashboard extends Component{
 
             </Grid>
 
-            </Tab>
+            </ReactTab>
 
-            <Tab eventKey="chart" title="Performance Analysis">
+            <ReactTab eventKey="chart" title="Performance Analysis">
             <br/><br/>
             <Grid container spacing={3} style={{paddingBottom:"40px"}}>
 
@@ -868,17 +860,17 @@ class Dashboard extends Component{
               </Grid>
             </Grid>
 
-            </Tab>
+            </ReactTab>
 
             {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
-            <Tab eventKey="Audio" title="Transcription Comparison">
+            <ReactTab eventKey="Audio" title="Transcription Comparison">
             <br/><br/>
               <AudioUpload
               backendUrl={this.state.backendUrl}
               />
-            </Tab>
+            </ReactTab>
 
-            </Tabs>
+            </ReactTabs>
             </Container>
 
         </main>

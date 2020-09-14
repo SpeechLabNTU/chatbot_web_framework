@@ -18,10 +18,10 @@ async function dialoflowConnection(query, topic, res) {
     var projectId = ""
     var keyFiledir = ""
     switch(topic) {
-      case 'babybonus':
+      case 'Baby Bonus':
         keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS
         break
-      case 'covid19':
+      case 'Covid 19':
         keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_COVID19
         break
       default:

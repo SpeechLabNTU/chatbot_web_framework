@@ -11,10 +11,10 @@ router.post("/api/queryEndpoint", (req, res) => {
 
     let apiEndpoint = ''
     switch (topic){
-      case 'babybonus':
+      case 'Baby Bonus':
         apiEndpoint = process.env.RAJAT_ENDPOINT_BABYBONUS
         break
-      case 'covid19':
+      case 'Covid 19':
         apiEndpoint = process.env.RAJAT_ENDPOINT_COVID19
         break
       default:
