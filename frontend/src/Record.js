@@ -43,7 +43,7 @@ export default class Record extends Component {
   componentWillUnmount() {
     // cancel recorder from browser
     // window.cancelAnimationFrame(this.drawVisual)
-    if (this.state.browserSupported){
+    if (this.state.browserSupported && this.mediaStream){
       const track = this.mediaStream.getTracks()[0]
       track.stop()
       // Closes the audio context, releasing any system audio resources that it uses.

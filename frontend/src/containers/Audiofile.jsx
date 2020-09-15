@@ -36,7 +36,6 @@ const useStyles = makeStyles(theme => ({
     padding: '2px 4px',
     display: 'flex',
     alignItems: 'center',
-    width: 500,
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -51,10 +50,12 @@ const useStyles = makeStyles(theme => ({
   },
   tableContainer: {
     paddingTop: '50px',
+    flexGrow: 1,
   },
-  table: {
-    width: 'auto',
-    //minWidth: 1200
+  pagination: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
 }));
 
@@ -82,7 +83,7 @@ function TablePaginationActions(props){
 
   //------------------------------Pagination Icons-------------------------------------
   return (
-    <div className={classes.root}>
+    <div className={classes.pagination}>
       <IconButton
         onClick={handleFirstPageButtonClick}
         disabled={page === 0}
@@ -310,8 +311,7 @@ export default function Audiofile(props) {
 
       <Grid container style={{paddingBottom:"40px"}} justify="center">
       <Card>
-
-          <CardContent style={{width:"500px"}}>
+          <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Transcription Comparison of Speech-to-text APIs
             </Typography>
@@ -326,12 +326,11 @@ export default function Audiofile(props) {
               3. Select audio file to playback
             </Typography>
           </CardContent>
-
       </Card>
       </Grid>
 
-      <FormControl component="fieldset">
-
+      <Grid container>
+      <FormControl component="fieldset" style={{flexGrow:1, maxWidth:400}}>
         {/* Audio file upload field and button */}
         <Paper component="form" className={classes.root}>
             <InputBase
@@ -348,12 +347,14 @@ export default function Audiofile(props) {
             </IconButton>
         </Paper>
       </FormControl>
+      </Grid>
 
       {/* Table for response display and page management */}
+      <Grid container>
       <FormControl className={classes.tableContainer}>
         <Paper variant="outlined">
 
-          <Table className={classes.table} aria-label="simple table">
+          <Table aria-label="simple table">
             <TableHead>
               <TableRow>
                 <TableCell padding='checkbox'></TableCell>
@@ -409,6 +410,7 @@ export default function Audiofile(props) {
 
         </Paper>
       </FormControl>
+      </Grid>
     </div>
   );
 }

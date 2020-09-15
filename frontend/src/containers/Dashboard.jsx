@@ -10,12 +10,10 @@ import Record from '../Record';
 import io from 'socket.io-client'
 import axios from "axios";
 import FormControl from '@material-ui/core/FormControl';
-import Switch from '@material-ui/core/Switch';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from '@material-ui/core/Button';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Jamie from "./Jamie";
 import AnswerModel from "./AnswerModel";
@@ -29,35 +27,17 @@ import ReactTab from "react-bootstrap/Tab"
 import ReactTabs from "react-bootstrap/Tabs"
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import TabPanel from "./TabPanel"
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import Box from '@material-ui/core/Box';
-
+import Collapse from '@material-ui/core/Collapse';
 
 const content={flexgrow: 1, height: '100vh', overflow:'auto'};
 const container={paddingTop: '50px', paddingBottom:'10px'};
-const textPosition ={paddingLeft: '10px', paddingTop:'10px', paddingBottom:'10px'};
-
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-    >
-      {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
 
 
 class Dashboard extends Component{
@@ -67,6 +47,7 @@ class Dashboard extends Component{
     this.state = {
         //Direct Query
         input:"",
+        similarQuestions: undefined,
 
         responseDialogflow:"",
         responseJamie:"",
@@ -91,7 +72,6 @@ class Dashboard extends Component{
         scoreRushi: 0,
 
         choice: "",
-        reccommendation: [],
         checkDialog: true,
         checkMICL: true,
         checkRajat: true,
@@ -122,7 +102,6 @@ class Dashboard extends Component{
         streamOpenGoogle: false,
 
         //Switch
-        switch: false,
         inputMethod: 0,
     }
 
@@ -162,6 +141,7 @@ class Dashboard extends Component{
   summarizer(result){
     var array = []
     var summary = "";
+    if (result===undefined) return ""
     array = result.split(" ").filter(i => i !== "")
 
     for (var i = 0; i < array.length; i++){
@@ -243,7 +223,6 @@ class Dashboard extends Component{
     return new Promise(function(resolve, reject){
       axios.post(`${process.env.REACT_APP_API}/micl/api/directQuery`, params)
       .then((res)=>{
-        // that.setState({reccommendation: res.data.queries})
         resolve(res.data.reply)
       })
       .catch(error=>{
@@ -256,7 +235,6 @@ class Dashboard extends Component{
     return new Promise(function(resolve, reject){
       axios.post(`${process.env.REACT_APP_API}/rajat/api/queryEndpoint`, params)
       .then((res)=>{
-        console.log(res)
         resolve(res.data.reply)
       })
       .catch(error=>{
@@ -266,10 +244,11 @@ class Dashboard extends Component{
   }
 
   rushiAPI(params){
+    let that = this
     return new Promise(function(resolve, reject){
       axios.post(`${process.env.REACT_APP_API}/rushi/api/queryEndpoint`, params)
       .then((res)=>{
-        console.log(res)
+        that.setState({similarQuestions: res.data.similarQuestions})
         resolve(res.data.reply)
       })
       .catch(error=>{
@@ -534,6 +513,7 @@ class Dashboard extends Component{
       similarityMICL: false,
       similarityRajat: false,
       similarityRushi: false,
+      similarQuestions: undefined,
     })
   }
 
@@ -551,6 +531,7 @@ class Dashboard extends Component{
       similarityMICL: false,
       similarityRajat: false,
       similarityRushi: false,
+      similarQuestions: undefined,
     })
 
     switch (value) {
@@ -610,23 +591,23 @@ class Dashboard extends Component{
   render(){
     return (
 
-      <div>
+      <React.Fragment>
         <CssBaseline />
 
         <main style={content}>
             <Container maxWidth="lg" style={container}>
 
-            <Grid container style={{paddingBottom:"40px"}} justify="center">
-              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+            <Grid container style={{paddingBottom:"40px"}} justify="space-evenly" spacing={3}>
+              <Grid item style={{textAlign:"center"}}>
                     <img src={AISG} style={{width: '80px', height:'70px'}} alt="AISG Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+              <Grid item style={{textAlign:"center"}}>
                   <img src={NTU} style={{width: '160px', height:'70px'}} alt="NTU Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+              <Grid item style={{textAlign:"center"}}>
                     <img src={NUS} style={{width: '160px', height:'70px'}} alt="NUS Logo"/>
               </Grid>
-              <Grid item xs={8} md={2} style={{textAlign:"center"}}>
+              <Grid item style={{textAlign:"center"}}>
                     <img src={MSF} style={{width: '160px', height:'70px'}} alt="MSF Logo"/>
               </Grid>
 
@@ -641,7 +622,7 @@ class Dashboard extends Component{
             <Grid container style={{paddingBottom:"40px"}} justify="center">
 
             <Card>
-              <CardContent style={{width:"500px"}}>
+              <CardContent style={{marginRight:10}}>
                 <Typography color="textSecondary" gutterBottom>
                   Multi Chatbot Interface for Response Comparisons
                 </Typography>
@@ -649,65 +630,82 @@ class Dashboard extends Component{
 
                 </Typography>
                 <Typography variant="body2" component="p">
-                  1. Selection of Chatbot Services
+                  1. Choose between Text or Realtime Speech Input
                   <br />
-                  2. Choose between Text(Default) or Realtime Speech Input
+                  2. Selection of Question Topic and Chatbot Services
                   <br />
                   3. Real-time Speech allows choice of Google or AISG Transcription Services
                 </Typography>
               </CardContent>
-
             </Card>
 
             </Grid>
 
             <Grid container spacing={3} style={{paddingBottom:'30px'}}>
 
-              <Grid item container xs={12} style={{flexGrow: 1}}>
-              <Paper><Tabs
-                orientation="vertical"
-                variant="fullWidth"
-                value={this.state.inputMethod}
-                onChange={this.handleInputMethodChange}
-              >
-                <Tab label="Text" />
-                <Tab label="Speech" />
-              </Tabs></Paper>
-              <Paper>
-              <Grid item xs={10}>
-              <TabPanel value={this.state.inputMethod} index={0}>
-                <FormControl fullWidth variant="outlined">
-                <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-amount"
-                  startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
-                  labelWidth={60}
-                  name="input"
-                  value={this.state.input}
-                  onChange={this.handleInput}
-                />
-                <Button onClick={this.handleClick} variant="contained" color="primary">Submit</Button>
-                </FormControl>
-              </TabPanel>
-              <TabPanel value={this.state.inputMethod} index={1}>
-                <Record
-                transcriptionAISG= {this.state.transcriptionAISG}
-                transcriptionGoogle = {this.state.transcriptionGoogle}
-                partialResultAISG = {this.state.partialResultAISG}
-                partialResultGoogle = {this.state.partialResultGoogle}
-                input = {this.state.input}
-                socket={this.state.socket}
-                isBusy={this.state.isBusy}
-                isSocketReady={this.state.isSocketReady}
-                backendUrl={this.state.backendUrl}
-                reset={this.reset}
-                setState={this.setState}
-                handleClick = {this.handleClick}
-                />
-                <h6>Transcription: {this.state.input}</h6>
-              </TabPanel>
-              </Grid>
-              </Paper>
+              <Grid item container xs={12}>
+                <Grid item ><Paper><Tabs
+                  orientation="vertical"
+                  variant="fullWidth"
+                  value={this.state.inputMethod}
+                  onChange={this.handleInputMethodChange}
+                >
+                  <Tab label="Text" />
+                  <Tab label="Speech" />
+                </Tabs></Paper></Grid>
+                <Grid item xs={8} style={{flexGrow: 1, maxWidth:700}}>
+                <Paper>
+                {/* Text input */}
+                <TabPanel value={this.state.inputMethod} index={0} >
+                  <FormControl fullWidth variant="outlined">
+                  <InputLabel htmlFor="outlined-adornment-amount">Input</InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-amount"
+                    startAdornment={<InputAdornment position="start">FAQ</InputAdornment>}
+                    labelWidth={60}
+                    name="input"
+                    value={this.state.input}
+                    onChange={this.handleInput}
+                  />
+                  <Button onClick={this.handleClick} variant="contained" color="primary">Submit</Button>
+                  </FormControl>
+                </TabPanel>
+                {/* Speech to text */}
+                <TabPanel value={this.state.inputMethod} index={1}>
+                  <Record
+                  transcriptionAISG= {this.state.transcriptionAISG}
+                  transcriptionGoogle = {this.state.transcriptionGoogle}
+                  partialResultAISG = {this.state.partialResultAISG}
+                  partialResultGoogle = {this.state.partialResultGoogle}
+                  input = {this.state.input}
+                  socket={this.state.socket}
+                  isBusy={this.state.isBusy}
+                  isSocketReady={this.state.isSocketReady}
+                  backendUrl={this.state.backendUrl}
+                  reset={this.reset}
+                  setState={this.setState}
+                  handleClick = {this.handleClick}
+                  />
+                  <br/>
+                  <h6>Transcription: {this.state.input}</h6>
+                </TabPanel>
+                </Paper>
+                <Collapse in={this.state.similarQuestions!==undefined}><Paper>
+                  <List dense>
+                    <ListItem><Typography variant='h6'>You might be interested: </Typography></ListItem>
+                    {this.state.similarQuestions && this.state.similarQuestions.map( (item) => {
+                      if (item !== this.state.input) return (
+                        <ListItem button onClick={(e)=>{
+                        this.setState({input: e.target.innerText})
+                        setTimeout( ()=>{this.handleClick()}, 0 )}}
+                        >{item}</ListItem>
+                      )
+                      else return undefined
+                    })}
+                  </List>
+                </Paper></Collapse>
+                </Grid>
+
               </Grid>
 
               {/* Question topic and Chatbot services */}
@@ -786,7 +784,7 @@ class Dashboard extends Component{
 
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <Jamie
                   loadingJamie = {this.state.loadingJamie}
                   responseJamie = {this.state.responseJamie}
@@ -794,7 +792,7 @@ class Dashboard extends Component{
               </Grid>
 
               {this.state.checkDialog &&
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <AnswerModel
                   value = "Dialogflow"
                   similarity = {this.state.similarityDialog}
@@ -806,7 +804,7 @@ class Dashboard extends Component{
               }
 
               {this.state.checkMICL &&
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <AnswerModel
                   value = "Andrew"
                   similarity = {this.state.similarityMICL}
@@ -818,7 +816,7 @@ class Dashboard extends Component{
               }
 
               {this.state.checkRajat &&
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <AnswerModel
                   value = "Rajat"
                   similarity = {this.state.similarityRajat}
@@ -830,7 +828,7 @@ class Dashboard extends Component{
               }
 
               {this.state.checkRushi &&
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <AnswerModel
                   value = "Rushi"
                   similarity = {this.state.similarityRushi}
@@ -863,7 +861,7 @@ class Dashboard extends Component{
             </ReactTab>
 
             {/* AudioUpload(Audiofile.jsx) component to be worked on by Damien */}
-            <ReactTab eventKey="Audio" title="Transcription Comparison">
+            <ReactTab eventKey="audio" title="Transcription Comparison">
             <br/><br/>
               <AudioUpload
               backendUrl={this.state.backendUrl}
@@ -874,7 +872,7 @@ class Dashboard extends Component{
             </Container>
 
         </main>
-      </div>
+      </React.Fragment>
     );
   }
 }

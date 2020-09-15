@@ -37,7 +37,10 @@ router.post("/api/queryEndpoint", (req, res) => {
           res.json({ reply: "Lab server is down", queries:[]})
         }
       }else{
-        res.json({ reply: response.body.result})
+        res.json({
+          reply: response.body.result,
+          similarQuestions: response.body.similarQuestions,
+        })
       }
     });
 
