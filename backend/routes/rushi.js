@@ -11,14 +11,17 @@ router.post("/api/queryEndpoint", (req, res) => {
 
     let apiEndpoint = ''
     switch (topic){
-      case 'babybonus':
+      case 'Baby Bonus':
         apiEndpoint = process.env.RUSHI_ENDPOINT_BABYBONUS
         break
-      case 'covid19':
+      case 'Covid 19':
         apiEndpoint = process.env.RUSHI_ENDPOINT_COVID19
         break
-      case 'comcare':
+      case 'ComCare':
         apiEndpoint = process.env.RUSHI_ENDPOINT_COMCARE
+        break
+      case 'Adoption':
+        apiEndpoint = process.env.RUSHI_ENDPOINT_ADOPTION
         break
       default:
         break
@@ -34,7 +37,10 @@ router.post("/api/queryEndpoint", (req, res) => {
           res.json({ reply: "Lab server is down", queries:[]})
         }
       }else{
-        res.json({ reply: response.body.result})
+        res.json({
+          reply: response.body.result,
+          similarQuestions: response.body.similarQuestions,
+        })
       }
     });
 

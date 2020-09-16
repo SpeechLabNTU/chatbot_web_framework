@@ -47,14 +47,15 @@ import Charts from "./Charts";
 
 const useStyles = makeStyles(theme => ({
   pagination: {
-    flexShrink: 0,
-    marginleft: theme.spacing(2.5)
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   root: {
     padding: '2px 4px',
     display: 'flex',
     alignItems: 'center',
-    width: 500,
+    flex: 1,
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -67,15 +68,12 @@ const useStyles = makeStyles(theme => ({
     height: 28,
     margin: 4,
   },
-  table: {
-    width: 'auto'
-    // minWidth: 1200
-  },
   modeSelect: {
     minWidth: 120,
   },
   tableContainer: {
     paddingTop: '10px',
+    flexGrow: 1
   }
 
 }));
@@ -104,7 +102,7 @@ function TablePaginationActions(props){
 
     //------------------------------Pagination Icons-------------------------------------
     return (
-      <div className={classes.root}>
+      <div className={classes.pagination}>
         <IconButton
           onClick={handleFirstPageButtonClick}
           disabled={page === 0}
@@ -409,8 +407,7 @@ export default function CustomizedInputBase(props) {
     {/* File Upload Form */}
     <Grid container style={{paddingBottom:"40px"}} justify="center">
     <Card>
-
-        <CardContent style={{width:"500px"}}>
+        <CardContent>
           <Typography color="textSecondary" gutterBottom>
             Performance Analysis of Chatbot Service
           </Typography>
@@ -429,15 +426,14 @@ export default function CustomizedInputBase(props) {
             5. Graphical Report available after all responses are processed
           </Typography>
         </CardContent>
-
     </Card>
     </Grid>
 
     <Grid container spacing={3}>
       <Grid item container spacing={4} >
         {/* File uploading field */}
-        <Grid item>
-        <FormControl component="fieldset">
+        <Grid item style={{flexGrow: 1, display: 'flex', maxWidth:400}}>
+        <FormControl component="fieldset" style={{flex: 1}}>
           <Paper component="form" className={classes.root}>
             <InputBase
             className={classes.input}
@@ -515,18 +511,23 @@ export default function CustomizedInputBase(props) {
         <RadioGroup aria-label="topic selection" name="topic selection"
         value={topic} onChange={handleTopicChange} row>
           <FormControlLabel
-          value="babybonus"
+          value="Baby Bonus"
           label="Baby Bonus"
           control={<Radio color="primary" />}
           />
           <FormControlLabel
-          value="covid19"
-          label="Covid-19"
+          value="Covid 19"
+          label="Covid 19"
           control={<Radio color="primary" />}
           />
           <FormControlLabel
-          value="comcare"
+          value="ComCare"
           label="ComCare"
+          control={<Radio color="primary" />}
+          />
+          <FormControlLabel
+          value="Adoption"
+          label="Adoption"
           control={<Radio color="primary" />}
           />
         </RadioGroup>
@@ -544,9 +545,10 @@ export default function CustomizedInputBase(props) {
     }
 
     {/* Table for response display and page management */}
+    <Grid container>
     <FormControl className={classes.tableContainer}>
       <Paper variant="outlined">
-        <Table className={classes.table} aria-label="simple table">
+        <Table aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Input</TableCell>
@@ -565,9 +567,7 @@ export default function CustomizedInputBase(props) {
             :rows
           ).map((row) => (
             <TableRow key={row.input}>
-              <TableCell component="th" scope="row">
-                {row.input}
-              </TableCell>
+              <TableCell component="th" scope="row">{row.input}</TableCell>
               <TableCell>{row.jamie}</TableCell>
               <TableCell>{row.dialogflow}</TableCell>
               <TableCell align="right">{row.score}</TableCell>
@@ -585,7 +585,7 @@ export default function CustomizedInputBase(props) {
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                colSpan={3}
+                colSpan={4}
                 count={rows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
@@ -602,6 +602,7 @@ export default function CustomizedInputBase(props) {
         </Table>
       </Paper>
     </FormControl>
+    </Grid>
 
     {/* Popup dialog */}
     <Dialog
