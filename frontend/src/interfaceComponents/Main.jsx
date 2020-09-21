@@ -1,6 +1,8 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Questions from "./Questions.jsx";
+import SingleQuestion from "./SingleQuestion.jsx";
+import NewQuestion from "./NewQuestion.jsx";
 
 import AppBar from '@material-ui/core/AppBar';
 import Divider from '@material-ui/core/Divider';
@@ -25,6 +27,9 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Popper from '@material-ui/core/Popper';
 import Grow from '@material-ui/core/Grow';
 import Fade from '@material-ui/core/Fade';
+import Slide from '@material-ui/core/Slide';
+
+import axios from 'axios';
 
 
 const drawerWidth = 180;
@@ -59,13 +64,15 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
+    marginLeft: 40,
+    marginRight: 40,
   },
   sideIcon: {
     marginRight: 10,
   },
-  test: {
-    fontWeight: 'bold',
-  }
+  topicMenu: {
+    zIndex: 1300,
+  },
 }));
 
 
@@ -74,54 +81,97 @@ export default function Main(props) {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false)
-  const [currentTopic, setCurrentTopic] = React.useState("babybonus")
-  const [currentContext, setCurrentContext] = React.useState('Questions')
+
+  const [allTopics, setAllTopics] = React.useState([])
+  const [currentTopic, setCurrentTopic] = React.useState("")
+  const [data, setData] = React.useState([])
+  const [dataChanged, setDataChanged] = React.useState(false)
+  const [currentContext, setCurrentContext] = React.useState("Questions")
+
   const [isTopicMenuOpen, setIsTopicMenuOpen] = React.useState(false)
-  const topicAnchorRef = React.useRef(null)
+  const [topicAnchorRef, setTopicAnchorRef] = React.useState(null)
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-  const handleContextChange = (context) => {
-    setCurrentContext(context)
-  }
+  const [selectedIndex, setSelectedIndex] = React.useState(null)
+  const [addNewQuestion, setAddNewQuestion] = React.useState(false)
 
+  // initial call to backend to get all topics available
+  React.useEffect( () => {
+    axios.get(`${process.env.REACT_APP_API}/faqtopics`)
+    .then( res => {
+      setAllTopics(res.data.topics)
+      setCurrentTopic(res.data.topics[0])
+    })
+  }, [])
+
+  React.useEffect( () => {
+    if (currentTopic !== ""){
+      axios.get(`${process.env.REACT_APP_API}/faqdata/${currentTopic}`)
+      .then( (res) => {
+        setData(res.data.data)
+      }).catch( (err) => {
+        console.log(err)
+      })
+    }
+  }, [currentTopic])
+
+  React.useEffect( () => {
+    if (dataChanged) {
+      axios.post(`${process.env.REACT_APP_API}/faqdata`, {
+        topic: currentTopic,
+        data: data,
+      }).catch( err => {
+        console.log(err)
+      })
+      setDataChanged(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataChanged])
+
+  // side drawer component
   const drawer = (
-    <React.Fragment>
+    <React.Fragment >
       <div className={classes.toolbar} />
       <Divider />
       <List>
-        <ListItem key={"Topics"} >
+        <ListItem key={"Topics"}>
           <ListItemText primary={"Topics"} primaryTypographyProps={{variant: 'h6'}} />
         </ListItem>
-        <ListItem button key={currentTopic} ref={topicAnchorRef} onClick={()=>{setIsTopicMenuOpen((prev)=>!prev)}}>
+        <ListItem button onClick={ (e) => {
+          setTopicAnchorRef(e.currentTarget)
+          setIsTopicMenuOpen((prev)=>!prev)
+        }}>
           <ListItemText primary={currentTopic} />
           <ArrowDropDownIcon />
         </ListItem>
-        <Popper open={isTopicMenuOpen} anchorEl={topicAnchorRef.current} transition>
-        { ({TransitionProps, placement }) => (
-          <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
-          <Paper>
-          <ClickAwayListener onClickAway={()=>{setIsTopicMenuOpen(false)}}>
-          <MenuList autoFocusItem={isTopicMenuOpen}>
-            <MenuItem>1432</MenuItem>
-          </MenuList>
-          </ClickAwayListener>
-          </Paper>
-          </Grow>
-        )}
-        </Popper>
       </List>
+      <Popper open={isTopicMenuOpen} anchorEl={topicAnchorRef} transition placement="right-start"
+      className={classes.topicMenu}>
+      { ( {TransitionProps, placement} ) => (
+        <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
+        <Paper>
+        <ClickAwayListener onClickAway={()=>{setIsTopicMenuOpen(false)}}>
+        <MenuList autoFocusItem={isTopicMenuOpen}>
+          {allTopics.map((item) => (
+            <MenuItem key={item} button onClick={()=>setCurrentTopic(item)}>{item}</MenuItem>
+          ))}
+        </MenuList>
+        </ClickAwayListener>
+        </Paper>
+        </Grow>
+      )}
+      </Popper>
+
       <Divider />
+
       <List>
-        <ListItem button key={"Questions"} onClick={()=>handleContextChange("Questions")}>
+        <ListItem button key={"Questions"} onClick={()=>setCurrentContext("Questions")}>
           <QuestionAnswerIcon className={classes.sideIcon}/>
           <ListItemText primary={"Questions"} />
         </ListItem>
-        <ListItem button key={"Trained Models"} onClick={()=>handleContextChange("Trained Models")}>
+        <ListItem button key={"Trained Models"} onClick={()=>setCurrentContext("Trained Models")}>
           <ListItemText primary={"Trained Models"} />
         </ListItem>
-        <ListItem button key={"Deployments"} onClick={()=>handleContextChange("Deployments")}>
+        <ListItem button key={"Deployments"} onClick={()=>setCurrentContext("Deployments")}>
           <BackupIcon className={classes.sideIcon} />
           <ListItemText primary={"Deployments"} />
         </ListItem>
@@ -139,7 +189,7 @@ export default function Main(props) {
           <IconButton
             color="inherit"
             edge="start"
-            onClick={handleDrawerToggle}
+            onClick={()=>setMobileOpen(p=>!p)}
             className={classes.menuButton}
           >
             <MenuIcon />
@@ -149,6 +199,7 @@ export default function Main(props) {
           </Typography>
         </Toolbar>
       </AppBar>
+
       <nav className={classes.drawer}>
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden mdUp >
@@ -157,7 +208,7 @@ export default function Main(props) {
             variant="temporary"
             anchor={theme.direction === 'rtl' ? 'right' : 'left'}
             open={mobileOpen}
-            onClose={handleDrawerToggle}
+            onClose={()=>setMobileOpen(p=>!p)}
             classes={{
               paper: classes.drawerPaper,
             }}
@@ -180,11 +231,47 @@ export default function Main(props) {
           </Drawer>
         </Hidden>
       </nav>
+
       <main className={classes.content}>
         <div className={classes.toolbar} />
+          {/* Questions context */}
           <Fade in={currentContext==="Questions"}>
-            <Questions />
+            <div>
+            <Slide direction="right" in={selectedIndex===null && !addNewQuestion} mountOnEnter unmountOnExit
+            timeout={{enter:600}}>
+              <div>
+                <Questions
+                setAddNewQuestion={setAddNewQuestion}
+                data={data}
+                setData={setData}
+                setDataChanged={setDataChanged}
+                setSelectedIndex={setSelectedIndex} />
+              </div>
+            </Slide>
+            <Slide direction="left" in={selectedIndex!==null} mountOnEnter unmountOnExit
+            timeout={{enter:600}}>
+              <div>
+                <SingleQuestion
+                data={data}
+                setData={setData}
+                setDataChanged={setDataChanged}
+                selectedIndex={selectedIndex}
+                setSelectedIndex={setSelectedIndex} />
+              </div>
+            </Slide>
+            <Slide direction="left" in={addNewQuestion} mountOnEnter unmountOnExit
+            timeout={{enter:600}}>
+              <div>
+                <NewQuestion
+                data={data}
+                setData={setData}
+                setDataChanged={setDataChanged}
+                setAddNewQuestion={setAddNewQuestion} />
+              </div>
+            </Slide>
+            </div>
           </Fade>
+
       </main>
     </div>
   )
