@@ -18,33 +18,100 @@ fs.readFile(topicToFileMappingFile, (err, data) => {
 
 
 class FAQDataController {
+
+  static addNewTopic(req, res, next) {
+    var topic = req.body.topic
+
+    if (!topic) {
+      console.log("Could not add topic, no topic found in request.")
+      res.send("No topic found in request.")
+    }
+    else {
+      topicToFileMapping[topic] = `${topic}.csv`
+
+      fs.writeFile(topicToFileMappingFile, JSON.stringify(topicToFileMapping), (err) => {
+        if (err) console.log(err)
+        else {
+          fs.writeFileSync(`./data/${topicToFileMapping[topic]}`, "")
+          console.log(`${topic} has been added to master file and ${topic}.csv was created.`)
+          res.send(`Created new csv file for ${topic}.`)
+        }
+      })
+    }
+  }
+
+  static removeTopic(req, res, next) {
+    var topic = req.body.topic
+    var filename = topicToFileMapping[topic]
+    delete topicToFileMapping[topic]
+
+    if (!topic) {
+      console.log("Could not remove topic, no topic found in request.")
+      res.send("No topic found in request.")
+    }
+    else if (!filename) {
+      console.log("Could not remove topic, could not find file related to topic.")
+      res.send("No file found for topic.")
+    }
+    else {
+      fs.writeFile(topicToFileMappingFile, JSON.stringify(topicToFileMapping), (err) => {
+        if (err) console.log(err)
+        else {
+          fs.unlinkSync(`./data/${filename}`, "")
+          console.log(`${topic} has been removed from master file and ${filename} was removed.`)
+          res.send(`${topic} data and files removed.`)
+        }
+      })
+    }
+  }
+
   static async getFAQData(req, res, next) {
     var topic = req.params.topic
-    var file = topicToFileMapping[topic]
+    var filename = topicToFileMapping[topic]
     var results = []
 
-    fs.createReadStream(`./data/${file}`)
-    .pipe(csvReader(['Index', 'Question', 'Answer']))
-    .on('data', (data) => results.push(data))
-    .on('end', () => {
-      // console.log(results)
-      res.json({data: results})
-    })
+    if (!topic) {
+      console.log("Could not GET faqdata, no topic found in request.")
+      res.send("No topic found in request.")
+    }
+    else if (!filename) {
+      console.log("Could not GET faqdata, could not find file related to topic.")
+      res.send("No file found for topic.")
+    }
+    else {
+      fs.createReadStream(`./data/${filename}`)
+      .pipe(csvReader(['Index', 'Question', 'Answer']))
+      .on('data', (data) => results.push(data))
+      .on('end', () => {
+        // console.log(results)
+        res.json({data: results})
+      })
+    }
   }
 
   static async writeFAQData(req, res, next) {
     var topic = req.body.topic
-    var file = topicToFileMapping[topic] || `${topic}.csv`
+    var filename = topicToFileMapping[topic]
 
-    const csvWriter = createCsvWriter({
-      path: `./data/${file}`,
-      header: [ "Index", "Question", "Answer"]
-    })
-    csvWriter.writeRecords(req.body.data)
-    .then( () => {
-      console.log(`${file} has been updated.`)
-    })
-    res.send(`${file} has been updated.`)
+    if (!topic) {
+      console.log("Could not write faqdata, no topic found in request.")
+      res.send("No topic found in request.")
+    }
+    else if (!filename) {
+      console.log("Could not write faqdata, could not find file related to topic.")
+      res.send("No file found for topic.")
+    }
+    else {
+      const csvWriter = createCsvWriter({
+        path: `./data/${filename}`,
+        header: [ "Index", "Question", "Answer"]
+      })
+      csvWriter.writeRecords(req.body.data)
+      .then( () => {
+        console.log(`${filename} has been updated.`)
+      })
+      res.send(`${filename} has been updated.`)
+    }
   }
 
   static async getFAQTopics(req, res, next) {

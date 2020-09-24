@@ -12,12 +12,12 @@ import EditIcon from '@material-ui/icons/Edit';
 import DoneIcon from '@material-ui/icons/Done';
 
 const useStyles = makeStyles((theme) => ({
-  topPaper: {
-    height: 60,
+  topBarPaper: {
+    height: '5em',
     display: "flex",
     alignItems: 'center'
   },
-  questionPaper: {
+  bodyPaper: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -49,6 +49,7 @@ export default function SingleQuestion(props) {
   const [newAnswer, setNewAnswer] = React.useState(props.selectedIndex ? props.data[props.selectedIndex].Answer : "")
 
   React.useEffect( () => {
+    if (props.selectedIndex === null) return
     if (newQuestion !== props.data[props.selectedIndex].Question || newAnswer !== props.data[props.selectedIndex].Answer) {
       updateData()
     }
@@ -73,12 +74,12 @@ export default function SingleQuestion(props) {
   return (
     <Grid container spacing={2}>
       <Grid container item>
-        <Paper className={classes.topPaper} style={{marginRight:10}}>
+        <Paper className={classes.topBarPaper} style={{marginRight:10}}>
         <IconButton onClick={()=>{props.setSelectedIndex(null)}}>
           <ArrowBackIcon fontSize="large"/>
         </IconButton>
         </Paper>
-        <Paper className={classes.topPaper} style={{flex:1}}>
+        <Paper className={classes.topBarPaper} style={{flex:1}}>
         <Typography variant='h5' className={classes.topHeader}>
           Question and Answer
         </Typography>
@@ -86,7 +87,7 @@ export default function SingleQuestion(props) {
       </Grid>
 
       <Grid item container>
-        <Paper className={classes.questionPaper}>
+        <Paper className={classes.bodyPaper}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <Typography variant="h5" className={classes.bodyHeader}>
             Question:
@@ -111,7 +112,7 @@ export default function SingleQuestion(props) {
       </Grid>
 
       <Grid item container>
-        <Paper className={classes.questionPaper}>
+        <Paper className={classes.bodyPaper}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <Typography variant="h5"  className={classes.bodyHeader}>
             Answer:

@@ -12,17 +12,17 @@ import EditIcon from '@material-ui/icons/Edit';
 import DoneIcon from '@material-ui/icons/Done';
 
 const useStyles = makeStyles((theme) => ({
-  topPaper: {
-    height: 60,
+  topBarPaper: {
+    height: '5em',
     display: "flex",
     alignItems: 'center',
     justifyContent: 'space-between',
     overflow:"hidden"
   },
-  barItems: {
+  topBarItems: {
     margin: theme.spacing(2),
   },
-  questionPaper: {
+  bodyPaper: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -71,12 +71,12 @@ export default function SingleQuestion(props) {
   return (
     <Grid container spacing={2}>
       <Grid container item>
-        <Paper className={classes.topPaper} style={{flex:1}}>
+        <Paper className={classes.topBarPaper} style={{flex:1}}>
         <Typography variant='h5' className={classes.topHeader}>
           Add New Question
         </Typography>
         <div style={{display:'flex', alignItems:'center'}}>
-          <Button className={classes.barItems} variant="contained" color="primary"
+          <Button className={classes.topBarItems} variant="contained" color="primary"
           disabled={newQuestion==="" || newAnswer==="" || editQuestion || editAnswer}
           onClick={()=>{
             addNewQuestion(newQuestion, newAnswer)
@@ -84,7 +84,7 @@ export default function SingleQuestion(props) {
           }}>
           Save
           </Button>
-          <Button className={classes.barItems} variant="contained" color="primary"
+          <Button className={classes.topBarItems} variant="contained" color="primary"
           onClick={()=>{props.setAddNewQuestion(false)}}>
           Cancel
           </Button>
@@ -94,7 +94,7 @@ export default function SingleQuestion(props) {
 
 
       <Grid item container>
-        <Paper className={classes.questionPaper}>
+        <Paper className={classes.bodyPaper}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <Typography variant="h5" className={classes.bodyHeader}>
             Question:
@@ -123,7 +123,7 @@ export default function SingleQuestion(props) {
       </Grid>
 
       <Grid item container>
-        <Paper className={classes.questionPaper}>
+        <Paper className={classes.bodyPaper}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <Typography variant="h5"  className={classes.bodyHeader}>
             Answer:

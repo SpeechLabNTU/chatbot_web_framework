@@ -37,6 +37,8 @@ app.get('/api/deletestorage', AC.deleteFiles)
 app.get('/faqdata/:topic', FAQ.getFAQData)
 app.post('/faqdata', FAQ.writeFAQData)
 app.get('/faqtopics', FAQ.getFAQTopics)
-app.post('/process/csv', upload.csv.single('file'), FAQ.processCSV)
+app.post('/faqdata/csv', upload.csv.single('file'), FAQ.processCSV)
+app.post('/faqtopics/create', FAQ.addNewTopic)
+app.post('/faqtopics/delete', FAQ.removeTopic)
 
 module.exports = app

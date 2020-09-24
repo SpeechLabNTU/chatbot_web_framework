@@ -3,31 +3,40 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Questions from "./Questions.jsx";
 import SingleQuestion from "./SingleQuestion.jsx";
 import NewQuestion from "./NewQuestion.jsx";
+import Settings from "./Settings.jsx";
 
 import AppBar from '@material-ui/core/AppBar';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import Hidden from '@material-ui/core/Hidden';
 import IconButton from '@material-ui/core/IconButton';
-import QuestionAnswerIcon from '@material-ui/icons/QuestionAnswer';
-import BackupIcon from '@material-ui/icons/Backup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@material-ui/core/TextField';
 
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Popper from '@material-ui/core/Popper';
 import Grow from '@material-ui/core/Grow';
 import Fade from '@material-ui/core/Fade';
 import Slide from '@material-ui/core/Slide';
+
+import QuestionAnswerIcon from '@material-ui/icons/QuestionAnswer';
+import MenuIcon from '@material-ui/icons/Menu';
+import BackupIcon from '@material-ui/icons/Backup';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import SettingsIcon from '@material-ui/icons/Settings';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 
 import axios from 'axios';
 
@@ -45,6 +54,8 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   appBar: {
+    minHeight: "5em",
+    flexDirection: 'row',
     [theme.breakpoints.up('md')]: {
       width: `calc(100% - ${drawerWidth}px)`,
       marginLeft: drawerWidth,
@@ -57,22 +68,28 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   // necessary for content to be below app bar
-  toolbar: theme.mixins.toolbar,
+  toolbar: {
+    minHeight: "5em"
+  },
   drawerPaper: {
     width: drawerWidth,
   },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
-    marginLeft: 40,
-    marginRight: 40,
+    marginLeft: '4em',
+    marginRight: '4em',
   },
   sideIcon: {
-    marginRight: 10,
+    marginRight: '1em',
   },
   topicMenu: {
-    zIndex: 1300,
+    zIndex: theme.zIndex.modal,
   },
+  menuItem: {
+    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing(3),
+  }
 }));
 
 
@@ -82,8 +99,12 @@ export default function Main(props) {
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
+  const [newTopic, setNewTopic] = React.useState("")
+
   const [allTopics, setAllTopics] = React.useState([])
   const [currentTopic, setCurrentTopic] = React.useState("")
+  const [newTopicDialog, setNewTopicDialog] = React.useState(false)
+
   const [data, setData] = React.useState([])
   const [dataChanged, setDataChanged] = React.useState(false)
   const [currentContext, setCurrentContext] = React.useState("Questions")
@@ -94,15 +115,23 @@ export default function Main(props) {
   const [selectedIndex, setSelectedIndex] = React.useState(null)
   const [addNewQuestion, setAddNewQuestion] = React.useState(false)
 
-  // initial call to backend to get all topics available
+  // call to backend to get all topics available
   React.useEffect( () => {
     axios.get(`${process.env.REACT_APP_API}/faqtopics`)
     .then( res => {
       setAllTopics(res.data.topics)
-      setCurrentTopic(res.data.topics[0])
+      if (res.data.topics.length === 0 ) {
+        // do nothing if no topics found
+        setData([])
+      }
+      else if (currentTopic==="") {
+        setCurrentTopic(res.data.topics[0])
+      }
     })
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [currentTopic])
 
+  // get data for current topic
   React.useEffect( () => {
     if (currentTopic !== ""){
       axios.get(`${process.env.REACT_APP_API}/faqdata/${currentTopic}`)
@@ -112,8 +141,10 @@ export default function Main(props) {
         console.log(err)
       })
     }
+    setCurrentContext("Questions")
   }, [currentTopic])
 
+  // update backend with changed data
   React.useEffect( () => {
     if (dataChanged) {
       axios.post(`${process.env.REACT_APP_API}/faqdata`, {
@@ -127,6 +158,10 @@ export default function Main(props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataChanged])
 
+  React.useEffect( () => {
+    setIsTopicMenuOpen(false)
+  }, [currentContext])
+
   // side drawer component
   const drawer = (
     <React.Fragment >
@@ -135,6 +170,9 @@ export default function Main(props) {
       <List>
         <ListItem key={"Topics"}>
           <ListItemText primary={"Topics"} primaryTypographyProps={{variant: 'h6'}} />
+          <IconButton size='medium' edge="end" onClick={()=>{setCurrentContext("Topics")}}>
+            <SettingsIcon />
+          </IconButton>
         </ListItem>
         <ListItem button onClick={ (e) => {
           setTopicAnchorRef(e.currentTarget)
@@ -152,8 +190,18 @@ export default function Main(props) {
         <ClickAwayListener onClickAway={()=>{setIsTopicMenuOpen(false)}}>
         <MenuList autoFocusItem={isTopicMenuOpen}>
           {allTopics.map((item) => (
-            <MenuItem key={item} button onClick={()=>setCurrentTopic(item)}>{item}</MenuItem>
+            <MenuItem key={item} className={classes.menuItem} button
+            onClick={()=>setCurrentTopic(item)}>
+              {item}
+            </MenuItem>
           ))}
+            <Divider style={{margin:theme.spacing(1)}}/>
+            <MenuItem key={"New Topic"} className={classes.menuItem} button
+            onClick={()=>{setNewTopicDialog(true)}}>
+              <AddCircleOutlineIcon fontSize='small'/>
+              <Typography style={{marginLeft:theme.spacing(1)}}
+              >New Topic</Typography>
+            </MenuItem>
         </MenuList>
         </ClickAwayListener>
         </Paper>
@@ -177,6 +225,30 @@ export default function Main(props) {
         </ListItem>
       </List>
       <Divider />
+
+      {/* Dialog for creating new topic */}
+      <Dialog open={newTopicDialog} onClose={()=>{setNewTopicDialog(false)}}>
+        <DialogTitle >{"Enter name of new topic"}</DialogTitle>
+        <DialogContent>
+          <TextField id='new topic name' value={newTopic} onChange={(e)=>setNewTopic(e.target.value)}/>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" onClick={(e)=>{
+            axios.post(`${process.env.REACT_APP_API}/faqtopics/create`, {topic: newTopic})
+            .then( res => {
+              setCurrentTopic(newTopic)
+              setNewTopic("")
+              setNewTopicDialog(false)
+            })
+          }}>
+            Create
+          </Button>
+          <Button color="primary" autoFocus
+          onClick={()=>{setNewTopicDialog(false)}}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </React.Fragment>
   );
 
@@ -185,7 +257,7 @@ export default function Main(props) {
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar variant="dense">
+        <Toolbar variant="dense" style={{}}>
           <IconButton
             color="inherit"
             edge="start"
@@ -194,8 +266,8 @@ export default function Main(props) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            FAQ Answering Model
+          <Typography variant="h4" noWrap>
+            FAQ Management
           </Typography>
         </Toolbar>
       </AppBar>
@@ -234,9 +306,18 @@ export default function Main(props) {
 
       <main className={classes.content}>
         <div className={classes.toolbar} />
+          {/* Topics context */}
+          <Fade in={currentContext==="Topics"}>
+            <div style={{height:'100%'}}>
+              <Settings
+              currentTopic={currentTopic}
+              setCurrentTopic={setCurrentTopic}
+              />
+            </div>
+          </Fade>
           {/* Questions context */}
           <Fade in={currentContext==="Questions"}>
-            <div>
+            <div style={{height:'100%', position:'relative', top:'-100%', marginBottom:'-100%'}}>
             <Slide direction="right" in={selectedIndex===null && !addNewQuestion} mountOnEnter unmountOnExit
             timeout={{enter:600}}>
               <div>

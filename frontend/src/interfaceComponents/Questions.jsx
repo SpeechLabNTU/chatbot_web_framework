@@ -24,8 +24,6 @@ import SearchIcon from '@material-ui/icons/Search';
 import Grow from '@material-ui/core/Grow';
 import Fade from '@material-ui/core/Fade';
 
-
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -44,19 +42,19 @@ import axios from "axios";
 const useStyles = makeStyles((theme) => ({
   topBarPaper: {
     marginBottom: theme.spacing(2),
-    height: 60,
+    height: '5em',
     width: '100%',
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     overflow:"hidden"
   },
-  barItems: {
+  searchBaritems: {
     margin: theme.spacing(2),
   },
   editBar: {
     marginBottom: theme.spacing(2),
-    height: 50,
+    height: '4em',
     display: "flex",
     justifyContent: "flex-end",
   },
@@ -65,10 +63,10 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
   },
-  searchBar: {
+  searchBarPaper: {
     marginBottom: theme.spacing(2),
     display: "flex",
-    height: 50,
+    height: '4em',
     alignItems: "center",
   },
   tableContainer: {
@@ -219,7 +217,7 @@ export default function Questions(props) {
     let formData = new FormData()
     formData.append('file', file)
 
-    axios.post(`${process.env.REACT_APP_API}/process/csv`, formData)
+    axios.post(`${process.env.REACT_APP_API}/faqdata/csv`, formData)
     .then( res => {
       let newData = res.data.data
       let tempData = []
@@ -236,6 +234,7 @@ export default function Questions(props) {
       })
       props.setData(tempData)
       props.setDataChanged(true)
+      setIsMenuOpen(false)
     })
   }
 
@@ -251,14 +250,14 @@ export default function Questions(props) {
   return (
     <React.Fragment>
       <Paper className={classes.topBarPaper}>
-        <Typography variant='h5' className={classes.barItems}>Questions</Typography>
+        <Typography variant='h5' className={classes.searchBaritems}>Questions</Typography>
         <div style={{display:'flex', alignItems:'center'}}>
           <Button variant="contained" color="primary"
           onClick={()=>{props.setAddNewQuestion(true)}}>
           Add Question
           </Button>
 
-          <IconButton className={classes.barItems} ref={menuAnchorRef} onClick={()=>setIsMenuOpen((prev)=>!prev)}>
+          <IconButton className={classes.searchBaritems} ref={menuAnchorRef} onClick={()=>setIsMenuOpen((prev)=>!prev)}>
           <MoreHorizIcon/>
           </IconButton>
 
@@ -283,8 +282,8 @@ export default function Questions(props) {
 
       { !showEditBar ?
       <Fade in={!showEditBar}>
-        <Paper className={classes.searchBar}>
-        <SearchIcon className={classes.barItems}/>
+        <Paper className={classes.searchBarPaper}>
+        <SearchIcon className={classes.searchBaritems}/>
         <InputBase
         placeholder="Search questions"
         onChange={(e)=>{setSearchValue(e.target.value.toLowerCase())}}
@@ -369,7 +368,7 @@ export default function Questions(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={()=>{
+          <Button color="secondary" onClick={()=>{
             props.setData([])
             props.setDataChanged(true)
             setDeleteAllDialog(false)
