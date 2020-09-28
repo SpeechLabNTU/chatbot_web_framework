@@ -5,7 +5,7 @@ const router = express.Router()
 router.post("/api/askJamieFast", (req,res)=> {
     let query = req.body.question
     example(query,res)
-    
+
 });
 
 function example(query,res){
@@ -17,6 +17,5 @@ function example(query,res){
         res.json({reply: data.toString()});
     });
 }
-
 
 module.exports = router
