@@ -236,7 +236,7 @@ export default function Main(props) {
       <Divider />
       <List>
         <ListItem disabled>
-        This page is in development. Any data shown here is currently not linked to the any services in anyway.
+        This page is in development. Any data shown here is currently not linked to the any services in any way.
         </ListItem>
       </List>
 

@@ -114,7 +114,10 @@ class FAQDataController {
 
     fs.createReadStream(file.path)
     .pipe(csvReader(["Index", "Question", "Answer", 'Alternatives']))
-    .on('data', (data) => results.push(data))
+    .on('data', (data) => {
+      data.Alternatives = []
+      results.push(data)
+    })
     .on('end', () => {
       if (fs.existsSync(file.path)) { // clean original file after converting
           fs.unlinkSync(file.path)
