@@ -136,7 +136,16 @@ export default function Main(props) {
     if (currentTopic !== ""){
       axios.get(`${process.env.REACT_APP_API}/faqdata/${currentTopic}`)
       .then( (res) => {
-        setData(res.data.data)
+        let temp = res.data.data.map( val => {
+          if (val.Alternatives==="" || val.Alternatives===undefined) {
+            val.Alternatives = []
+            return val
+          }
+          else {
+            return val
+          }
+        })
+        setData(temp)
       }).catch( (err) => {
         console.log(err)
       })
@@ -216,15 +225,20 @@ export default function Main(props) {
           <QuestionAnswerIcon className={classes.sideIcon}/>
           <ListItemText primary={"Questions"} />
         </ListItem>
-        <ListItem button key={"Trained Models"} onClick={()=>setCurrentContext("Trained Models")}>
+        <ListItem button key={"Trained Models"} onClick={()=>setCurrentContext("Trained Models")} disabled>
           <ListItemText primary={"Trained Models"} />
         </ListItem>
-        <ListItem button key={"Deployments"} onClick={()=>setCurrentContext("Deployments")}>
+        <ListItem button key={"Deployments"} onClick={()=>setCurrentContext("Deployments")} disabled>
           <BackupIcon className={classes.sideIcon} />
           <ListItemText primary={"Deployments"} />
         </ListItem>
       </List>
       <Divider />
+      <List>
+        <ListItem disabled>
+        This page is in development. Any data shown here is currently not linked to the any services in anyway.
+        </ListItem>
+      </List>
 
       {/* Dialog for creating new topic */}
       <Dialog open={newTopicDialog} onClose={()=>{setNewTopicDialog(false)}}>

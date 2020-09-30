@@ -4,6 +4,7 @@ node_modules/
 #backend
 gcloud/
 keys/
+data/
 
 #dataConstruction directory
 permutations/

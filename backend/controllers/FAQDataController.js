@@ -27,14 +27,14 @@ class FAQDataController {
       res.send("No topic found in request.")
     }
     else {
-      topicToFileMapping[topic] = `${topic}.csv`
+      topicToFileMapping[topic] = `${topic}.json`
 
       fs.writeFile(topicToFileMappingFile, JSON.stringify(topicToFileMapping), (err) => {
         if (err) console.log(err)
         else {
-          fs.writeFileSync(`./data/${topicToFileMapping[topic]}`, "")
-          console.log(`${topic} has been added to master file and ${topic}.csv was created.`)
-          res.send(`Created new csv file for ${topic}.`)
+          fs.writeFileSync(`./data/${topicToFileMapping[topic]}`, "[]")
+          console.log(`${topic} has been added to master file and ${topic}.json was created.`)
+          res.send(`Created new json file for ${topic}.`)
         }
       })
     }
@@ -79,13 +79,8 @@ class FAQDataController {
       res.send("No file found for topic.")
     }
     else {
-      fs.createReadStream(`./data/${filename}`)
-      .pipe(csvReader(['Index', 'Question', 'Answer']))
-      .on('data', (data) => results.push(data))
-      .on('end', () => {
-        // console.log(results)
-        res.json({data: results})
-      })
+      results = JSON.parse(fs.readFileSync(`./data/${filename}`))
+      res.json({data: results})
     }
   }
 
@@ -102,14 +97,8 @@ class FAQDataController {
       res.send("No file found for topic.")
     }
     else {
-      const csvWriter = createCsvWriter({
-        path: `./data/${filename}`,
-        header: [ "Index", "Question", "Answer"]
-      })
-      csvWriter.writeRecords(req.body.data)
-      .then( () => {
-        console.log(`${filename} has been updated.`)
-      })
+      fs.writeFileSync(`./data/${filename}`, JSON.stringify(req.body.data))
+      console.log(`${filename} has been updated.`)
       res.send(`${filename} has been updated.`)
     }
   }
@@ -122,8 +111,9 @@ class FAQDataController {
     var file = req.file
     var results = []
 
+
     fs.createReadStream(file.path)
-    .pipe(csvReader(["Index", "Question", "Answer"]))
+    .pipe(csvReader(["Index", "Question", "Answer", 'Alternatives']))
     .on('data', (data) => results.push(data))
     .on('end', () => {
       if (fs.existsSync(file.path)) { // clean original file after converting
