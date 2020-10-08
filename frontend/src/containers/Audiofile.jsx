@@ -29,27 +29,34 @@ import Grid from '@material-ui/core/Grid';
 
 import AudioPlaybackButton from './AudioPlaybackButton';
 
-
-
 const useStyles = makeStyles(theme => ({
   root: {
     padding: '2px 4px',
     display: 'flex',
     alignItems: 'center',
   },
+  descriptionCardGrid: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  userMenuGrid: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
   input: {
     marginLeft: theme.spacing(1),
     flex: 1,
   },
   iconButton: {
-    padding: 10,
+    padding: theme.spacing(1),
   },
   divider: {
     height: 28,
     margin: 4,
   },
   tableContainer: {
-    paddingTop: '50px',
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
     flexGrow: 1,
   },
   pagination: {
@@ -307,29 +314,24 @@ export default function Audiofile(props) {
   }
 
   return (
-    <div>
+    <React.Fragment>
 
-      <Grid container style={{paddingBottom:"40px"}} justify="center">
-      <Card>
+      <Grid container className={classes.descriptionCardGrid} justify="center">
+        <Card style={{paddingRight:10}}>
           <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Transcription Comparison of Speech-to-text APIs
             </Typography>
-            <Typography color="textSecondary">
-
-            </Typography>
-            <Typography variant="body2" component="p">
-              1. Upload Audio Files (.wav and .mp3 files only)
-              <br />
-              2. View Table Listing of Transcriptions
-              <br />
+            <Typography variant="body2">
+              1. Upload Audio Files (.wav and .mp3 files only)<br />
+              2. View Table Listing of Transcriptions<br />
               3. Select audio file to playback
             </Typography>
           </CardContent>
-      </Card>
+        </Card>
       </Grid>
 
-      <Grid container>
+      <Grid container className={classes.userMenuGrid}>
       <FormControl component="fieldset" style={{flexGrow:1, maxWidth:400}}>
         {/* Audio file upload field and button */}
         <Paper component="form" className={classes.root}>
@@ -411,6 +413,6 @@ export default function Audiofile(props) {
         </Paper>
       </FormControl>
       </Grid>
-    </div>
+    </React.Fragment>
   );
 }

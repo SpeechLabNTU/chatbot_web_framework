@@ -9,7 +9,7 @@ router.post("/api/queryEndpoint", (req, res) => {
     let queryText = req.body.question
     let topic = req.body.topic
 
-    axios.get(process.env.RUSHI_ENDPOINT, {
+    axios.get(`${process.env.RUSHI_ENDPOINT}/answer`, {
       params: {
         topic: topic,
         question: queryText,

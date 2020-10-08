@@ -187,6 +187,7 @@ export default function SingleQuestion(props) {
   React.useEffect( () => {
     updateData()
     setEditAltPhrase(altPhrases.map(()=>false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [altPhrases])
 
   const updateData = () => {

@@ -107,6 +107,9 @@ class measure(object):
         for i in range(len(bow_vector)):
             c += V1[i] * V2[i]
 
-        cosineSimilarity = c / float((sum(V1)*sum(V2))**0.5)
+        try:
+            cosineSimilarity = c / float((sum(V1)*sum(V2))**0.5)
+        except:
+            return 0
 
         return round(cosineSimilarity,2)

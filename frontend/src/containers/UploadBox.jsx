@@ -1,4 +1,4 @@
-import React, { useState }from 'react';
+import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -6,10 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl'
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import RadioGroup from '@material-ui/core/RadioGroup'
-import Radio from '@material-ui/core/Radio'
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import Button from '@material-ui/core/Button';
@@ -42,10 +39,18 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
-// import Chartplotly from "./Chartplotly";
 import Charts from "./Charts";
+import TopicSelection from "./TopicSelection"
 
 const useStyles = makeStyles(theme => ({
+  descriptionCardGrid: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  userMenuGrid: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
   pagination: {
     display: 'flex',
     alignItems: 'center',
@@ -72,63 +77,63 @@ const useStyles = makeStyles(theme => ({
     minWidth: 120,
   },
   tableContainer: {
-    paddingTop: '10px',
+    marginTop: theme.spacing(2),
     flexGrow: 1
   }
 
 }));
 
 function TablePaginationActions(props){
-    const classes = useStyles();
-    const theme = useTheme();
-    const { count, page, rowsPerPage, onChangePage } = props;
+  const classes = useStyles();
+  const theme = useTheme();
+  const { count, page, rowsPerPage, onChangePage } = props;
 
-    //-----------------------------Pagination Handler-----------------------------------
-    const handleFirstPageButtonClick = (event) => {
-      onChangePage(event, 0)
-    };
+  //-----------------------------Pagination Handler-----------------------------------
+  const handleFirstPageButtonClick = (event) => {
+    onChangePage(event, 0)
+  };
 
-    const handleBackButtonClick = (event) => {
-      onChangePage(event, page - 1)
-    }
+  const handleBackButtonClick = (event) => {
+    onChangePage(event, page - 1)
+  }
 
-    const handleNextButtonClick = (event) => {
-      onChangePage(event, page + 1)
-    }
+  const handleNextButtonClick = (event) => {
+    onChangePage(event, page + 1)
+  }
 
-    const handleLastPageButtonClick = (event) => {
-      onChangePage(event, Math.max(0, Math.ceil(count/rowsPerPage)-1));
-    }
+  const handleLastPageButtonClick = (event) => {
+    onChangePage(event, Math.max(0, Math.ceil(count/rowsPerPage)-1));
+  }
 
-    //------------------------------Pagination Icons-------------------------------------
-    return (
-      <div className={classes.pagination}>
-        <IconButton
-          onClick={handleFirstPageButtonClick}
-          disabled={page === 0}
-          aria-label="first page"
-        >
-          {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-        </IconButton>
-        <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
-          {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-        </IconButton>
-        <IconButton
-          onClick={handleNextButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="next page"
-        >
-          {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-        </IconButton>
-        <IconButton
-          onClick={handleLastPageButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="last page"
-        >
-          {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-        </IconButton>
-      </div>
-    );
+  //------------------------------Pagination Icons-------------------------------------
+  return (
+    <div className={classes.pagination}>
+      <IconButton
+        onClick={handleFirstPageButtonClick}
+        disabled={page === 0}
+        aria-label="first page"
+      >
+        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
+      </IconButton>
+      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
+        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+      </IconButton>
+      <IconButton
+        onClick={handleNextButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="next page"
+      >
+        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+      </IconButton>
+      <IconButton
+        onClick={handleLastPageButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="last page"
+      >
+        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
+      </IconButton>
+    </div>
+  );
 }
 
 //---------------------------Pagination Action Props---------------------------------------
@@ -141,296 +146,296 @@ TablePaginationActions.propTypes = {
 
 
 export default function CustomizedInputBase(props) {
-    let [fileName, setFilename] = useState("");
-    const [value, setValue] = React.useState('');
-    const [rows, updateRows] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
-    const [graph, setGraph] = React.useState(false);
-    const [open, setOpen] = React.useState(false);
-    const [load, setLoad] = React.useState(false);
-    const [scoreArray, setscoreArray] = React.useState([]);
-    const [completed, setCompleted] = React.useState(0);
-    const [text, setText] = React.useState([]);
-    const [submit, setSubmit] = React.useState(false);
 
-    const [upload, setUpload] = React.useState(false);
-    const [option, setOption] = React.useState(false);
+  const classes = useStyles();
 
-    const [topic, setTopic] = React.useState('babybonus')
-    const [availableMICL, setAvailableMICL] = React.useState(true)
-    const [availableDialog, setAvailableDialog] = React.useState(true)
-    const [availableRajat, setAvailableRajat] = React.useState(true)
-    const [availableRushi, setAvailableRushi] = React.useState(true)
+  let [fileName, setFilename] = React.useState("");
+  const [value, setValue] = React.useState('');
+  const [rows, setRows] = React.useState([]);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [graph, setGraph] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [load, setLoad] = React.useState(false);
+  const [scoreArray, setScoreArray] = React.useState([]);
+  const [completed, setCompleted] = React.useState(0);
+  const [text, setText] = React.useState([]);
+  const [submit, setSubmit] = React.useState(false);
 
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+  const [upload, setUpload] = React.useState(false);
+  const [option, setOption] = React.useState(false);
 
-    let tablecontent = []
-    let scorecontent = []
+  const [topic, setTopic] = React.useState('Baby Bonus')
+  const [availableMICL, setAvailableMICL] = React.useState(true)
+  const [availableDialog, setAvailableDialog] = React.useState(true)
+  const [availableRajat, setAvailableRajat] = React.useState(true)
+  const [availableRushi, setAvailableRushi] = React.useState(true)
 
-    //---------------------------Generate Report Pop Up Handler-------------------------------
-    const handleClickOpen = () =>{
-      setOpen(true);
-    };
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
-    const handleClose = () =>{
-      setOpen(false);
-    };
+  let tablecontent = []
+  let scorecontent = []
 
+  // when topic changes
+  React.useEffect( () => {
+    let clear = clearContent()
+    clear.then((val)=>{
+      if (val === 'Ok'){
+        setPage(0)
+      }
+    })
 
-    //---------------------------Page Change Handler-----------------------------------------
-    const handleChangePage = (event, newPage) =>{
-      setPage(newPage)
+    switch (topic) {
+      case "Baby Bonus":
+        setAvailableDialog(true)
+        setAvailableMICL(true)
+        setAvailableRajat(true)
+        setAvailableRushi(true)
+        break
+      case "Covid 19":
+        setAvailableDialog(true)
+        setAvailableMICL(false)
+        setAvailableRajat(true)
+        setAvailableRushi(true)
+        break
+      case "ComCare":
+        setAvailableDialog(false)
+        setAvailableMICL(false)
+        setAvailableRajat(false)
+        setAvailableRushi(true)
+        break
+      case "Adoption":
+        setAvailableDialog(false)
+        setAvailableMICL(false)
+        setAvailableRajat(false)
+        setAvailableRushi(true)
+        break
+      default:
+        break
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topic])
 
-    const handleChangeRowsPerPage = (event) =>{
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    }
+  //---------------------------Generate Report Pop Up Handler-------------------------------
+  const handleClickOpen = () =>{
+    setOpen(true);
+  };
 
-    //----------------Promise to clear state and array of Chart and Table Array---------------
-    function clearContent(){
+  const handleClose = () =>{
+    setOpen(false);
+  };
 
-      return new Promise(function(resolve, reject){
 
-        try{
-          //Clear Array content for state re-population
-          tablecontent = []
-          scorecontent = []
+  //---------------------------Page Change Handler-----------------------------------------
+  const handleChangePage = (event, newPage) =>{
+    setPage(newPage)
+  }
 
-          //Clear Chart and Table State
-          setscoreArray([])
-          updateRows([]);
+  const handleChangeRowsPerPage = (event) =>{
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  }
 
-          //Disable Chart
-          setGraph(false)
+  //----------------Promise to clear state and array of Chart and Table Array---------------
+  function clearContent(){
 
-          resolve("Ok")
-        }catch(e){
-          reject(e)
-        }
+    return new Promise(function(resolve, reject){
 
-      });
-
-    }
-
-    function handleAnalysis(){
-
-      let clear = clearContent()
-      clear.then((val)=>{
-        if (val === 'Ok'){
-          setLoad(true)
-          setSubmit(true)
-          setPage(0)
-        }else{
-          console.log(val)
-        }
-      }).then(()=>{
-        handleSingleInput(text,0,text.length)
-      })
-    }
-
-    //--------------------------Chatbot Service Change Handler--------------------------------
-    const handleChange = event => {
-        setValue(event.target.value);
-        setOption(true)
+      try{
+        //Clear Array content for state re-population
+        tablecontent = []
+        scorecontent = []
 
         //Clear Chart and Table State
-        setscoreArray([])
-        updateRows([]);
+        setScoreArray([])
+        setRows([]);
+
+        //Disable Chart
         setGraph(false)
-        setPage(0)
 
-    };
-
-    const classes = useStyles();
-
-    //------------------------------Response Summarizer---------------------------------------
-    function summarizer(result){
-      var array = []
-      var summary = "";
-      array = result.split(" ")
-      if (array.length < 40){
-        summary = result
-      }else{
-        for (var i = 0;i<40;i++){
-          if (i === 39){
-            summary += array[i] + "..."
-          }else{
-            summary += array[i] + " "
-          }
-        }
+        resolve("Ok")
+      }catch(e){
+        reject(e)
       }
 
-      return summary
+    });
+
+  }
+
+  function handleAnalysis(){
+
+    let clear = clearContent()
+    clear.then((val)=>{
+      if (val === 'Ok'){
+        setLoad(true)
+        setSubmit(true)
+        setPage(0)
+      }else{
+        console.log(val)
+      }
+    }).then(()=>{
+      handleSingleInput(text,0,text.length)
+    })
+  }
+
+  //--------------------------Chatbot Service Change Handler--------------------------------
+  const handleChange = event => {
+    setValue(event.target.value);
+    setOption(true)
+
+    //Clear Chart and Table State
+    setScoreArray([])
+    setRows([]);
+    setGraph(false)
+    setPage(0)
+
+  };
+
+  //------------------------------Response Summarizer---------------------------------------
+  function summarizer(result){
+    var array = []
+    var summary = "";
+    array = result.split(" ")
+    if (array.length < 40){
+      summary = result
+    }else{
+      for (var i = 0;i<40;i++){
+        if (i === 39){
+          summary += array[i] + "..."
+        }else{
+          summary += array[i] + " "
+        }
+      }
     }
 
-    //---------------------------------Similarity Comparison---------------------------------------
-    function ResponseComparison(req){
+    return summary
+  }
 
-      return new Promise(function(resolve, reject){
-        axios.post(`${process.env.REACT_APP_API}/flask/api/responseCompare`,req)
-          .then((res)=>{
-              let probability = res.data.reply
-              resolve(probability)
-          }).catch(error=>{
-            reject(error)
-          });
+  //---------------------------------Similarity Comparison---------------------------------------
+  function ResponseComparison(req){
 
+    return new Promise(function(resolve, reject){
+      axios.post(`${process.env.REACT_APP_API}/flask/api/responseCompare`,req)
+      .then((res)=>{
+        let probability = res.data.reply
+        resolve(probability)
+      }).catch(error=>{
+        reject(error)
       });
 
-    }
+    });
 
-    //----------------------Recursive function to return results one at a time--------------------
-    async function handleSingleInput(textArray, i, textArrayLength){
+  }
 
-      if(i === textArrayLength -1 ){
-        setText(textArray)
-        setscoreArray(scorecontent)
-        setGraph(true)
-        setLoad(false)
-        setCompleted(0)
-        setSubmit(false)
-        return
-      }else{
-        let query = textArray[i]
-        let params = {
-          question: query,
-          topic: topic,
-        }
-        let service = ""
+  //----------------------Recursive function to return results one at a time--------------------
+  async function handleSingleInput(textArray, i, textArrayLength){
 
-        if(value === 'Dialogflow'){
-            service = props.dialogflowAPI(params)
-        }else if (value === 'Andrew'){
-            service = props.miclAPI(params)
-        }else if (value === 'Rajat'){
-            service = props.rajatAPI(params)
-        }else if (value === 'Rushi'){
-            service = props.rushiAPI(params)
-        }
+    if(i === textArrayLength ){
+      setText(textArray)
+      setScoreArray(scorecontent)
+      setGraph(true)
+      setLoad(false)
+      setCompleted(0)
+      setSubmit(false)
+      return
+    }else{
+      let query = textArray[i]
+      let params = {
+        question: query,
+        topic: topic,
+      }
+      let service = ""
 
-        await Promise.all(
-          [props.askJamieAPI(params), service]
-        ).then( val => {
-            let req = {responses:[summarizer(val[0]),summarizer(val[1])]}
-            let prob = ResponseComparison(req)
-            prob.then((probval)=>{
-              scorecontent.push(probval)
-              tablecontent = [...tablecontent, createData(query, summarizer(val[0]), summarizer(val[1]), probval)]
-              updateRows(tablecontent)
-            })
+      if(value === 'Dialogflow'){
+        service = props.dialogflowAPI(params)
+      }else if (value === 'Andrew'){
+        service = props.miclAPI(params)
+      }else if (value === 'Rajat'){
+        service = props.rajatAPI(params)
+      }else if (value === 'Rushi'){
+        service = props.rushiAPI(params)
+      }
 
-        }).then(()=>{
-          i = i + 1
-          handleSingleInput(textArray, i, textArrayLength)
-          setCompleted((i/(textArrayLength-1))*100)
+      await Promise.all(
+        [props.askJamieAPI(params), service]
+      ).then( val => {
+        let req = {responses:[summarizer(val[0]),summarizer(val[1])]}
+        let prob = ResponseComparison(req)
+        prob.then((probval)=>{
+          scorecontent.push(probval)
+          tablecontent = [...tablecontent, createData(query, summarizer(val[0]), summarizer(val[1]), probval)]
+          setRows(tablecontent)
         })
 
-      }
-    }
-
-    //----------------------Read file contents for computing response comparison----------------------
-    const handleFileRead = (e)=>{
-
-      const content = e.target.result;
-      let textArray = content.split('\n');
-      setText(textArray)
-    }
-
-    //---------------------------On file upload, call handleFileRead to load content------------------
-    function onChangehandler(e){
-
-      //Load file content
-      try {
-        let file = e.target.files[0];
-        fileName = file.name
-        setFilename(fileName);
-        let fileReader = new FileReader();
-        fileReader.onloadend = handleFileRead;
-        fileReader.readAsText(file)
-        setUpload(true)
-
-        //Clear Chart and Table State
-        setscoreArray([])
-        updateRows([]);
-        setGraph(false)
-
-      }catch(e){
-        setFilename("No file detected, please upload a line seperated text file")
-        setUpload(false)
-      }
-
-    };
-
-    //----------------------------Creates data contents for table listing------------------------------
-    function createData(input, jamie, dialogflow, score){
-      return {input, jamie, dialogflow, score}
-    }
-
-    //Handle question topic change
-    function handleTopicChange(e, value) {
-      setTopic(value)
-      let clear = clearContent()
-      clear.then((val)=>{
-        if (val === 'Ok'){
-          setPage(0)
-        }
+      }).then(()=>{
+        i = i + 1
+        handleSingleInput(textArray, i, textArrayLength)
+        setCompleted((i/(textArrayLength-1))*100)
       })
-      switch (value) {
-        case 'babybonus':
-          setAvailableDialog(true)
-          setAvailableMICL(true)
-          setAvailableRajat(true)
-          setAvailableRushi(true)
-          break
-        case 'covid19':
-          setAvailableDialog(true)
-          setAvailableMICL(false)
-          setAvailableRajat(true)
-          setAvailableRushi(true)
-          break
-        case 'comcare':
-          setAvailableDialog(false)
-          setAvailableMICL(false)
-          setAvailableRajat(false)
-          setAvailableRushi(true)
-          break
-        default:
-          break
-      }
+
+    }
+  }
+
+  //----------------------Read file contents for computing response comparison----------------------
+  const handleFileRead = (e)=>{
+
+    const content = e.target.result;
+    let textArray = content.split('\n');
+    setText(textArray)
+  }
+
+  //---------------------------On file upload, call handleFileRead to load content------------------
+  function onChangehandler(e){
+
+    //Load file content
+    try {
+      let file = e.target.files[0];
+      fileName = file.name
+      setFilename(fileName);
+      let fileReader = new FileReader();
+      fileReader.onloadend = handleFileRead;
+      fileReader.readAsText(file)
+      setUpload(true)
+
+      //Clear Chart and Table State
+      setScoreArray([])
+      setRows([]);
+      setGraph(false)
+
+    }catch(e){
+      setFilename("No file detected, please upload a line seperated text file")
+      setUpload(false)
     }
 
+  };
+
+  //----------------------------Creates data contents for table listing------------------------------
+  function createData(input, jamie, dialogflow, score){
+    return {input, jamie, dialogflow, score}
+  }
 
   return (
-    <div>
+    <React.Fragment>
     {/* File Upload Form */}
-    <Grid container style={{paddingBottom:"40px"}} justify="center">
-    <Card>
+    <Grid container className={classes.descriptionCardGrid} justify="center">
+      <Card style={{paddingRight:10}}>
         <CardContent>
           <Typography color="textSecondary" gutterBottom>
             Performance Analysis of Chatbot Service
           </Typography>
-          <Typography color="textSecondary">
-
-          </Typography>
-          <Typography variant="body2" component="p">
-            1. Upload Text File of Line-Seperated Queries
-            <br />
-            2. Selection of Chatbot Service for Analysis
-            <br />
-            3. Click on Start Analysis
-            <br />
-            4. View Table Listing of Responses and Accuracy Score
-            <br />
+          <Typography variant="body2">
+            1. Upload Text File of Line-Seperated Queries<br />
+            2. Selection of Chatbot Service for Analysis<br />
+            3. Click on Start Analysis<br />
+            4. View Table Listing of Responses and Accuracy Score<br />
             5. Graphical Report available after all responses are processed
           </Typography>
         </CardContent>
-    </Card>
+      </Card>
     </Grid>
 
-    <Grid container spacing={3}>
-      <Grid item container spacing={4} >
+    <Grid container className={classes.userMenuGrid} spacing={2} direction="column">
+      <Grid item container spacing={4} alignItems='center'>
         {/* File uploading field */}
         <Grid item style={{flexGrow: 1, display: 'flex', maxWidth:400}}>
         <FormControl component="fieldset" style={{flex: 1}}>
@@ -502,42 +507,13 @@ export default function CustomizedInputBase(props) {
       {/* Question Topic Selection */}
       <Grid item container spacing={2} alignItems='center'>
         <Grid item>
-          <Typography variant='h5' gutterBottom>
-          Question Topic:
-          </Typography>
+          <TopicSelection
+          topic={topic}
+          setTopic={setTopic}
+          />
         </Grid>
-
-        <Grid item>
-        <RadioGroup aria-label="topic selection" name="topic selection"
-        value={topic} onChange={handleTopicChange} row>
-          <FormControlLabel
-          value="Baby Bonus"
-          label="Baby Bonus"
-          control={<Radio color="primary" />}
-          />
-          <FormControlLabel
-          value="Covid 19"
-          label="Covid 19"
-          control={<Radio color="primary" />}
-          />
-          <FormControlLabel
-          value="ComCare"
-          label="ComCare"
-          control={<Radio color="primary" />}
-          />
-          <FormControlLabel
-          value="Adoption"
-          label="Adoption"
-          control={<Radio color="primary" />}
-          />
-        </RadioGroup>
-        </Grid>
-
       </Grid>
 
-      <Grid item>
-
-      </Grid>
     </Grid>
 
     {load === true &&
@@ -627,6 +603,6 @@ export default function CustomizedInputBase(props) {
     </Dialog>
 
 
-  </div>
+  </React.Fragment>
   );
 }

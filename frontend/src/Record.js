@@ -58,11 +58,8 @@ export default class Record extends Component {
     if (!navigator.mediaDevices) {
       console.log('browser doesn\'t support')
       this.setState({browserSupported:false})
-      this.props.setState({
-        transcriptionAISG:"Media input is not support on this browser",
-        transcriptionGoogle:"Media input is not support on this browser",
-      })
-
+      this.props.setTranscriptionAISG("Media input is not support on this browser")
+      this.props.setTranscriptionGoogle("Media input is not support on this browser")
     } else if (navigator.mediaDevices.getUserMedia) {
 
       console.log('getUserMedia supported.')
@@ -88,10 +85,8 @@ export default class Record extends Component {
         console.log('The following error occured: ' + e)
         // this.$emit('onError', e.toString())
         this.setState({browserSupported:false})
-        this.props.setState({
-          transcriptionAISG:"Media input is not possible",
-          transcriptionGoogle:"Media input is not possible",
-        })
+        this.props.setTranscriptionAISG("Media input is not possible")
+        this.props.setTranscriptionGoogle("Media input is not possible")
       }
     } else {
       // this.$emit('onError', 'getUserMedia not supported on your browser!')
@@ -233,9 +228,7 @@ export default class Record extends Component {
       // Start recording
       this.setState({start:true})
       this.state.recorder.record()
-      this.props.setState({
-        isBusy: true,
-      })
+      this.props.setIsBusy(true)
       this.setState({
         service: "",
         isRecording: true,
@@ -255,10 +248,8 @@ export default class Record extends Component {
         if (this.state.start) {
           this.stop()
           setTimeout(() => {
-            this.props.setState({
-              partialResultAISG: "Stopped: 2 minute maximum stream duration reached",
-              partialResultGoogle: "Stopped: 2 minute maximum stream duration reached",
-            })
+            this.props.setPartialResultAISG("Stopped: 2 minute maximum stream duration reached")
+            this.props.setPartialResultGoogle("Stopped: 2 minute maximum stream duration reached")
           },1000)
           // delay in set text to allow buffer for last message from backend
         }
@@ -324,20 +315,13 @@ export default class Record extends Component {
 
   sendTranscription(){
     if (this.state.service === "aisg"){
-      this.props.setState({
-        input: this.props.transcriptionAISG,
-      })
+      this.props.setInput(this.props.transcriptionAISG)
+      this.props.getResponses(this.props.transcriptionAISG)
     }
     else if (this.state.service === "google"){
-      this.props.setState({
-        input: this.props.transcriptionGoogle,
-      })
+      this.props.setInput(this.props.transcriptionGoogle)
+      this.props.getResponses(this.props.transcriptionGoogle)
     }
-
-    // set timeout so that handleClick will use updated input rather than prevState input
-    setTimeout( () => {
-      this.props.handleClick()
-    }, 100)
   }
 
   render () {
