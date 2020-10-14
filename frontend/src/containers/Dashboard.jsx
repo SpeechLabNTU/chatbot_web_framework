@@ -1,6 +1,5 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import io from 'socket.io-client'
 import axios from "axios";
 
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -94,31 +93,6 @@ export default function Dashboard(props) {
   const [checkRushi, setCheckRushi] = React.useState(true)
   const [availableRushi, setAvailableRushi] = React.useState(true)
 
-  ////////// voice transcriptions state variables
-  const [isSocketReady, setIsSocketReady] = React.useState(false)
-  const [isBusy, setIsBusy] = React.useState(false)
-  const [socket, setSocket] = React.useState(null)
-
-  const [partialResultAISG, setPartialResultAISG] = React.useState("")
-  const [transcriptionAISG, setTranscriptionAISG] = React.useState("")
-  const [isStreamOpenAISG, setIsStreamOpenAISG] = React.useState(false)
-
-  const [partialResultGoogle, setPartialResultGoogle] = React.useState("")
-  const [transcriptionGoogle, setTranscriptionGoogle] = React.useState("")
-  const [isStreamOpenGoogle, setIsStreamOpenGoogle] = React.useState(false)
-
-  // when user changes input method (text/speech)
-  React.useEffect( () => {
-    resetAll()
-    if (inputMethod===0) {
-      if (socket) socket.disconnect()
-    }
-    else {
-      initSockets()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputMethod])
-
   // when topic changes
   React.useEffect( () => {
     resetResponses()
@@ -168,6 +142,11 @@ export default function Dashboard(props) {
         break
     }
   }, [topic])
+
+  React.useEffect( () => {
+    setInput("")
+    resetResponses()
+  }, [inputMethod])
 
   // API calls for various chatbots
   const askJamieAPI = params => {
@@ -327,71 +306,6 @@ export default function Dashboard(props) {
     })
   }
 
-  // initialize socket to backend for voice
-  const initSockets = () => {
-    const socket = io(backendURL, {
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      // reconnectionAttempts: Infinity
-      reconnectionAttempts: 2
-    })
-
-    socket.on('connect', () => {
-      console.log("Socket connected!")
-      setSocket(socket)
-      setIsSocketReady(true)
-    })
-
-    socket.on("stream-ready-aisg", () => {
-      setIsStreamOpenAISG(true)
-    })
-
-    socket.on("stream-ready-google", () => {
-      setIsStreamOpenGoogle(true)
-    })
-
-    socket.on("stream-data-google", data => {
-      if (data.results[0].isFinal) {
-        setPartialResultGoogle("")
-        setTranscriptionGoogle( prev => (prev + data.results[0].alternatives[0].transcript) )
-        }
-        else {
-          setPartialResultGoogle( "[..." + data.results[0].alternatives[0].transcript + "]" )
-        }
-    })
-
-    socket.on("stream-data-aisg", data => {
-      if (data.result.final) {
-        setPartialResultAISG("")
-        setTranscriptionAISG( prev => (prev.slice(0,-1) + ' ' + data.result.hypotheses[0].transcript) )
-      }
-      else {
-        setPartialResultAISG( "[..." + data.result.hypotheses[0].transcript + "]" )
-      }
-    })
-
-    socket.on("stream-close-aisg", () => {
-      setIsStreamOpenAISG(false)
-      setIsBusy(isStreamOpenGoogle)
-    })
-
-    socket.on("stream-close-google", () => {
-      setIsStreamOpenGoogle(false)
-      setIsBusy(isStreamOpenAISG)
-    })
-  }
-
-  // reset of various state variables
-  const resetTextAndSpeechInputs = () => {
-    setInput("")
-
-    setPartialResultAISG("")
-    setPartialResultGoogle("")
-    setTranscriptionAISG("")
-    setTranscriptionGoogle("")
-  }
-
   const resetResponses = () => {
     setSimilarQuestions(null)
 
@@ -407,10 +321,6 @@ export default function Dashboard(props) {
     setScoreRushi(null)
   }
 
-  const resetAll = () => {
-    resetTextAndSpeechInputs()
-    resetResponses()
-  }
 
   return (
     <React.Fragment>
@@ -496,23 +406,11 @@ export default function Dashboard(props) {
                   {/* Speech to text */}
                   <TabPanel value={inputMethod} index={1}>
                     <Record
-                    transcriptionAISG = {transcriptionAISG}
-                    setTranscriptionAISG = {setTranscriptionAISG}
-                    transcriptionGoogle = {transcriptionGoogle}
-                    setTranscriptionGoogle = {setTranscriptionGoogle}
-                    partialResultAISG = {partialResultAISG}
-                    setPartialResultAISG = {setPartialResultAISG}
-                    partialResultGoogle = {partialResultGoogle}
-                    setPartialResultGoogle = {setPartialResultGoogle}
                     input = {input}
                     setInput = {setInput}
-                    socket={socket}
-                    isBusy={isBusy}
-                    setIsBusy={setIsBusy}
-                    isSocketReady={isSocketReady}
-                    backendUrl={backendURL}
-                    reset={resetAll}
-                    getResponses = {getResponses}
+                    backendURL={backendURL}
+                    resetResponses={resetResponses}
+                    getResponses={getResponses}
                     />
                     <br/>
                     <Typography variant='h6'>Transcription: {input}</Typography>

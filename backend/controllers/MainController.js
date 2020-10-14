@@ -23,7 +23,9 @@ class MainController {
       Object.keys(io.sockets.connected).forEach(key => {
         if (socket_id === key){
           io.sockets.connected[key].on('stream-input', data => {
-            conn.sendBytes(data)
+            if (conn) {
+              conn.sendBytes(data)
+            }
           })
 
           io.sockets.connected[key].once('stream-stop', data => {
@@ -46,7 +48,7 @@ class MainController {
           })
 
           io.sockets.connected[key].once('stream-cancel', () => {
-            conn.close() // immediately close connection to online server
+            if (conn) conn.close() // immediately close connection to online server
             // cleanup eventListeners on exit
             io.sockets.connected[key].removeAllListeners(['stream-input'])
             io.sockets.connected[key].removeAllListeners(['stream-stop'])
@@ -61,37 +63,41 @@ class MainController {
           })
 
           client.on('connect', (connection) => {
-            conn = connection
-            console.log('WebSocket Client Connected to AISG')
+            // in case socket closes before connection to AISG is established
+            if (io.sockets.connected[key]) {
+              conn = connection
+              console.log('WebSocket Client Connected to AISG')
 
-            io.sockets.connected[key].emit('stream-ready-aisg') // tell frontend that socket is ready
+              io.sockets.connected[key].emit('stream-ready-aisg') // tell frontend that socket is ready
 
-            connection.on('error', (error) => {
-              console.log('Connection Error: ' + error.toString())
-            })
+              connection.on('error', (error) => {
+                console.log('Connection Error: ' + error.toString())
+              })
 
-            connection.on('close', (res) => {
-              console.log('AISG echo-protocol Connection Closed')
-              io.sockets.connected[key].emit('stream-close-aisg') // send close signal to client
-              client = null
-            })
+              connection.on('close', (res, mess) => {
+                console.log(res, mess)
+                console.log('AISG echo-protocol Connection Closed')
+                io.sockets.connected[key].emit('stream-close-aisg') // send close signal to client
+                client = null
+              })
 
-            connection.on('message', (message) => {
-              const data = JSON.parse(message.utf8Data)
-              if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
-                isFinal = data.result.final
-                io.sockets.connected[key].emit(`stream-data-aisg`, data)
-                if (isWaitingToClose && isFinal){
-                  clearInterval(emptyBufferInterval)
-                  conn.sendUTF('EOS') // after this conn.close() will be called because server will stop the connection
-                  conn.close() // close conn immediately instead of waiting for server to close it
+              connection.on('message', (message) => {
+                const data = JSON.parse(message.utf8Data)
+                if (data.status === 0 && data.result) { // only send data which is truely a transcription to browser
+                  isFinal = data.result.final
+                  io.sockets.connected[key].emit(`stream-data-aisg`, data)
+                  if (isWaitingToClose && isFinal){
+                    clearInterval(emptyBufferInterval)
+                    conn.sendUTF('EOS') // after this conn.close() will be called because server will stop the connection
+                    conn.close() // close conn immediately instead of waiting for server to close it
+                  }
                 }
-              }
-            })
+              })
+            }
           })
 
           // start connect to online server
-          client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1?token=${token}`, null, null, null, null)
+          client.connect(`${englishOnlineServerUrl}?content-type=audio/x-raw,+layout=(string)interleaved,+rate=(int)16000,+format=(string)S16LE,+channels=(int)1&accessToken=${token}&model=eng_closetalk`, null, null, null, null)
 
         }
       })
@@ -130,43 +136,35 @@ class MainController {
     // Handle Web Socket Connection
     Object.keys(io.sockets.connected).forEach(key => {
       if (socket_id === key){
-        console.log('Connection Initiated')
-        io.sockets.connected[key].emit('stream-ready-google') // tell frontend that socket is ready
-
-        // //Signal on socket error
-        io.sockets.connected[key].on('error', (error) => {
-          console.log('Connection Error: ' + error.toString())
-        })
 
         const keyFiledir = process.env.DIALOGFLOW_KEYFILENAME_BABYBONUS // use babybonus projectid for STT
-
         const googleclient = new speech.SpeechClient({'keyFilename':keyFiledir});
+
+        console.log('Google Connection Initiated')
+
+        recognizeStream = googleclient
+          .streamingRecognize(request)
+          .on('error', (error)=>{
+            console.log(error)
+          })
+          .on('data', data => {
+            isFinal = data.results[0].isFinal
+            io.sockets.connected[key].emit('stream-data-google', data)
+            // io.sockets.connected[key].emit('stream-data-google', data.results[0].alternatives[0].transcript)
+
+            if (isWaitingToClose && isFinal){
+              console.log('Google echo-protocol Connection Closed')
+              clearInterval(emptyBufferInterval)
+              recognizeStream.destroy()
+              recognizeStream = null
+              io.sockets.connected[key].emit('stream-close-google') // send close signal to client
+            }
+          })
+
+        io.sockets.connected[key].emit('stream-ready-google') // tell frontend that socket is ready
 
         //Start Connection to GCLOUD
         io.sockets.connected[key].on('stream-input', data =>{
-
-          if(!recognizeStream){
-            console.log('INIT GCLOUD SPEECH')
-
-            recognizeStream = googleclient
-              .streamingRecognize(request)
-              .on('error', (error)=>{
-                console.log(error)
-              })
-              .on('data', data => {
-                isFinal = data.results[0].isFinal
-                io.sockets.connected[key].emit('stream-data-google', data)
-                // io.sockets.connected[key].emit('stream-data-google', data.results[0].alternatives[0].transcript)
-
-                if (isWaitingToClose && isFinal){
-                  console.log('Google echo-protocol Connection Closed')
-                  clearInterval(emptyBufferInterval)
-                  recognizeStream.destroy()
-                  recognizeStream = null
-                  io.sockets.connected[key].emit('stream-close-google') // send close signal to client
-                }
-              })
-          }
           recognizeStream.write(new Uint8Array(data))
         })
 
@@ -188,8 +186,19 @@ class MainController {
           }
 
           // cleanup eventListeners on exit
-          io.sockets.connected[key].removeAllListeners(['error'])
           io.sockets.connected[key].removeAllListeners(['stream-input'])
+          io.sockets.connected[key].removeAllListeners(['stream-cancel'])
+        })
+
+        io.sockets.connected[key].once('stream-cancel', () => {
+          recognizeStream.destroy()
+          recognizeStream = null
+          console.log('Google echo-protocol Connection Closed')
+          io.sockets.connected[key].emit("stream-close-google")
+
+          // cleanup eventListeners on exit
+          io.sockets.connected[key].removeAllListeners(['stream-input'])
+          io.sockets.connected[key].removeAllListeners(['stream-stop'])
         })
       }
     })
@@ -335,10 +344,10 @@ async function getSpeechLabToken() {
   return new Promise(resolve => {
     axios.post(`${speechLabAuthUrl}/login`, credentials)
       .then(response => {
-        resolve(response.data.user.token)
+        resolve(response.data.accessToken)
       })
       .catch(error => {
-        console.log(error)
+        console.log("Error getting access token for AISG")
       })
   })
 }

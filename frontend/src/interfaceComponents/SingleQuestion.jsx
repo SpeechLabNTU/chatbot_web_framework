@@ -185,8 +185,10 @@ export default function SingleQuestion(props) {
   }, [editQuestion, editAnswer])
 
   React.useEffect( () => {
-    updateData()
-    setEditAltPhrase(altPhrases.map(()=>false))
+    if (altPhrases !==  props.data[props.selectedIndex].Alternatives) {
+      updateData()
+      setEditAltPhrase(altPhrases.map(()=>false))
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [altPhrases])
 
@@ -221,7 +223,6 @@ export default function SingleQuestion(props) {
       <Grid container item>
         <Paper className={classes.topBarPaper} style={{marginRight:10}}>
         <IconButton onClick={()=>{
-          updateData()
           props.setSelectedIndex(null)
         }}>
           <ArrowBackIcon fontSize="large"/>

@@ -128,8 +128,7 @@ export default function Main(props) {
         setCurrentTopic(res.data.topics[0])
       }
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [currentTopic])
+  }, [currentTopic])
 
   // get data for current topic
   React.useEffect( () => {
@@ -151,6 +150,8 @@ export default function Main(props) {
       })
     }
     setCurrentContext("Questions")
+    setSelectedIndex(null)
+    setAddNewQuestion(false)
   }, [currentTopic])
 
   // update backend with changed data
@@ -164,8 +165,7 @@ export default function Main(props) {
       })
       setDataChanged(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataChanged])
+  }, [dataChanged, currentTopic, data])
 
   React.useEffect( () => {
     setIsTopicMenuOpen(false)
