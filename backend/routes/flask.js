@@ -31,8 +31,8 @@ router.post("/api/responseCompare", (req,res)=>{
       request: query,
     })
     .then( response => {
-      console.log(query)
-      console.log(response.data.response)
+      // console.log(query)
+      // console.log(response.data.response)
       res.status(200).json({ reply: response.data.response })
     })
     .catch( error => {

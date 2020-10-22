@@ -238,16 +238,20 @@ export default function Dashboard(props) {
     })
   }
 
-  const makeComparisons = () => {
+  const makeComparisons = (responseArray) => {
+    // have to use responseArray instead of useState variables because values
+    // will be stale. 
+    // getResponses changed the state of response variables previously,
+    // upon reaching this function, variables will still be referencing stale values
     let temp = [
-      [checkDialog, responseDialog, setScoreDialog],
-      [checkMICL, responseMICL, setScoreMICL],
-      [checkRajat, responseRajat, setScoreRajat],
-      [checkRushi, responseRushi, setScoreRushi]
+      [checkDialog, responseArray[1], setScoreDialog],
+      [checkMICL, responseArray[2], setScoreMICL],
+      [checkRajat, responseArray[3], setScoreRajat],
+      [checkRushi, responseArray[4], setScoreRushi]
     ]
     temp.forEach( ([check, response, setScore]) => {
       if (check) {
-        let req = {responses: [response, responseJamie]}
+        let req = {responses: [response, responseArray[0]]}
         makeResponseComparisonRequest(req)
         .then( val => {setScore(val)})
         .catch( e => {
@@ -302,7 +306,7 @@ export default function Dashboard(props) {
     Promise.all(promiseArray)
     .then( values => {
       // console.log(values)
-      makeComparisons()
+      makeComparisons(values)
     })
   }
 
