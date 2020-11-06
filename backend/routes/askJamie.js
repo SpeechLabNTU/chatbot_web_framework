@@ -35,7 +35,7 @@ router.post("/api/askJamieFast", (req, res)=> {
       else {
         text_answer = "I am sorry, your question does not provide enough detail for me to answer. Please rephrase your question."
       }
-      res.json({reply: text_answer})
+      res.json({reply: text_answer.trim()})
     })
   }).catch( err => {
     console.log(err)
