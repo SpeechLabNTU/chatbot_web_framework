@@ -93,11 +93,11 @@ export default function Dashboard(props) {
   const [checkRushi, setCheckRushi] = React.useState(true)
   const [availableRushi, setAvailableRushi] = React.useState(true)
 
-  const [responseChadbot, setResponseChadbot] = React.useState("")
-  const [loadingChadbot, setLoadingChadbot] = React.useState(false)
-  const [scoreChadbot, setScoreChadbot] = React.useState(null)
-  const [checkChadbot, setCheckChadbot] = React.useState(true)
-  const [availableChadbot, setAvailableChadbot] = React.useState(true)
+  const [responseBani, setResponseBani] = React.useState("")
+  const [loadingBani, setLoadingBani] = React.useState(false)
+  const [scoreBani, setScoreBani] = React.useState(null)
+  const [checkBani, setCheckBani] = React.useState(true)
+  const [availableBani, setAvailableBani] = React.useState(true)
 
   // when topic changes
   React.useEffect(() => {
@@ -113,8 +113,8 @@ export default function Dashboard(props) {
         setCheckRajat(true)
         setAvailableRushi(true)
         setCheckRushi(true)
-        setAvailableChadbot(true)
-        setCheckChadbot(true)
+        setAvailableBani(true)
+        setCheckBani(true)
         break
       case "Covid 19":
         setAvailableDialog(true)
@@ -125,8 +125,8 @@ export default function Dashboard(props) {
         setCheckRajat(true)
         setAvailableRushi(true)
         setCheckRushi(true)
-        setAvailableChadbot(true)
-        setCheckChadbot(true)
+        setAvailableBani(true)
+        setCheckBani(true)
         break
       case "ComCare":
         setAvailableDialog(false)
@@ -137,8 +137,8 @@ export default function Dashboard(props) {
         setCheckRajat(false)
         setAvailableRushi(true)
         setCheckRushi(true)
-        setAvailableChadbot(true)
-        setCheckChadbot(true)
+        setAvailableBani(true)
+        setCheckBani(true)
         break
       case "Adoption":
         setAvailableDialog(false)
@@ -149,8 +149,8 @@ export default function Dashboard(props) {
         setCheckRajat(false)
         setAvailableRushi(true)
         setCheckRushi(true)
-        setAvailableChadbot(true)
-        setCheckChadbot(true)
+        setAvailableBani(true)
+        setCheckBani(true)
         break
       default:
         break
@@ -236,15 +236,15 @@ export default function Dashboard(props) {
     })
   }
 
-  const chadbotAPI = params => {
+  const baniAPI = params => {
     return new Promise((resolve, reject) => {
-      axios.post(`${process.env.REACT_APP_API}/chadbot/api/queryEndpoint`, params)
+      axios.post(`${process.env.REACT_APP_API}/bani/api/queryEndpoint`, params)
         .then((res) => {
           setSimilarQuestions(res.data.similarQuestions)
           resolve(res.data.reply)
         })
         .catch(error => {
-          console.log("Error contacting Chadbot server")
+          console.log("Error contacting Bani server")
         })
     })
   }
@@ -275,7 +275,7 @@ export default function Dashboard(props) {
       [checkMICL, responseArray[2], setScoreMICL],
       [checkRajat, responseArray[3], setScoreRajat],
       [checkRushi, responseArray[4], setScoreRushi],
-      [checkChadbot, responseArray[5], setScoreChadbot]
+      [checkBani, responseArray[5], setScoreBani]
     ]
     temp.forEach(([check, response, setScore]) => {
       if (check) {
@@ -316,7 +316,7 @@ export default function Dashboard(props) {
       [checkMICL, miclAPI, setLoadingMICL, setResponseMICL],
       [checkRajat, rajatAPI, setLoadingRajat, setResponseRajat],
       [checkRushi, rushiAPIwithSimilarQuestions, setLoadingRushi, setResponseRushi],
-      [checkChadbot, chadbotAPI, setLoadingChadbot, setResponseChadbot],
+      [checkBani, baniAPI, setLoadingBani, setResponseBani],
     ]
 
     temp.forEach(([check, apiCall, setLoading, setResponse]) => {
@@ -329,6 +329,9 @@ export default function Dashboard(props) {
           setResponse(res)
           setLoading(false)
         })
+      }
+      else {
+        promiseArray.push("")
       }
     })
 
@@ -347,13 +350,13 @@ export default function Dashboard(props) {
     setResponseMICL("")
     setResponseRajat("")
     setResponseRushi("")
-    setResponseChadbot("")
+    setResponseBani("")
 
     setScoreDialog(null)
     setScoreMICL(null)
     setScoreRajat(null)
     setScoreRushi(null)
-    setScoreChadbot(null)
+    setScoreBani(null)
   }
 
 
@@ -490,7 +493,7 @@ export default function Dashboard(props) {
                       (checkMICL ? "Andrew " : "") +
                       (checkRajat ? "Rajat " : "") +
                       (checkRushi ? "Rushi " : "") +
-                      (checkChadbot ? "Chadbot" : "")
+                      (checkBani ? "Bani" : "")
                     } />
                   </ListItem>
                 </List></Paper>
@@ -536,13 +539,13 @@ export default function Dashboard(props) {
                             if (!e.target.checked) setResponseRushi("")
                           }} />
                       </MenuItem>}
-                    {availableChadbot &&
+                    {availableBani &&
                       <MenuItem style={{ display: 'flex', justifyContent: "space-between" }}>
-                        Chadbot
-              <Checkbox checked={checkChadbot} name="checkChadbot" value="Chadbot"
+                        Bani
+              <Checkbox checked={checkBani} name="checkBani" value="Bani"
                           onChange={(e) => {
-                            setCheckChadbot(e.target.checked)
-                            if (!e.target.checked) setResponseChadbot("")
+                            setCheckBani(e.target.checked)
+                            if (!e.target.checked) setResponseBani("")
                           }} />
                       </MenuItem>}
                   </Menu></Grid>
@@ -601,13 +604,13 @@ export default function Dashboard(props) {
                 </Grid>
               }
 
-              {checkChadbot &&
+              {checkBani &&
                 <Grid item xs={12} sm={6} md={4}>
                   <AnswerModel
-                    value="Chadbot"
-                    loading={loadingChadbot}
-                    response={responseChadbot}
-                    score={scoreChadbot}
+                    value="Bani"
+                    loading={loadingBani}
+                    response={responseBani}
+                    score={scoreBani}
                   />
                 </Grid>
               }
@@ -624,7 +627,7 @@ export default function Dashboard(props) {
               miclAPI={miclAPI}
               rajatAPI={rajatAPI}
               rushiAPI={rushiAPI}
-              chadbotAPI={chadbotAPI}
+              baniAPI={baniAPI}
             />
           </ReactTab>
 

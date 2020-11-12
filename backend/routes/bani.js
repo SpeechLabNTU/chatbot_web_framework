@@ -9,15 +9,19 @@ router.post("/api/queryEndpoint", (req, res) => {
     let queryText = req.body.question
     let topic = req.body.topic
 
-    axios.get(`${process.env.CHADBOT_ENDPOINT}/answer`, {
+    axios.get(`${process.env.BANI_ENDPOINT}/answer`, {
         params: {
-            topic: topic,
+            topic: "No topic",
             question: queryText,
         }
     })
         .then(response => {
+            let reply = response.data.result
+            if (reply === "") {
+                reply = "I am sorry, your question does not provide enough detail for me to answer. Please rephrase your question."
+            }
             res.json({
-                reply: response.data.result,
+                reply: reply,
                 similarQuestions: response.data.similarQuestions,
             })
         })

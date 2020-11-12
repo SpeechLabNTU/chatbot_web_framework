@@ -5,7 +5,7 @@ const flaskRouter = require('./routes/flask');
 const askJamieRouter = require('./routes/askJamie');
 const rajatRouter = require('./routes/rajat.js');
 const rushiRouter = require('./routes/rushi.js')
-const chadbotRouter = require('./routes/chadbot')
+const baniRouter = require('./routes/bani')
 const STT = require('./controllers/MainController');
 const upload = require('./upload');
 const AC = require('./controllers/AudioController')
@@ -23,7 +23,7 @@ app.use('/flask', flaskRouter);
 app.use('/jamie', askJamieRouter);
 app.use('/rajat', rajatRouter);
 app.use('/rushi', rushiRouter);
-app.use('/chadbot', chadbotRouter);
+app.use('/bani', baniRouter);
 
 app.get('/', (req, res, next)=>{res.json({'status':'success'})})
 
