@@ -10,7 +10,7 @@ export default function TabPanel(props) {
     >
       {value === index && (
         <Box padding={3}>
-        {children}
+          {children}
         </Box>)}
     </div>
   );

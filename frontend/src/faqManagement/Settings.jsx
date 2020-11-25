@@ -13,7 +13,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 import axios from 'axios';
 
-const useStyles = makeStyles( theme => ({
+const useStyles = makeStyles(theme => ({
   topBarPaper: {
     marginBottom: theme.spacing(2),
     height: '5em',
@@ -21,7 +21,7 @@ const useStyles = makeStyles( theme => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    overflow:"hidden"
+    overflow: "hidden"
   },
   barItems: {
     margin: theme.spacing(2),
@@ -51,15 +51,15 @@ export default function Settings(props) {
           All questions and answers will be removed and cannot be recovered.</Typography>
         </div>
         <Button variant="contained" color="secondary" className={classes.barItems}
-        onClick={()=>{
-          setDeleteTopicDialog(true)
-        }}>
+          onClick={() => {
+            setDeleteTopicDialog(true)
+          }}>
           Delete
         </Button>
       </Paper>
 
       {/* Dialogbox for deleting topic */}
-      <Dialog open={deleteTopicDialog} onClose={()=>{setDeleteTopicDialog(false)}}>
+      <Dialog open={deleteTopicDialog} onClose={() => { setDeleteTopicDialog(false) }}>
         <DialogTitle id="alert-dialog-title">{"Delete this topic?"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -67,18 +67,18 @@ export default function Settings(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button color="secondary" onClick={()=>{
-            axios.post(`${process.env.REACT_APP_API}/faqtopics/delete`, {topic: props.currentTopic})
-            .then(res=>{
-              console.log(res)
-              props.setCurrentTopic("")
-              setDeleteTopicDialog(false)
-            })
+          <Button color="secondary" onClick={() => {
+            axios.post(`${process.env.REACT_APP_API}/faqtopics/delete`, { topic: props.currentTopic })
+              .then(res => {
+                console.log(res)
+                props.setCurrentTopic("")
+                setDeleteTopicDialog(false)
+              })
           }}>
             Delete Topic
           </Button>
           <Button color="primary" autoFocus
-          onClick={()=>{setDeleteTopicDialog(false)}}>
+            onClick={() => { setDeleteTopicDialog(false) }}>
             Cancel
           </Button>
         </DialogActions>

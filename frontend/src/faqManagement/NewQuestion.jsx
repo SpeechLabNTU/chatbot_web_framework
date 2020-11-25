@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: 'center',
     justifyContent: 'space-between',
-    overflow:"hidden"
+    overflow: "hidden"
   },
   topBarItems: {
     margin: theme.spacing(2),
@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function TablePaginationActions(props){
+function TablePaginationActions(props) {
   const classes = useStyles();
   const theme = useTheme();
   const { count, page, rowsPerPage, onChangePage } = props;
@@ -120,7 +120,7 @@ function TablePaginationActions(props){
   }
 
   const handleLastPageButtonClick = (event) => {
-    onChangePage(event, Math.max(0, Math.ceil(count/rowsPerPage)-1));
+    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   }
 
   //------------------------------Pagination Icons-------------------------------------
@@ -178,21 +178,21 @@ export default function SingleQuestion(props) {
   const [altPhrasesCopy, setAltPhrasesCopy] = React.useState([])
   const [phrasesChanged, setPhrasesChanged] = React.useState(false)
   const [newAlt, setNewAlt] = React.useState("")
-  const [editAltPhrase, setEditAltPhrase] = React.useState(altPhrases.map(()=>false))
+  const [editAltPhrase, setEditAltPhrase] = React.useState(altPhrases.map(() => false))
 
   const classes = useStyles()
 
-  React.useEffect( () => {
-    setEditAltPhrase(altPhrases.map(()=>false))
+  React.useEffect(() => {
+    setEditAltPhrase(altPhrases.map(() => false))
   }, [altPhrases])
 
   const addNewQuestion = (question, answer) => {
     let tempData = []
     let i = 1
-    tempData.push( {Index: 0, Question: question, Answer: answer, Alternatives: (phrasesChanged ? altPhrasesCopy : altPhrases)} )
-    props.data.forEach( (val, idx) => {
+    tempData.push({ Index: 0, Question: question, Answer: answer, Alternatives: (phrasesChanged ? altPhrasesCopy : altPhrases) })
+    props.data.forEach((val, idx) => {
       tempData.push(val)
-      tempData[i].Index=i
+      tempData[i].Index = i
       i++
     })
     props.setData(tempData)
@@ -200,11 +200,11 @@ export default function SingleQuestion(props) {
     setPhrasesChanged(false)
   }
 
-  const handleChangePage = (event, newPage) =>{
+  const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
 
-  const handleChangeRowsPerPage = (event) =>{
+  const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   }
@@ -212,133 +212,133 @@ export default function SingleQuestion(props) {
   return (
     <Grid container spacing={2}>
       <Grid container item>
-        <Paper className={classes.topBarPaper} style={{flex:1}}>
-        <Typography variant='h5' className={classes.topHeader}>
-          Add New Question
+        <Paper className={classes.topBarPaper} style={{ flex: 1 }}>
+          <Typography variant='h5' className={classes.topHeader}>
+            Add New Question
         </Typography>
-        <div style={{display:'flex', alignItems:'center'}}>
-          <Button className={classes.topBarItems} variant="contained" color="primary"
-          disabled={newQuestion==="" || newAnswer==="" || editQuestion || editAnswer}
-          onClick={()=>{
-            addNewQuestion(newQuestion, newAnswer)
-            props.setAddNewQuestion(false)
-          }}>
-          Save
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Button className={classes.topBarItems} variant="contained" color="primary"
+              disabled={newQuestion === "" || newAnswer === "" || editQuestion || editAnswer}
+              onClick={() => {
+                addNewQuestion(newQuestion, newAnswer)
+                props.setAddNewQuestion(false)
+              }}>
+              Save
           </Button>
-          <Button className={classes.topBarItems} variant="contained" color="primary"
-          onClick={()=>{props.setAddNewQuestion(false)}}>
-          Cancel
+            <Button className={classes.topBarItems} variant="contained" color="primary"
+              onClick={() => { props.setAddNewQuestion(false) }}>
+              Cancel
           </Button>
-        </div>
+          </div>
         </Paper>
       </Grid>
 
 
       <Grid item container>
         <Paper className={classes.bodyPaper}>
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h5" className={classes.bodyHeader}>
-            Question:
+              Question:
             </Typography>
-            <IconButton className={classes.bodyHeader} onClick={()=>{
-              setNewQuestion(p=>p.trim())
-              setEditQuestion((prev)=>!prev)
+            <IconButton className={classes.bodyHeader} onClick={() => {
+              setNewQuestion(p => p.trim())
+              setEditQuestion((prev) => !prev)
             }}>
-              {editQuestion ? <DoneIcon color='primary'/> : <EditIcon color='primary'/>}
+              {editQuestion ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
             </IconButton>
           </div>
           <TextField className={classes.bodyText} variant="outlined" multiline
-          value={newQuestion} error={warnQuestion} disabled={!editQuestion}
-          onChange={(e)=>{
-            setNewQuestion(e.target.value)
-            setWarnQuestion(false)
-          }}/>
+            value={newQuestion} error={warnQuestion} disabled={!editQuestion}
+            onChange={(e) => {
+              setNewQuestion(e.target.value)
+              setWarnQuestion(false)
+            }} />
 
-          <Divider/>
+          <Divider />
 
           <Typography variant="h5" className={classes.bodyHeader}>
-          Alternative Phrasings:
+            Alternative Phrasings:
           </Typography>
 
           <Paper variant='outlined' className={classes.questionInput}>
             <Input disableUnderline fullWidth multiline placeholder={"Enter new alternate phrasing for original question."}
-            value={newAlt}
-            onChange={(e)=>{
-              if (phrasesChanged) {
-                setAltPhrases(altPhrasesCopy)
-                setPhrasesChanged(false)
-              }
-              if (e.target.value.trim() === "") {setNewAlt("")}
-              else if (e.target.value.endsWith("\n")) {
-                let temp = e.target.value.trim()
-                let tempData = [temp, ...altPhrases]
-                setAltPhrases(tempData)
-                setAltPhrasesCopy(tempData)
-                setNewAlt("")
-              }
-              else {
-                setNewAlt(e.target.value)
-              }
-            }}/>
+              value={newAlt}
+              onChange={(e) => {
+                if (phrasesChanged) {
+                  setAltPhrases(altPhrasesCopy)
+                  setPhrasesChanged(false)
+                }
+                if (e.target.value.trim() === "") { setNewAlt("") }
+                else if (e.target.value.endsWith("\n")) {
+                  let temp = e.target.value.trim()
+                  let tempData = [temp, ...altPhrases]
+                  setAltPhrases(tempData)
+                  setAltPhrasesCopy(tempData)
+                  setNewAlt("")
+                }
+                else {
+                  setNewAlt(e.target.value)
+                }
+              }} />
           </Paper>
 
-          <Collapse in={altPhrases.length>0}>
-          <Paper className={classes.tableContainer} variant="outlined">
-            <Table aria-label="simple table" >
-              <TableBody>
-                {(rowsPerPage > 0
-                  ? altPhrases.slice(page*rowsPerPage, page*rowsPerPage + rowsPerPage)
-                  : altPhrases
-                ).map((row, index) => (
-                  <TableRow key={row} className={classes.tableRow}>
-                    <TableCell className={classes.tableCell} component="th" scope="row">
-                      <IconButton onClick={()=>{
-                        let temp = [...editAltPhrase]
-                        temp[index] = !temp[index]
-                        setEditAltPhrase(temp)
-                        setAltPhrases(altPhrasesCopy)
-                      }}>
-                        {editAltPhrase[index] ? <DoneIcon color='primary'/> : <EditIcon color='primary'/>}
-                      </IconButton>
-                      <Input disableUnderline fullWidth multiline disabled={!editAltPhrase[index]} className={classes.tableCellText}
-                      id={`${index}`} defaultValue={altPhrases[index]}
-                      onChange={(e)=>{
-                        setPhrasesChanged(true)
-                        let temp = [...altPhrasesCopy]
-                        temp[e.target.id] = e.target.value
-                        setAltPhrasesCopy(temp)
-                      }}/>
-                      <IconButton onClick={()=>{
-                        let temp = altPhrases.filter((v, i)=>(i!==index))
-                        setAltPhrases(temp)
-                      }}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
+          <Collapse in={altPhrases.length > 0}>
+            <Paper className={classes.tableContainer} variant="outlined">
+              <Table aria-label="simple table" >
+                <TableBody>
+                  {(rowsPerPage > 0
+                    ? altPhrases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    : altPhrases
+                  ).map((row, index) => (
+                    <TableRow key={row} className={classes.tableRow}>
+                      <TableCell className={classes.tableCell} component="th" scope="row">
+                        <IconButton onClick={() => {
+                          let temp = [...editAltPhrase]
+                          temp[index] = !temp[index]
+                          setEditAltPhrase(temp)
+                          setAltPhrases(altPhrasesCopy)
+                        }}>
+                          {editAltPhrase[index] ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
+                        </IconButton>
+                        <Input disableUnderline fullWidth multiline disabled={!editAltPhrase[index]} className={classes.tableCellText}
+                          id={`${index}`} defaultValue={altPhrases[index]}
+                          onChange={(e) => {
+                            setPhrasesChanged(true)
+                            let temp = [...altPhrasesCopy]
+                            temp[e.target.id] = e.target.value
+                            setAltPhrasesCopy(temp)
+                          }} />
+                        <IconButton onClick={() => {
+                          let temp = altPhrases.filter((v, i) => (i !== index))
+                          setAltPhrases(temp)
+                        }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                      colSpan={2}
+                      count={altPhrases.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      SelectProps={{
+                        inputProps: { 'aria-label': 'rows per page' },
+                        native: true,
+                      }}
+                      onChangePage={handleChangePage}
+                      onChangeRowsPerPage={handleChangeRowsPerPage}
+                      ActionsComponent={TablePaginationActions}
+                    />
                   </TableRow>
-                ))}
-
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                    colSpan={2}
-                    count={altPhrases.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    SelectProps={{
-                      inputProps: { 'aria-label': 'rows per page' },
-                      native: true,
-                    }}
-                    onChangePage={handleChangePage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
-                  />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </Paper>
+                </TableFooter>
+              </Table>
+            </Paper>
           </Collapse>
 
         </Paper>
@@ -346,23 +346,23 @@ export default function SingleQuestion(props) {
 
       <Grid item container>
         <Paper className={classes.bodyPaper}>
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <Typography variant="h5"  className={classes.bodyHeader}>
-            Answer:
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" className={classes.bodyHeader}>
+              Answer:
             </Typography>
-            <IconButton className={classes.bodyHeader} onClick={()=>{
-              setNewAnswer(p=>p.trim())
-              setEditAnswer((prev)=>!prev)
+            <IconButton className={classes.bodyHeader} onClick={() => {
+              setNewAnswer(p => p.trim())
+              setEditAnswer((prev) => !prev)
             }}>
-              {editAnswer ? <DoneIcon color='primary' /> : <EditIcon color='primary'/>}
+              {editAnswer ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
             </IconButton>
           </div>
           <TextField className={classes.bodyText} variant="outlined" multiline
-          value={newAnswer} error={warnAnswer} disabled={!editAnswer}
-          onChange={(e)=>{
-            setNewAnswer(e.target.value)
-            setWarnAnswer(false)
-          }}/>
+            value={newAnswer} error={warnAnswer} disabled={!editAnswer}
+            onChange={(e) => {
+              setNewAnswer(e.target.value)
+              setWarnAnswer(false)
+            }} />
 
         </Paper>
       </Grid>

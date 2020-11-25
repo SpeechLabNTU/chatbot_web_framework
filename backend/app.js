@@ -1,7 +1,7 @@
 const express = require('express');
 const dialogflowRouter = require('./routes/dialogflow');
 const miclRouter = require('./routes/micl');
-const flaskRouter = require('./routes/flask');
+const similarityRouter = require('./routes/similarity');
 const askJamieRouter = require('./routes/askJamie');
 const rajatRouter = require('./routes/rajat.js');
 const rushiRouter = require('./routes/rushi.js')
@@ -17,9 +17,9 @@ app.use(require('cors')({ origin: true, credentials: true }))
 app.use(express.json({limit: "50mb"}))
 app.use(express.urlencoded({ extended: false }))
 
+app.use('/similarity', similarityRouter);
 app.use('/dialog', dialogflowRouter);
 app.use('/micl', miclRouter);
-app.use('/flask', flaskRouter);
 app.use('/jamie', askJamieRouter);
 app.use('/rajat', rajatRouter);
 app.use('/rushi', rushiRouter);

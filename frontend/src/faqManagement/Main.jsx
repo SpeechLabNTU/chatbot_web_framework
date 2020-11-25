@@ -116,38 +116,38 @@ export default function Main(props) {
   const [addNewQuestion, setAddNewQuestion] = React.useState(false)
 
   // call to backend to get all topics available
-  React.useEffect( () => {
+  React.useEffect(() => {
     axios.get(`${process.env.REACT_APP_API}/faqtopics`)
-    .then( res => {
-      setAllTopics(res.data.topics)
-      if (res.data.topics.length === 0 ) {
-        // do nothing if no topics found
-        setData([])
-      }
-      else if (currentTopic==="") {
-        setCurrentTopic(res.data.topics[0])
-      }
-    })
+      .then(res => {
+        setAllTopics(res.data.topics)
+        if (res.data.topics.length === 0) {
+          // do nothing if no topics found
+          setData([])
+        }
+        else if (currentTopic === "") {
+          setCurrentTopic(res.data.topics[0])
+        }
+      })
   }, [currentTopic])
 
   // get data for current topic
-  React.useEffect( () => {
-    if (currentTopic !== ""){
+  React.useEffect(() => {
+    if (currentTopic !== "") {
       axios.get(`${process.env.REACT_APP_API}/faqdata/${currentTopic}`)
-      .then( (res) => {
-        let temp = res.data.data.map( val => {
-          if (val.Alternatives==="" || val.Alternatives===undefined) {
-            val.Alternatives = []
-            return val
-          }
-          else {
-            return val
-          }
+        .then((res) => {
+          let temp = res.data.data.map(val => {
+            if (val.Alternatives === "" || val.Alternatives === undefined) {
+              val.Alternatives = []
+              return val
+            }
+            else {
+              return val
+            }
+          })
+          setData(temp)
+        }).catch((err) => {
+          console.log(err)
         })
-        setData(temp)
-      }).catch( (err) => {
-        console.log(err)
-      })
     }
     setCurrentContext("Questions")
     setSelectedIndex(null)
@@ -155,19 +155,19 @@ export default function Main(props) {
   }, [currentTopic])
 
   // update backend with changed data
-  React.useEffect( () => {
+  React.useEffect(() => {
     if (dataChanged) {
       axios.post(`${process.env.REACT_APP_API}/faqdata`, {
         topic: currentTopic,
         data: data,
-      }).catch( err => {
+      }).catch(err => {
         console.log(err)
       })
       setDataChanged(false)
     }
   }, [dataChanged, currentTopic, data])
 
-  React.useEffect( () => {
+  React.useEffect(() => {
     setIsTopicMenuOpen(false)
   }, [currentContext])
 
@@ -178,57 +178,57 @@ export default function Main(props) {
       <Divider />
       <List>
         <ListItem key={"Topics"}>
-          <ListItemText primary={"Topics"} primaryTypographyProps={{variant: 'h6'}} />
-          <IconButton size='medium' edge="end" onClick={()=>{setCurrentContext("Topics")}}>
+          <ListItemText primary={"Topics"} primaryTypographyProps={{ variant: 'h6' }} />
+          <IconButton size='medium' edge="end" onClick={() => { setCurrentContext("Topics") }}>
             <SettingsIcon />
           </IconButton>
         </ListItem>
-        <ListItem button onClick={ (e) => {
+        <ListItem button onClick={(e) => {
           setTopicAnchorRef(e.currentTarget)
-          setIsTopicMenuOpen((prev)=>!prev)
+          setIsTopicMenuOpen((prev) => !prev)
         }}>
           <ListItemText primary={currentTopic} />
           <ArrowDropDownIcon />
         </ListItem>
       </List>
       <Popper open={isTopicMenuOpen} anchorEl={topicAnchorRef} transition placement="right-start"
-      className={classes.topicMenu}>
-      { ( {TransitionProps, placement} ) => (
-        <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
-        <Paper>
-        <ClickAwayListener onClickAway={()=>{setIsTopicMenuOpen(false)}}>
-        <MenuList autoFocusItem={isTopicMenuOpen}>
-          {allTopics.map((item) => (
-            <MenuItem key={item} className={classes.menuItem} button
-            onClick={()=>setCurrentTopic(item)}>
-              {item}
-            </MenuItem>
-          ))}
-            <Divider style={{margin:theme.spacing(1)}}/>
-            <MenuItem key={"New Topic"} className={classes.menuItem} button
-            onClick={()=>{setNewTopicDialog(true)}}>
-              <AddCircleOutlineIcon fontSize='small'/>
-              <Typography style={{marginLeft:theme.spacing(1)}}
-              >New Topic</Typography>
-            </MenuItem>
-        </MenuList>
-        </ClickAwayListener>
-        </Paper>
-        </Grow>
-      )}
+        className={classes.topicMenu}>
+        {({ TransitionProps, placement }) => (
+          <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
+            <Paper>
+              <ClickAwayListener onClickAway={() => { setIsTopicMenuOpen(false) }}>
+                <MenuList autoFocusItem={isTopicMenuOpen}>
+                  {allTopics.map((item) => (
+                    <MenuItem key={item} className={classes.menuItem} button
+                      onClick={() => setCurrentTopic(item)}>
+                      {item}
+                    </MenuItem>
+                  ))}
+                  <Divider style={{ margin: theme.spacing(1) }} />
+                  <MenuItem key={"New Topic"} className={classes.menuItem} button
+                    onClick={() => { setNewTopicDialog(true) }}>
+                    <AddCircleOutlineIcon fontSize='small' />
+                    <Typography style={{ marginLeft: theme.spacing(1) }}
+                    >New Topic</Typography>
+                  </MenuItem>
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
       </Popper>
 
       <Divider />
 
       <List>
-        <ListItem button key={"Questions"} onClick={()=>setCurrentContext("Questions")}>
-          <QuestionAnswerIcon className={classes.sideIcon}/>
+        <ListItem button key={"Questions"} onClick={() => setCurrentContext("Questions")}>
+          <QuestionAnswerIcon className={classes.sideIcon} />
           <ListItemText primary={"Questions"} />
         </ListItem>
-        <ListItem button key={"Trained Models"} onClick={()=>setCurrentContext("Trained Models")} disabled>
+        <ListItem button key={"Trained Models"} onClick={() => setCurrentContext("Trained Models")} disabled>
           <ListItemText primary={"Trained Models"} />
         </ListItem>
-        <ListItem button key={"Deployments"} onClick={()=>setCurrentContext("Deployments")} disabled>
+        <ListItem button key={"Deployments"} onClick={() => setCurrentContext("Deployments")} disabled>
           <BackupIcon className={classes.sideIcon} />
           <ListItemText primary={"Deployments"} />
         </ListItem>
@@ -236,29 +236,29 @@ export default function Main(props) {
       <Divider />
       <List>
         <ListItem disabled>
-        This page is in development. Any data shown here is currently not linked to the any services in any way.
+          This page is in development. Any data shown here is currently not linked to the any services in any way.
         </ListItem>
       </List>
 
       {/* Dialog for creating new topic */}
-      <Dialog open={newTopicDialog} onClose={()=>{setNewTopicDialog(false)}}>
+      <Dialog open={newTopicDialog} onClose={() => { setNewTopicDialog(false) }}>
         <DialogTitle >{"Enter name of new topic"}</DialogTitle>
         <DialogContent>
-          <TextField id='new topic name' value={newTopic} onChange={(e)=>setNewTopic(e.target.value)}/>
+          <TextField id='new topic name' value={newTopic} onChange={(e) => setNewTopic(e.target.value)} />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={(e)=>{
-            axios.post(`${process.env.REACT_APP_API}/faqtopics/create`, {topic: newTopic})
-            .then( res => {
-              setCurrentTopic(newTopic)
-              setNewTopic("")
-              setNewTopicDialog(false)
-            })
+          <Button color="primary" onClick={(e) => {
+            axios.post(`${process.env.REACT_APP_API}/faqtopics/create`, { topic: newTopic })
+              .then(res => {
+                setCurrentTopic(newTopic)
+                setNewTopic("")
+                setNewTopicDialog(false)
+              })
           }}>
             Create
           </Button>
           <Button color="primary" autoFocus
-          onClick={()=>{setNewTopicDialog(false)}}>
+            onClick={() => { setNewTopicDialog(false) }}>
             Cancel
           </Button>
         </DialogActions>
@@ -275,7 +275,7 @@ export default function Main(props) {
           <IconButton
             color="inherit"
             edge="start"
-            onClick={()=>setMobileOpen(p=>!p)}
+            onClick={() => setMobileOpen(p => !p)}
             className={classes.menuButton}
           >
             <MenuIcon />
@@ -294,7 +294,7 @@ export default function Main(props) {
             variant="temporary"
             anchor={theme.direction === 'rtl' ? 'right' : 'left'}
             open={mobileOpen}
-            onClose={()=>setMobileOpen(p=>!p)}
+            onClose={() => setMobileOpen(p => !p)}
             classes={{
               paper: classes.drawerPaper,
             }}
@@ -320,52 +320,52 @@ export default function Main(props) {
 
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          {/* Topics context */}
-          <Fade in={currentContext==="Topics"}>
-            <div style={{height:'100%'}}>
-              <Settings
+        {/* Topics context */}
+        <Fade in={currentContext === "Topics"}>
+          <div style={{ height: '100%' }}>
+            <Settings
               currentTopic={currentTopic}
               setCurrentTopic={setCurrentTopic}
-              />
-            </div>
-          </Fade>
-          {/* Questions context */}
-          <Fade in={currentContext==="Questions"}>
-            <div style={{height:'100%', position:'relative', top:'-100%', marginBottom:'-100%'}}>
-            <Slide direction="right" in={selectedIndex===null && !addNewQuestion} mountOnEnter unmountOnExit
-            timeout={{enter:600}}>
+            />
+          </div>
+        </Fade>
+        {/* Questions context */}
+        <Fade in={currentContext === "Questions"}>
+          <div style={{ height: '100%', position: 'relative', top: '-100%', marginBottom: '-100%' }}>
+            <Slide direction="right" in={selectedIndex === null && !addNewQuestion} mountOnEnter unmountOnExit
+              timeout={{ enter: 600 }}>
               <div>
                 <Questions
-                setAddNewQuestion={setAddNewQuestion}
-                data={data}
-                setData={setData}
-                setDataChanged={setDataChanged}
-                setSelectedIndex={setSelectedIndex} />
+                  setAddNewQuestion={setAddNewQuestion}
+                  data={data}
+                  setData={setData}
+                  setDataChanged={setDataChanged}
+                  setSelectedIndex={setSelectedIndex} />
               </div>
             </Slide>
-            <Slide direction="left" in={selectedIndex!==null} mountOnEnter unmountOnExit
-            timeout={{enter:600}}>
+            <Slide direction="left" in={selectedIndex !== null} mountOnEnter unmountOnExit
+              timeout={{ enter: 600 }}>
               <div>
                 <SingleQuestion
-                data={data}
-                setData={setData}
-                setDataChanged={setDataChanged}
-                selectedIndex={selectedIndex}
-                setSelectedIndex={setSelectedIndex} />
+                  data={data}
+                  setData={setData}
+                  setDataChanged={setDataChanged}
+                  selectedIndex={selectedIndex}
+                  setSelectedIndex={setSelectedIndex} />
               </div>
             </Slide>
             <Slide direction="left" in={addNewQuestion} mountOnEnter unmountOnExit
-            timeout={{enter:600}}>
+              timeout={{ enter: 600 }}>
               <div>
                 <NewQuestion
-                data={data}
-                setData={setData}
-                setDataChanged={setDataChanged}
-                setAddNewQuestion={setAddNewQuestion} />
+                  data={data}
+                  setData={setData}
+                  setDataChanged={setDataChanged}
+                  setAddNewQuestion={setAddNewQuestion} />
               </div>
             </Slide>
-            </div>
-          </Fade>
+          </div>
+        </Fade>
 
       </main>
     </div>

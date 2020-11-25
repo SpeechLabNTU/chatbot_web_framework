@@ -14,7 +14,7 @@ export default function TopicSelection(props) {
     <React.Fragment>
       <Paper elevation={1}>
         <List component="nav">
-          <ListItem button onClick={(event)=>{setTopicMenuRef(event.currentTarget)}}>
+          <ListItem button onClick={(event) => { setTopicMenuRef(event.currentTarget) }}>
             <ListItemText primary="Question Topic" secondary={props.topic} />
           </ListItem>
         </List>
@@ -23,39 +23,39 @@ export default function TopicSelection(props) {
         anchorEl={topicMenuRef}
         keepMounted
         open={Boolean(topicMenuRef)}
-        onClose={()=>{setTopicMenuRef(null)}}
+        onClose={() => { setTopicMenuRef(null) }}
       >
         <MenuItem id={"Baby Bonus"}
-          onClick={(e)=>{
+          onClick={(e) => {
             props.setTopic(e.target.id)
             setTopicMenuRef(null)
           }}
         >
-        Baby Bonus
+          Baby Bonus
         </MenuItem>
         <MenuItem id={"Covid 19"}
-          onClick={(e)=>{
+          onClick={(e) => {
             props.setTopic(e.target.id)
             setTopicMenuRef(null)
           }}
         >
-        Covid 19
+          Covid 19
         </MenuItem>
         <MenuItem id={"ComCare"}
-          onClick={(e)=>{
+          onClick={(e) => {
             props.setTopic(e.target.id)
             setTopicMenuRef(null)
           }}
         >
-        ComCare
+          ComCare
         </MenuItem>
         <MenuItem id={"Adoption"}
-          onClick={(e)=>{
+          onClick={(e) => {
             props.setTopic(e.target.id)
             setTopicMenuRef(null)
           }}
         >
-        Adoption
+          Adoption
         </MenuItem>
       </Menu>
     </React.Fragment>

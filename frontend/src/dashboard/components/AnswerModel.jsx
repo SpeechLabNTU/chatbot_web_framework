@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-export default function AnswerModel(props){
+export default function AnswerModel(props) {
   const classes = useStyles();
 
   return (
@@ -30,8 +30,8 @@ export default function AnswerModel(props){
           rows="10"
           variant="outlined"
           disabled
-          helperText= {props.score!==null ? "Similarity Score: " + props.score : "Comparison Inactive"}
-          value={props.loading ? "loading...": props.response}
+          helperText={props.score !== null ? "Similarity Score: " + props.score : "Comparison Inactive"}
+          value={props.loading ? "loading..." : props.response}
         />
       </FormControl>
     </React.Fragment>

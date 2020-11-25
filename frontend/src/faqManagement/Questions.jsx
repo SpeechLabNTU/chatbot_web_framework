@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    overflow:"hidden"
+    overflow: "hidden"
   },
   searchBaritems: {
     margin: theme.spacing(2),
@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 
-function TablePaginationActions(props){
+function TablePaginationActions(props) {
   const classes = useStyles();
   const theme = useTheme();
   const { count, page, rowsPerPage, onChangePage } = props;
@@ -111,7 +111,7 @@ function TablePaginationActions(props){
   }
 
   const handleLastPageButtonClick = (event) => {
-    onChangePage(event, Math.max(0, Math.ceil(count/rowsPerPage)-1));
+    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   }
 
   //------------------------------Pagination Icons-------------------------------------
@@ -168,19 +168,19 @@ export default function Questions(props) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
-  React.useEffect( ()=>{
+  React.useEffect(() => {
     if (checkboxes.includes(true)) setShowEditBar(true)
     else setShowEditBar(false)
   }, [checkboxes])
 
-  React.useEffect( ()=>{
-    let temp = props.data.map(()=>{
+  React.useEffect(() => {
+    let temp = props.data.map(() => {
       return false
     })
     setCheckboxes(temp)
   }, [props.data])
 
-  React.useEffect( ()=>{
+  React.useEffect(() => {
     if (searchValue === "") {
       setSearchData(null)
     }
@@ -199,10 +199,10 @@ export default function Questions(props) {
   const handleDeleteButton = () => {
     let tempData = []
     let i = 0
-    checkboxes.map( (val, idx) => {
+    checkboxes.map((val, idx) => {
       if (!val) {
         tempData.push(props.data[idx])
-        tempData[i].Index=i
+        tempData[i].Index = i
         i++
       }
       return null
@@ -218,31 +218,31 @@ export default function Questions(props) {
     formData.append('file', file)
 
     axios.post(`${process.env.REACT_APP_API}/faqdata/csv`, formData)
-    .then( res => {
-      let newData = res.data.data
-      let tempData = []
-      let i = 0
-      newData.forEach( (val) => {
-        tempData.push(val)
-        tempData[i].Index=i
-        i++
+      .then(res => {
+        let newData = res.data.data
+        let tempData = []
+        let i = 0
+        newData.forEach((val) => {
+          tempData.push(val)
+          tempData[i].Index = i
+          i++
+        })
+        props.data.forEach((val) => {
+          tempData.push(val)
+          tempData[i].Index = i
+          i++
+        })
+        props.setData(tempData)
+        props.setDataChanged(true)
+        setIsMenuOpen(false)
       })
-      props.data.forEach( (val) => {
-        tempData.push(val)
-        tempData[i].Index=i
-        i++
-      })
-      props.setData(tempData)
-      props.setDataChanged(true)
-      setIsMenuOpen(false)
-    })
   }
 
-  const handleChangePage = (event, newPage) =>{
+  const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
 
-  const handleChangeRowsPerPage = (event) =>{
+  const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   }
@@ -251,60 +251,60 @@ export default function Questions(props) {
     <React.Fragment>
       <Paper className={classes.topBarPaper}>
         <Typography variant='h5' className={classes.searchBaritems}>Questions</Typography>
-        <div style={{display:'flex', alignItems:'center'}}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Button variant="contained" color="primary"
-          onClick={()=>{props.setAddNewQuestion(true)}}>
-          Add Question
+            onClick={() => { props.setAddNewQuestion(true) }}>
+            Add Question
           </Button>
 
-          <IconButton className={classes.searchBaritems} ref={menuAnchorRef} onClick={()=>setIsMenuOpen((prev)=>!prev)}>
-          <MoreHorizIcon/>
+          <IconButton className={classes.searchBaritems} ref={menuAnchorRef} onClick={() => setIsMenuOpen((prev) => !prev)}>
+            <MoreHorizIcon />
           </IconButton>
 
           <Popper open={isMenuOpen} anchorEl={menuAnchorRef.current} transition>
-          { ({TransitionProps, placement }) => (
-            <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
-            <Paper>
-            <ClickAwayListener onClickAway={()=>{setIsMenuOpen(false)}}>
-            <MenuList autoFocusItem={isMenuOpen}>
-              <MenuItem button component="label">Upload Questions
-              <input accept=".csv" type="file" name="file" style={{display: 'none'}} onChange={handleFile}/>
-              </MenuItem>
-              <MenuItem button onClick={()=>{setDeleteAllDialog(true)}}>Delete All</MenuItem>
-            </MenuList>
-            </ClickAwayListener>
-            </Paper>
-            </Grow>
-          )}
+            {({ TransitionProps, placement }) => (
+              <Grow {...TransitionProps} style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}>
+                <Paper>
+                  <ClickAwayListener onClickAway={() => { setIsMenuOpen(false) }}>
+                    <MenuList autoFocusItem={isMenuOpen}>
+                      <MenuItem button component="label">Upload Questions
+              <input accept=".csv" type="file" name="file" style={{ display: 'none' }} onChange={handleFile} />
+                      </MenuItem>
+                      <MenuItem button onClick={() => { setDeleteAllDialog(true) }}>Delete All</MenuItem>
+                    </MenuList>
+                  </ClickAwayListener>
+                </Paper>
+              </Grow>
+            )}
           </Popper>
         </div>
       </Paper>
 
       { !showEditBar ?
-      <Fade in={!showEditBar}>
-        <Paper className={classes.searchBarPaper}>
-        <SearchIcon className={classes.searchBaritems}/>
-        <InputBase
-        placeholder="Search questions"
-        onChange={(e)=>{setSearchValue(e.target.value.toLowerCase())}}
-        value={searchValue}
-        />
-        </Paper>
-      </Fade>
-      :
-      <Fade in={showEditBar}>
-        <div className={classes.editBar}>
-          <Button variant="contained" className={classes.button}
-          onClick={handleDeleteButton}>
-          Delete
+        <Fade in={!showEditBar}>
+          <Paper className={classes.searchBarPaper}>
+            <SearchIcon className={classes.searchBaritems} />
+            <InputBase
+              placeholder="Search questions"
+              onChange={(e) => { setSearchValue(e.target.value.toLowerCase()) }}
+              value={searchValue}
+            />
+          </Paper>
+        </Fade>
+        :
+        <Fade in={showEditBar}>
+          <div className={classes.editBar}>
+            <Button variant="contained" className={classes.button}
+              onClick={handleDeleteButton}>
+              Delete
           </Button>
-          <Button variant="contained" className={classes.button}
-          onClick={ () => setCheckboxes(checkboxes.map(() => (false))) }
-          >
-          Cancel
+            <Button variant="contained" className={classes.button}
+              onClick={() => setCheckboxes(checkboxes.map(() => (false)))}
+            >
+              Cancel
           </Button>
-        </div>
-      </Fade>
+          </div>
+        </Fade>
       }
 
       {/* Table for data */}
@@ -314,14 +314,14 @@ export default function Questions(props) {
             {(rowsPerPage > 0
               ? (searchData
                 ? searchData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                : props.data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) )
+                : props.data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))
               : (searchData ? searchData : props.data)
             ).map((row) => (
               <TableRow key={row.Index} className={classes.tableRow}>
                 <TableCell className={classes.tableCellCheckbox}>
                   <Checkbox
                     checked={Boolean(checkboxes[row.Index])}
-                    onChange={(e)=>{
+                    onChange={(e) => {
                       const temp = [...checkboxes]
                       temp[row.Index] = e.target.checked
                       setCheckboxes(temp)
@@ -330,8 +330,8 @@ export default function Questions(props) {
                 </TableCell>
                 <TableCell className={classes.tableCellText} component="th" scope="row">
                   <ButtonBase disableTouchRipple disableRipple
-                  onClick={()=>{props.setSelectedIndex(row.Index)}}>
-                  <Typography align='left'>{row.Question}</Typography>
+                    onClick={() => { props.setSelectedIndex(row.Index) }}>
+                    <Typography align='left'>{row.Question}</Typography>
                   </ButtonBase>
                 </TableCell>
               </TableRow>
@@ -360,7 +360,7 @@ export default function Questions(props) {
       </Paper>
 
       {/* Dialogbox for deleting all */}
-      <Dialog open={deleteAllDialog} onClose={()=>{setDeleteAllDialog(false)}}>
+      <Dialog open={deleteAllDialog} onClose={() => { setDeleteAllDialog(false) }}>
         <DialogTitle id="alert-dialog-title">{"Delete all questions and answers?"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -368,7 +368,7 @@ export default function Questions(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button color="secondary" onClick={()=>{
+          <Button color="secondary" onClick={() => {
             props.setData([])
             props.setDataChanged(true)
             setDeleteAllDialog(false)
@@ -376,7 +376,7 @@ export default function Questions(props) {
             Delete All
           </Button>
           <Button color="primary" autoFocus
-          onClick={()=>{setDeleteAllDialog(false)}}>
+            onClick={() => { setDeleteAllDialog(false) }}>
             Cancel
           </Button>
         </DialogActions>
