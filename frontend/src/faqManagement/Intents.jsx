@@ -1,7 +1,7 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import PropTypes from 'prop-types';
+import TablePaginationActions from "../components/TablePaginationActions"
 
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -30,11 +30,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import TableFooter from '@material-ui/core/TableFooter';
 import TablePagination from '@material-ui/core/TablePagination';
-
-import FirstPageIcon from '@material-ui/icons/FirstPage';
-import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import LastPageIcon from '@material-ui/icons/LastPage';
 
 import axios from "axios";
 
@@ -84,79 +79,13 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'flex-start'
   },
-  pagination: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
 }))
-
-
-function TablePaginationActions(props) {
-  const classes = useStyles();
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onChangePage } = props;
-
-  //-----------------------------Pagination Handler-----------------------------------
-  const handleFirstPageButtonClick = (event) => {
-    onChangePage(event, 0)
-  };
-
-  const handleBackButtonClick = (event) => {
-    onChangePage(event, page - 1)
-  }
-
-  const handleNextButtonClick = (event) => {
-    onChangePage(event, page + 1)
-  }
-
-  const handleLastPageButtonClick = (event) => {
-    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  }
-
-  //------------------------------Pagination Icons-------------------------------------
-  return (
-    <div className={classes.pagination}>
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-      </IconButton>
-      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
-        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-      </IconButton>
-    </div>
-  );
-}
-
-//---------------------------Pagination Action Props---------------------------------------
-TablePaginationActions.propTypes = {
-  count: PropTypes.number.isRequired,
-  onChangePage: PropTypes.func.isRequired,
-  page: PropTypes.number.isRequired,
-  rowsPerPage: PropTypes.number.isRequired,
-};
 
 
 export default function Questions(props) {
 
   const classes = useStyles()
+  const [data, setData] = React.useState([])
   const [searchValue, setSearchValue] = React.useState("")
   const [searchData, setSearchData] = React.useState(null)
   const [checkboxes, setCheckboxes] = React.useState([])
@@ -168,47 +97,59 @@ export default function Questions(props) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
+  // get data for current topic
+  React.useEffect(() => {
+    if (props.currentTopic !== "") {
+      props.getAllIntents(props.currentTopic)
+        .then(data => {
+          setData(data)
+        })
+    }
+    // eslint-disable-next-line
+  }, [props.currentTopic])
+
+  // for edit bar to show up
   React.useEffect(() => {
     if (checkboxes.includes(true)) setShowEditBar(true)
     else setShowEditBar(false)
   }, [checkboxes])
 
+  // reset checkboxes when data changes
   React.useEffect(() => {
-    let temp = props.data.map(() => {
+    let temp = data.map(() => {
       return false
     })
     setCheckboxes(temp)
-  }, [props.data])
+  }, [data])
 
+  // search handling
   React.useEffect(() => {
     if (searchValue === "") {
       setSearchData(null)
     }
     else {
       let temp = []
-      props.data.forEach((val) => {
-        let q = val.Question.toLowerCase()
+      data.forEach((val) => {
+        let q = val.question.toLowerCase()
         if (q.search(searchValue) !== -1) {
           temp.push(val)
         }
       })
       setSearchData(temp)
     }
-  }, [searchValue, props.data])
+  }, [searchValue, data])
 
   const handleDeleteButton = () => {
-    let tempData = []
-    let i = 0
-    checkboxes.map((val, idx) => {
-      if (!val) {
-        tempData.push(props.data[idx])
-        tempData[i].Index = i
-        i++
+    var temp = []
+    checkboxes.forEach((val, idx) => {
+      if (val) {
+        props.deleteIntent(data[idx].id)
       }
-      return null
+      else {
+        temp.push(data[idx])
+      }
     })
-    props.setData(tempData)
-    props.setDataChanged(true)
+    setData(temp)
   }
 
   const handleFile = (e) => {
@@ -216,25 +157,15 @@ export default function Questions(props) {
 
     let formData = new FormData()
     formData.append('file', file)
+    formData.append('topic', props.currentTopic)
 
     axios.post(`${process.env.REACT_APP_API}/faqdata/csv`, formData)
       .then(res => {
-        let newData = res.data.data
-        let tempData = []
-        let i = 0
-        newData.forEach((val) => {
-          tempData.push(val)
-          tempData[i].Index = i
-          i++
-        })
-        props.data.forEach((val) => {
-          tempData.push(val)
-          tempData[i].Index = i
-          i++
-        })
-        props.setData(tempData)
-        props.setDataChanged(true)
-        setIsMenuOpen(false)
+        props.getAllIntents(props.currentTopic)
+          .then(data => {
+            setData(data)
+            setIsMenuOpen(false)
+          })
       })
   }
 
@@ -253,7 +184,7 @@ export default function Questions(props) {
         <Typography variant='h5' className={classes.searchBaritems}>Questions</Typography>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Button variant="contained" color="primary"
-            onClick={() => { props.setAddNewQuestion(true) }}>
+            onClick={() => { props.setAddNewIntent(true) }}>
             Add Question
           </Button>
 
@@ -267,8 +198,15 @@ export default function Questions(props) {
                 <Paper>
                   <ClickAwayListener onClickAway={() => { setIsMenuOpen(false) }}>
                     <MenuList autoFocusItem={isMenuOpen}>
-                      <MenuItem button component="label">Upload Questions
-              <input accept=".csv" type="file" name="file" style={{ display: 'none' }} onChange={handleFile} />
+                      <MenuItem button component="label">
+                        Upload Questions
+                        <input
+                          accept=".csv"
+                          type="file"
+                          name="file"
+                          style={{ display: 'none' }}
+                          onChange={handleFile}
+                        />
                       </MenuItem>
                       <MenuItem button onClick={() => { setDeleteAllDialog(true) }}>Delete All</MenuItem>
                     </MenuList>
@@ -297,12 +235,11 @@ export default function Questions(props) {
             <Button variant="contained" className={classes.button}
               onClick={handleDeleteButton}>
               Delete
-          </Button>
+            </Button>
             <Button variant="contained" className={classes.button}
-              onClick={() => setCheckboxes(checkboxes.map(() => (false)))}
-            >
+              onClick={() => setCheckboxes(checkboxes.map(() => (false)))}>
               Cancel
-          </Button>
+            </Button>
           </div>
         </Fade>
       }
@@ -314,24 +251,24 @@ export default function Questions(props) {
             {(rowsPerPage > 0
               ? (searchData
                 ? searchData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                : props.data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))
-              : (searchData ? searchData : props.data)
-            ).map((row) => (
-              <TableRow key={row.Index} className={classes.tableRow}>
+                : data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))
+              : (searchData ? searchData : data)
+            ).map((row, idx) => (
+              <TableRow key={page * rowsPerPage + idx} className={classes.tableRow}>
                 <TableCell className={classes.tableCellCheckbox}>
                   <Checkbox
-                    checked={Boolean(checkboxes[row.Index])}
+                    checked={Boolean(checkboxes[page * rowsPerPage + idx])}
                     onChange={(e) => {
                       const temp = [...checkboxes]
-                      temp[row.Index] = e.target.checked
+                      temp[page * rowsPerPage + idx] = e.target.checked
                       setCheckboxes(temp)
                     }}
                   />
                 </TableCell>
                 <TableCell className={classes.tableCellText} component="th" scope="row">
                   <ButtonBase disableTouchRipple disableRipple
-                    onClick={() => { props.setSelectedIndex(row.Index) }}>
-                    <Typography align='left'>{row.Question}</Typography>
+                    onClick={() => { props.setSelectedId(row.id) }}>
+                    <Typography align='left'>{row.question}</Typography>
                   </ButtonBase>
                 </TableCell>
               </TableRow>
@@ -343,7 +280,7 @@ export default function Questions(props) {
               <TablePagination
                 rowsPerPageOptions={[10, 25, 50, { label: 'All', value: -1 }]}
                 colSpan={2}
-                count={searchData ? searchData.length : props.data.length}
+                count={searchData ? searchData.length : data.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{
@@ -369,9 +306,14 @@ export default function Questions(props) {
         </DialogContent>
         <DialogActions>
           <Button color="secondary" onClick={() => {
-            props.setData([])
-            props.setDataChanged(true)
-            setDeleteAllDialog(false)
+            props.deleteAllIntents(props.currentTopic)
+              .then(() => {
+                props.getAllIntents(props.currentTopic)
+                  .then(data => {
+                    setData(data)
+                    setDeleteAllDialog(false)
+                  })
+              })
           }}>
             Delete All
           </Button>

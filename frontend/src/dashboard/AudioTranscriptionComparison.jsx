@@ -22,7 +22,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 
 import AudioPlaybackButton from './components/AudioPlaybackButton';
-import TablePaginationActions from './components/TablePaginationActions';
+import TablePaginationActions from '../components/TablePaginationActions';
 
 const useStyles = makeStyles(theme => ({
   root: {

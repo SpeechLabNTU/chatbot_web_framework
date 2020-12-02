@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import AudioVisualiser from './AudioVisualizer'
-import './recorder'
+import '../../recorder'
 import axios from 'axios'
 
 class AudioAnalyser extends Component {

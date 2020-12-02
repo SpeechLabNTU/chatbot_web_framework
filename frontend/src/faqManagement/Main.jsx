@@ -1,8 +1,8 @@
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import Questions from "./Questions.jsx";
-import SingleQuestion from "./SingleQuestion.jsx";
-import NewQuestion from "./NewQuestion.jsx";
+import Intents from "./Intents.jsx";
+import SingleIntent from "./SingleIntent.jsx";
+import NewIntent from "./NewIntent.jsx";
 import Settings from "./Settings.jsx";
 
 import AppBar from '@material-ui/core/AppBar';
@@ -107,13 +107,13 @@ export default function Main(props) {
 
   const [data, setData] = React.useState([])
   const [dataChanged, setDataChanged] = React.useState(false)
-  const [currentContext, setCurrentContext] = React.useState("Questions")
+  const [currentContext, setCurrentContext] = React.useState("Intents")
 
   const [isTopicMenuOpen, setIsTopicMenuOpen] = React.useState(false)
   const [topicAnchorRef, setTopicAnchorRef] = React.useState(null)
 
-  const [selectedIndex, setSelectedIndex] = React.useState(null)
-  const [addNewQuestion, setAddNewQuestion] = React.useState(false)
+  const [selectedId, setSelectedId] = React.useState(null)
+  const [addNewIntent, setAddNewIntent] = React.useState(false)
 
   // call to backend to get all topics available
   React.useEffect(() => {
@@ -132,26 +132,9 @@ export default function Main(props) {
 
   // get data for current topic
   React.useEffect(() => {
-    if (currentTopic !== "") {
-      axios.get(`${process.env.REACT_APP_API}/faqdata/${currentTopic}`)
-        .then((res) => {
-          let temp = res.data.data.map(val => {
-            if (val.Alternatives === "" || val.Alternatives === undefined) {
-              val.Alternatives = []
-              return val
-            }
-            else {
-              return val
-            }
-          })
-          setData(temp)
-        }).catch((err) => {
-          console.log(err)
-        })
-    }
-    setCurrentContext("Questions")
-    setSelectedIndex(null)
-    setAddNewQuestion(false)
+    setCurrentContext("Intents")
+    setSelectedId(null)
+    setAddNewIntent(false)
   }, [currentTopic])
 
   // update backend with changed data
@@ -170,6 +153,82 @@ export default function Main(props) {
   React.useEffect(() => {
     setIsTopicMenuOpen(false)
   }, [currentContext])
+
+  function deleteTopic(topic) {
+    return new Promise((resolve, reject) => {
+      axios.delete(`${process.env.REACT_APP_API}/faqtopics/${topic}`)
+        .then(res => {
+          resolve()
+        })
+    })
+  }
+
+  function getAllIntents(topic) {
+    return new Promise((resolve, reject) => {
+      axios.get(`${process.env.REACT_APP_API}/faqdata/topic/${topic}`)
+        .then((res) => {
+          let temp = res.data.data.map(val => {
+            if (val.Alternatives === "" || val.Alternatives === undefined) {
+              val.Alternatives = []
+              return val
+            }
+            else {
+              return val
+            }
+          })
+          resolve(temp)
+        }).catch((err) => {
+          console.log(err)
+          reject(err)
+        })
+    })
+  }
+
+  function deleteAllIntents(topic) {
+    return new Promise((resolve, reject) => {
+      axios.delete(`${process.env.REACT_APP_API}/faqdata/topic/${topic}`)
+        .then(res => {
+          resolve()
+        })
+    })
+  }
+
+  function getIntent(id) {
+    return new Promise((resolve, reject) => {
+      axios.get(`${process.env.REACT_APP_API}/faqdata/id/${id}`)
+        .then(res => {
+          resolve(res.data.intent)
+        })
+    })
+  }
+
+  function deleteIntent(id) {
+    return new Promise((resolve, reject) => {
+      axios.delete(`${process.env.REACT_APP_API}/faqdata/id/${id}`)
+        .then(res => {
+          resolve()
+        })
+    })
+  }
+
+  function updateIntent(id, payload) {
+    return new Promise((resolve, reject) => {
+      axios.patch(`${process.env.REACT_APP_API}/faqdata/id/${id}`, { payload })
+        .then(res => {
+          resolve()
+        })
+    })
+  }
+
+  function createIntent(payload) {
+    payload.topic = currentTopic
+    return new Promise((resolve, reject) => {
+      axios.post(`${process.env.REACT_APP_API}/faqdata/id`, { payload })
+        .then(res => {
+          resolve()
+        })
+    })
+  }
 
   // side drawer component
   const drawer = (
@@ -221,7 +280,7 @@ export default function Main(props) {
       <Divider />
 
       <List>
-        <ListItem button key={"Questions"} onClick={() => setCurrentContext("Questions")}>
+        <ListItem button key={"Intents"} onClick={() => setCurrentContext("Intents")}>
           <QuestionAnswerIcon className={classes.sideIcon} />
           <ListItemText primary={"Questions"} />
         </ListItem>
@@ -324,44 +383,47 @@ export default function Main(props) {
         <Fade in={currentContext === "Topics"}>
           <div style={{ height: '100%' }}>
             <Settings
+              deleteTopic={deleteTopic}
               currentTopic={currentTopic}
               setCurrentTopic={setCurrentTopic}
             />
           </div>
         </Fade>
         {/* Questions context */}
-        <Fade in={currentContext === "Questions"}>
+        <Fade in={currentContext === "Intents"}>
           <div style={{ height: '100%', position: 'relative', top: '-100%', marginBottom: '-100%' }}>
-            <Slide direction="right" in={selectedIndex === null && !addNewQuestion} mountOnEnter unmountOnExit
+            <Slide direction="right" in={selectedId === null && !addNewIntent} mountOnEnter unmountOnExit
               timeout={{ enter: 600 }}>
               <div>
-                <Questions
-                  setAddNewQuestion={setAddNewQuestion}
-                  data={data}
-                  setData={setData}
-                  setDataChanged={setDataChanged}
-                  setSelectedIndex={setSelectedIndex} />
+                <Intents
+                  currentTopic={currentTopic}
+                  deleteIntent={deleteIntent}
+                  deleteAllIntents={deleteAllIntents}
+                  getAllIntents={getAllIntents}
+                  setAddNewIntent={setAddNewIntent}
+                  setSelectedId={setSelectedId}
+                />
               </div>
             </Slide>
-            <Slide direction="left" in={selectedIndex !== null} mountOnEnter unmountOnExit
+            <Slide direction="left" in={selectedId !== null} mountOnEnter unmountOnExit
               timeout={{ enter: 600 }}>
               <div>
-                <SingleQuestion
-                  data={data}
-                  setData={setData}
-                  setDataChanged={setDataChanged}
-                  selectedIndex={selectedIndex}
-                  setSelectedIndex={setSelectedIndex} />
+                <SingleIntent
+                  currentTopic={currentTopic}
+                  getIntent={getIntent}
+                  updateIntent={updateIntent}
+                  selectedId={selectedId}
+                  setSelectedId={setSelectedId}
+                />
               </div>
             </Slide>
-            <Slide direction="left" in={addNewQuestion} mountOnEnter unmountOnExit
+            <Slide direction="left" in={addNewIntent} mountOnEnter unmountOnExit
               timeout={{ enter: 600 }}>
               <div>
-                <NewQuestion
-                  data={data}
-                  setData={setData}
-                  setDataChanged={setDataChanged}
-                  setAddNewQuestion={setAddNewQuestion} />
+                <NewIntent
+                  createIntent={createIntent}
+                  setAddNewIntent={setAddNewIntent}
+                />
               </div>
             </Slide>
           </div>

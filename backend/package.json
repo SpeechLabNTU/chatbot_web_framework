@@ -7,7 +7,7 @@
     "start": "NODE_ENV=production node ./bin/www"
   },
   "dependencies": {
-    "@google-cloud/speech": "^3.6.0",
+    "@google-cloud/speech": "^4.1.4",
     "axios": "^0.20.0",
     "check-word": "^1.1.0",
     "child_process": "^1.0.2",
@@ -16,7 +16,7 @@
     "csv-parser": "^2.3.3",
     "csv-writer": "^1.6.0",
     "debug": "~2.6.9",
-    "dialogflow": "^1.2.0",
+    "dialogflow": "^4.0.3",
     "dotenv": "^8.2.0",
     "ejs": "~2.5.7",
     "express": "^4.17.1",
@@ -25,6 +25,7 @@
     "html-to-text": "^5.1.1",
     "http-errors": "~1.6.2",
     "lda": "^0.2.0",
+    "mongoose": "^5.10.18",
     "morgan": "~1.9.0",
     "multer": "^1.4.2",
     "node-record-lpcm16": "^1.0.1",

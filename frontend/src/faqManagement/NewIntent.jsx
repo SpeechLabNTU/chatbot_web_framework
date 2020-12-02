@@ -1,6 +1,6 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
+import { makeStyles } from '@material-ui/core/styles';
+import TablePaginationActions from "../components/TablePaginationActions"
 
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -22,11 +22,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import TableFooter from '@material-ui/core/TableFooter';
 import TablePagination from '@material-ui/core/TablePagination';
-
-import FirstPageIcon from '@material-ui/icons/FirstPage';
-import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import LastPageIcon from '@material-ui/icons/LastPage';
 
 const useStyles = makeStyles((theme) => ({
   topBarPaper: {
@@ -94,73 +89,8 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
   },
-  pagination: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
 }))
 
-function TablePaginationActions(props) {
-  const classes = useStyles();
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onChangePage } = props;
-
-  //-----------------------------Pagination Handler-----------------------------------
-  const handleFirstPageButtonClick = (event) => {
-    onChangePage(event, 0)
-  };
-
-  const handleBackButtonClick = (event) => {
-    onChangePage(event, page - 1)
-  }
-
-  const handleNextButtonClick = (event) => {
-    onChangePage(event, page + 1)
-  }
-
-  const handleLastPageButtonClick = (event) => {
-    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  }
-
-  //------------------------------Pagination Icons-------------------------------------
-  return (
-    <div className={classes.pagination}>
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-      </IconButton>
-      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
-        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-      </IconButton>
-    </div>
-  );
-}
-
-//---------------------------Pagination Action Props---------------------------------------
-TablePaginationActions.propTypes = {
-  count: PropTypes.number.isRequired,
-  onChangePage: PropTypes.func.isRequired,
-  page: PropTypes.number.isRequired,
-  rowsPerPage: PropTypes.number.isRequired,
-};
 
 export default function SingleQuestion(props) {
 
@@ -178,27 +108,14 @@ export default function SingleQuestion(props) {
   const [altPhrasesCopy, setAltPhrasesCopy] = React.useState([])
   const [phrasesChanged, setPhrasesChanged] = React.useState(false)
   const [newAlt, setNewAlt] = React.useState("")
-  const [editAltPhrase, setEditAltPhrase] = React.useState(altPhrases.map(() => false))
+  const [editAltPhrase, setEditAltPhrase] = React.useState([])
 
   const classes = useStyles()
 
   React.useEffect(() => {
     setEditAltPhrase(altPhrases.map(() => false))
+    setAltPhrasesCopy(altPhrases)
   }, [altPhrases])
-
-  const addNewQuestion = (question, answer) => {
-    let tempData = []
-    let i = 1
-    tempData.push({ Index: 0, Question: question, Answer: answer, Alternatives: (phrasesChanged ? altPhrasesCopy : altPhrases) })
-    props.data.forEach((val, idx) => {
-      tempData.push(val)
-      tempData[i].Index = i
-      i++
-    })
-    props.setData(tempData)
-    props.setDataChanged(true)
-    setPhrasesChanged(false)
-  }
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -220,15 +137,25 @@ export default function SingleQuestion(props) {
             <Button className={classes.topBarItems} variant="contained" color="primary"
               disabled={newQuestion === "" || newAnswer === "" || editQuestion || editAnswer}
               onClick={() => {
-                addNewQuestion(newQuestion, newAnswer)
-                props.setAddNewQuestion(false)
-              }}>
+                props.createIntent({
+                  question: newQuestion,
+                  answer: newAnswer,
+                  alternatives: altPhrases,
+                })
+                  .then(res => {
+                    props.setAddNewIntent(false)
+                  })
+              }}
+            >
               Save
           </Button>
             <Button className={classes.topBarItems} variant="contained" color="primary"
-              onClick={() => { props.setAddNewQuestion(false) }}>
+              onClick={() => {
+                props.setAddNewIntent(false)
+              }}
+            >
               Cancel
-          </Button>
+            </Button>
           </div>
         </Paper>
       </Grid>
@@ -252,7 +179,8 @@ export default function SingleQuestion(props) {
             onChange={(e) => {
               setNewQuestion(e.target.value)
               setWarnQuestion(false)
-            }} />
+            }}
+          />
 
           <Divider />
 
@@ -294,14 +222,23 @@ export default function SingleQuestion(props) {
                       <TableCell className={classes.tableCell} component="th" scope="row">
                         <IconButton onClick={() => {
                           let temp = [...editAltPhrase]
-                          temp[index] = !temp[index]
+                          temp[page * rowsPerPage + index] = !temp[page * rowsPerPage + index]
                           setEditAltPhrase(temp)
                           setAltPhrases(altPhrasesCopy)
-                        }}>
-                          {editAltPhrase[index] ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
+                        }}
+                        >
+                          {editAltPhrase[page * rowsPerPage + index]
+                            ? <DoneIcon color='primary' />
+                            : <EditIcon color='primary' />}
                         </IconButton>
-                        <Input disableUnderline fullWidth multiline disabled={!editAltPhrase[index]} className={classes.tableCellText}
-                          id={`${index}`} defaultValue={altPhrases[index]}
+                        <Input
+                          disableUnderline
+                          fullWidth
+                          multiline
+                          disabled={!editAltPhrase[page * rowsPerPage + index]}
+                          className={classes.tableCellText}
+                          id={`${page * rowsPerPage + index}`}
+                          defaultValue={altPhrases[page * rowsPerPage + index]}
                           onChange={(e) => {
                             setPhrasesChanged(true)
                             let temp = [...altPhrasesCopy]
@@ -309,7 +246,7 @@ export default function SingleQuestion(props) {
                             setAltPhrasesCopy(temp)
                           }} />
                         <IconButton onClick={() => {
-                          let temp = altPhrases.filter((v, i) => (i !== index))
+                          let temp = altPhrases.filter((v, i) => (i !== page * rowsPerPage + index))
                           setAltPhrases(temp)
                         }}>
                           <DeleteIcon />

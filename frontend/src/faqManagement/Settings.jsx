@@ -11,8 +11,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 
-import axios from 'axios';
-
 const useStyles = makeStyles(theme => ({
   topBarPaper: {
     marginBottom: theme.spacing(2),
@@ -68,12 +66,11 @@ export default function Settings(props) {
         </DialogContent>
         <DialogActions>
           <Button color="secondary" onClick={() => {
-            axios.post(`${process.env.REACT_APP_API}/faqtopics/delete`, { topic: props.currentTopic })
-              .then(res => {
-                console.log(res)
+            props.deleteTopic(props.currentTopic)
+              .then(() => {
                 props.setCurrentTopic("")
                 setDeleteTopicDialog(false)
-              })
+            })
           }}>
             Delete Topic
           </Button>

@@ -36,11 +36,18 @@ app.post('/api/speechlabs', upload.audio.none(), STT.speechLabsHTTPRequest)
 app.post('/api/google', upload.audio.none(), STT.googleHTTPRequest)
 app.get('/api/deletestorage', AC.deleteFiles)
 
-app.get('/faqdata/:topic', FAQ.getFAQData)
-app.post('/faqdata', FAQ.writeFAQData)
-app.get('/faqtopics', FAQ.getFAQTopics)
+
+app.get('/faqdata/topic/:topic', FAQ.getFAQData)
+app.delete('/faqdata/topic/:topic', FAQ.deleteAllIntents)
+
+app.get('/faqdata/id/:id', FAQ.getIntent)
+app.delete('/faqdata/id/:id', FAQ.deleteIntent)
+app.patch('/faqdata/id/:id', FAQ.updateIntent)
+app.post('/faqdata/id', FAQ.createIntent)
+
 app.post('/faqdata/csv', upload.csv.single('file'), FAQ.processCSV)
+app.get('/faqtopics', FAQ.getFAQTopics)
 app.post('/faqtopics/create', FAQ.addNewTopic)
-app.post('/faqtopics/delete', FAQ.removeTopic)
+app.delete('/faqtopics/:topic', FAQ.deleteTopic)
 
 module.exports = app

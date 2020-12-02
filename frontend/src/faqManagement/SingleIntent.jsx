@@ -1,6 +1,6 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
+import { makeStyles } from '@material-ui/core/styles';
+import TablePaginationActions from "../components/TablePaginationActions"
 
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -22,11 +22,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import TableFooter from '@material-ui/core/TableFooter';
 import TablePagination from '@material-ui/core/TablePagination';
-
-import FirstPageIcon from '@material-ui/icons/FirstPage';
-import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import LastPageIcon from '@material-ui/icons/LastPage';
 
 const useStyles = makeStyles((theme) => ({
   topBarPaper: {
@@ -89,74 +84,7 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
   },
-  pagination: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
 }))
-
-
-function TablePaginationActions(props) {
-  const classes = useStyles();
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onChangePage } = props;
-
-  //-----------------------------Pagination Handler-----------------------------------
-  const handleFirstPageButtonClick = (event) => {
-    onChangePage(event, 0)
-  };
-
-  const handleBackButtonClick = (event) => {
-    onChangePage(event, page - 1)
-  }
-
-  const handleNextButtonClick = (event) => {
-    onChangePage(event, page + 1)
-  }
-
-  const handleLastPageButtonClick = (event) => {
-    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  }
-
-  //------------------------------Pagination Icons-------------------------------------
-  return (
-    <div className={classes.pagination}>
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-      </IconButton>
-      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
-        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-      </IconButton>
-    </div>
-  );
-}
-
-//---------------------------Pagination Action Props---------------------------------------
-TablePaginationActions.propTypes = {
-  count: PropTypes.number.isRequired,
-  onChangePage: PropTypes.func.isRequired,
-  page: PropTypes.number.isRequired,
-  rowsPerPage: PropTypes.number.isRequired,
-};
 
 
 export default function SingleQuestion(props) {
@@ -165,48 +93,33 @@ export default function SingleQuestion(props) {
 
   const [editQuestion, setEditQuestion] = React.useState(false)
   const [editAnswer, setEditAnswer] = React.useState(false)
-  const [newQuestion, setNewQuestion] = React.useState(props.selectedIndex !== null ? props.data[props.selectedIndex].Question : "")
-  const [newAnswer, setNewAnswer] = React.useState(props.selectedIndex !== null ? props.data[props.selectedIndex].Answer : "")
+  const [newQuestion, setNewQuestion] = React.useState("")
+  const [newAnswer, setNewAnswer] = React.useState("")
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const [altPhrases, setAltPhrases] = React.useState(props.selectedIndex !== null ? props.data[props.selectedIndex].Alternatives : [])
-  const [altPhrasesCopy, setAltPhrasesCopy] = React.useState(props.selectedIndex !== null ? props.data[props.selectedIndex].Alternatives : [])
-  const [phrasesChanged, setPhrasesChanged] = React.useState(false)
   const [newAlt, setNewAlt] = React.useState("")
-  const [editAltPhrase, setEditAltPhrase] = React.useState(altPhrases.map(() => false))
+  const [altPhrases, setAltPhrases] = React.useState([])
+  const [altPhrasesCopy, setAltPhrasesCopy] = React.useState([])
+  const [phrasesChanged, setPhrasesChanged] = React.useState(false)
+  const [editAltPhrases, setEditAltPhrases] = React.useState([])
+
+  // get current intent
+  React.useEffect(() => {
+    props.getIntent(props.selectedId)
+      .then(intent => {
+        setNewQuestion(intent.question)
+        setNewAnswer(intent.answer)
+        setAltPhrases(intent.alternatives)
+      })
+    // eslint-disable-next-line
+  }, [])
 
   React.useEffect(() => {
-    if (newQuestion !== props.data[props.selectedIndex].Question || newAnswer !== props.data[props.selectedIndex].Answer) {
-      updateData()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editQuestion, editAnswer])
-
-  React.useEffect(() => {
-    if (altPhrases !== props.data[props.selectedIndex].Alternatives) {
-      updateData()
-      setEditAltPhrase(altPhrases.map(() => false))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setEditAltPhrases(altPhrases.map(() => false))
+    setAltPhrasesCopy(altPhrases)
   }, [altPhrases])
-
-  const updateData = () => {
-    let tempData = []
-    props.data.map((val) => {
-      if (val.Index === props.selectedIndex) {
-        tempData.push({ Index: props.selectedIndex, Question: newQuestion.trim(), Answer: newAnswer.trim(), Alternatives: (phrasesChanged ? altPhrasesCopy : altPhrases) })
-      }
-      else {
-        tempData.push(val)
-      }
-      return null
-    })
-    props.setData(tempData)
-    props.setDataChanged(true)
-    setPhrasesChanged(false)
-  }
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -217,14 +130,22 @@ export default function SingleQuestion(props) {
     setPage(0);
   }
 
-
   return (
     <Grid container spacing={2}>
       <Grid container item>
         <Paper className={classes.topBarPaper} style={{ marginRight: 10 }}>
-          <IconButton onClick={() => {
-            props.setSelectedIndex(null)
-          }}>
+          <IconButton
+            onClick={() => {
+              props.updateIntent(props.selectedId, {
+                question: newQuestion,
+                answer: newAnswer,
+                alternatives: altPhrases
+              })
+                .then(() => {
+                  props.setSelectedId(null)
+                })
+            }}
+          >
             <ArrowBackIcon fontSize="large" />
           </IconButton>
         </Paper>
@@ -241,16 +162,24 @@ export default function SingleQuestion(props) {
             <Typography variant="h5" className={classes.bodyHeader}>
               Question:
             </Typography>
-            <IconButton className={classes.bodyHeader} onClick={() => {
-              setNewQuestion((p) => (p.trim()))
-              setEditQuestion((prev) => !prev)
-            }}>
+            <IconButton
+              className={classes.bodyHeader}
+              onClick={() => {
+                setNewQuestion((p) => (p.trim()))
+                setEditQuestion((prev) => !prev)
+              }}
+            >
               {editQuestion ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
             </IconButton>
           </div>
-          <TextField className={classes.bodyText} variant="outlined" multiline
-            value={newQuestion} onChange={(e) => { setNewQuestion(e.target.value) }}
-            disabled={!editQuestion} />
+          <TextField
+            className={classes.bodyText}
+            variant="outlined"
+            multiline
+            value={newQuestion}
+            onChange={(e) => { setNewQuestion(e.target.value) }}
+            disabled={!editQuestion}
+          />
 
           <Divider />
 
@@ -259,7 +188,11 @@ export default function SingleQuestion(props) {
           </Typography>
 
           <Paper variant='outlined' className={classes.questionInput}>
-            <Input disableUnderline fullWidth multiline placeholder={"Enter new alternate phrasing for original question."}
+            <Input
+              disableUnderline
+              fullWidth
+              multiline
+              placeholder={"Enter new alternate phrasing for original question."}
               value={newAlt}
               onChange={(e) => {
                 if (phrasesChanged) {
@@ -277,7 +210,8 @@ export default function SingleQuestion(props) {
                 else {
                   setNewAlt(e.target.value)
                 }
-              }} />
+              }}
+            />
           </Paper>
 
           <Collapse in={altPhrases.length > 0}>
@@ -290,24 +224,34 @@ export default function SingleQuestion(props) {
                   ).map((row, index) => (
                     <TableRow key={row} className={classes.tableRow}>
                       <TableCell className={classes.tableCell} component="th" scope="row">
-                        <IconButton onClick={() => {
-                          let temp = [...editAltPhrase]
-                          temp[index] = !temp[index]
-                          setEditAltPhrase(temp)
-                          setAltPhrases(altPhrasesCopy)
-                        }}>
-                          {editAltPhrase[index] ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
+                        <IconButton
+                          onClick={() => {
+                            let temp = [...editAltPhrases]
+                            temp[page * rowsPerPage + index] = !temp[page * rowsPerPage + index]
+                            setEditAltPhrases(temp)
+                            setAltPhrases(altPhrasesCopy)
+                          }}
+                        >
+                          {editAltPhrases[page * rowsPerPage + index]
+                            ? <DoneIcon color='primary' />
+                            : <EditIcon color='primary' />}
                         </IconButton>
-                        <Input disableUnderline fullWidth multiline disabled={!editAltPhrase[index]} className={classes.tableCellText}
-                          id={`${index}`} defaultValue={altPhrases[index]}
+                        <Input
+                          disableUnderline
+                          fullWidth
+                          multiline
+                          disabled={!editAltPhrases[page * rowsPerPage + index]}
+                          className={classes.tableCellText}
+                          id={`${page * rowsPerPage + index}`}
+                          defaultValue={altPhrases[page * rowsPerPage + index]}
                           onChange={(e) => {
-                            setPhrasesChanged(true)
                             let temp = [...altPhrasesCopy]
-                            temp[e.target.id] = e.target.value
+                            temp[page * rowsPerPage + index] = e.target.value
                             setAltPhrasesCopy(temp)
-                          }} />
+                          }}
+                        />
                         <IconButton onClick={() => {
-                          let temp = altPhrases.filter((v, i) => (i !== index))
+                          let temp = altPhrases.filter((v, i) => (i !== page * rowsPerPage + index))
                           setAltPhrases(temp)
                         }}>
                           <DeleteIcon />
@@ -355,9 +299,14 @@ export default function SingleQuestion(props) {
               {editAnswer ? <DoneIcon color='primary' /> : <EditIcon color='primary' />}
             </IconButton>
           </div>
-          <TextField className={classes.bodyText} variant="outlined" multiline
-            value={newAnswer} onChange={(e) => { setNewAnswer(e.target.value) }}
-            disabled={!editAnswer} />
+          <TextField
+            className={classes.bodyText}
+            variant="outlined"
+            multiline
+            disabled={!editAnswer}
+            value={newAnswer}
+            onChange={(e) => { setNewAnswer(e.target.value) }}
+          />
 
         </Paper>
       </Grid>

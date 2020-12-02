@@ -35,7 +35,7 @@ import CardContent from '@material-ui/core/CardContent';
 
 import Charts from "./components/Charts";
 import TopicSelection from "./components/TopicSelection";
-import TablePaginationActions from './components/TablePaginationActions';
+import TablePaginationActions from '../components/TablePaginationActions';
 
 const useStyles = makeStyles(theme => ({
   descriptionCardGrid: {
