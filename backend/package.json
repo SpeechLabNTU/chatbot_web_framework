@@ -7,6 +7,7 @@
     "start": "NODE_ENV=production node ./bin/www"
   },
   "dependencies": {
+    "@google-cloud/dialogflow": "^3.3.0",
     "@google-cloud/speech": "^4.1.4",
     "axios": "^0.20.0",
     "check-word": "^1.1.0",
@@ -16,7 +17,6 @@
     "csv-parser": "^2.3.3",
     "csv-writer": "^1.6.0",
     "debug": "~2.6.9",
-    "dialogflow": "^4.0.3",
     "dotenv": "^8.2.0",
     "ejs": "~2.5.7",
     "express": "^4.17.1",
