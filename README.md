@@ -22,12 +22,11 @@ The objective of this project is to design a full stack web application to compa
 
 
 ## Deployment Considerations
-Docker is used to set up 3 microservices React Frontend, Node Backend and Flask Server for response comparison. A docker-compose file is used to start up all microservices for deployment usage. Docker deployment resources can be found in the Docker branch of the repository.
+Docker is used to set up 3 microservices React Frontend and NodeJs Backend. A docker-compose file is used to start up all microservices for deployment usage. Docker deployment resources can be found in the Docker branch of the repository.
 
 ## Project organization:
 **frontend directory**: Written on ReactJS, provides the view of the application<br/>
 **backend directory**: Written on NodeJS, provides API endpoints for frontend<br/>
-**comparison directory**: Written on Flask, provides API service for response comparisons<br/>
 **dialogflowfunctions**: Written on NodeJS, used to upload intentions to dialogflow for NLP training<br/>
 
 ## Master Branch
@@ -37,7 +36,6 @@ Following directories must be executed in seperate terminals to run application
 
 1. Frontend Directory<br/>
 2. Backend Directory<br/>
-3. Comparison Directory<br/>
 
 **Additional Requirement**<br/>
 Create a `.env` file in the Backend Directory with the following:<br/>
@@ -46,18 +44,23 @@ Create a `.env` file in the Backend Directory with the following:<br/>
 DIALOGFLOW_KEYFILENAME_COVID19=
 DIALOGFLOW_KEYFILENAME_BABYBONUS=
 
-FLASK_ENDPOINT=
-
 MICL_ENDPOINT=
 RAJAT_ENDPOINT_BABYBONUS=
 RAJAT_ENDPOINT_COVID19=
 RUSHI_ENDPOINT=
+BANI_ENDPOINT=
 
-AISG_TOKEN=
 AISG_CREDENTIALS=
 SPEECH_API=
 SPEECH_HTTP_API=
 SPEECH_HTTP_AUTH=
+SPEECH_ENDPOINT=
+
+DB_HOST=localhost
+DB_PORT=27017
+DB_USER=
+DB_PASS=
+DB_NAME=faqdatastore
 ```
 
 Create a `.env` file in the Frontend Directory with the following:<br/>
