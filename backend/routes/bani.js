@@ -7,11 +7,9 @@ dotenv.config()
 router.post("/api/queryEndpoint", (req, res) => {
 
     let queryText = req.body.question
-    let topic = req.body.topic
 
     axios.get(`${process.env.BANI_ENDPOINT}/answer`, {
         params: {
-            topic: "No topic",
             question: queryText,
         }
     })
