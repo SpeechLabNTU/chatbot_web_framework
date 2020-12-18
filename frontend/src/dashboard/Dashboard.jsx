@@ -12,6 +12,8 @@ import MultiChatbotInterface from "./MultiChatbotInterface";
 import ReactTab from "react-bootstrap/Tab"
 import ReactTabs from "react-bootstrap/Tabs"
 
+import ChatWidget from '../chatwidget/ChatWidget';
+
 
 export default function Dashboard(props) {
 
@@ -125,6 +127,8 @@ export default function Dashboard(props) {
       <Container maxWidth="lg" style={{ paddingBottom: theme.spacing(6) }}>
 
         <LogoHeaders />
+
+        <ChatWidget />
 
         <ReactTabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
 
