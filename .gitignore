@@ -6,6 +6,9 @@ gcloud/
 keys/
 data/
 
+#intent-management
+dist/
+
 #dataConstruction directory
 permutations/
 
