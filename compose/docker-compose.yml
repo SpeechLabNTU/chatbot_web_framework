@@ -42,8 +42,26 @@ services:
       args:
         # need to specify here because it will be complied into image
         - REACT_APP_API=https://chatbot.speechlab.sg:3001
+        - REACT_APP_INTENT_API=http://intent-management:3010
     ports:
       - '3000:80'
+    deploy:
+      replicas: 1
+
+  ################
+  # Intent Management
+  ################
+  intent-management:
+    image: demonicmushy/chatbotplatform:intent-management
+    build:
+      context: ../intent-management
+    environment:
+      - PORT=3010
+      - DB_HOST=mongo
+      - DB_PORT=27017
+      - DB_NAME=intent-management
+    expose:
+      - '3010'
     deploy:
       replicas: 1
   
