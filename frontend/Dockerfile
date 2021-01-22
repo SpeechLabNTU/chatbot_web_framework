@@ -13,6 +13,7 @@ RUN npm install --production --slient && \
 COPY . /srv/app/client
 
 ARG REACT_APP_API
+ARG REACT_APP_INTENT_API
 
 RUN npm run build
 

@@ -12,7 +12,7 @@ USER node
 
 COPY --chown=node:node ["package.json", "package-lock.json*", "./"]
 
-RUN npm install --production --silent && npm cache clean --force
+RUN npm install --silent && npm cache clean --force
 
 COPY --chown=node:node . .
 
