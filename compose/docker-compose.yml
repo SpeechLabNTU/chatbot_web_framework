@@ -5,7 +5,7 @@ services:
   ##################
   # Node Container
   ##################
-  server:
+  backend:
     image: demonicmushy/chatbotplatform:server
     build:
       context: ../backend
@@ -19,12 +19,14 @@ services:
       - RAJAT_ENDPOINT_BABYBONUS=http://13.76.152.232:1995
       - RAJAT_ENDPOINT_COVID19=http://13.76.152.232:2995
       - RUSHI_ENDPOINT=http://13.76.152.232:1996
+      - BANI_ENDPOINT=http://13.76.152.232:1997
       - AISG_CREDENTIALS=/run/secrets/aisg_credentials
       - DB_HOST=mongo
       - DB_PORT=27017
       - DB_NAME=faqdatastore
     ports:
-      - '3001:3001'
+      # HTTPS server port : server listening port
+      - '3002:3001'
     deploy:
       replicas: 1
     secrets:
@@ -42,9 +44,11 @@ services:
       args:
         # need to specify here because it will be complied into image
         - REACT_APP_API=https://chatbot.speechlab.sg:3001
-        - REACT_APP_INTENT_API=http://intent-management:3010
+        - REACT_APP_INTENT_API=https://chatbot.speechlab.sg:3004
+        # - REACT_APP_API=http://localhost:3050
+        # - REACT_APP_INTENT_API=http://localhost:3050
     ports:
-      - '3000:80'
+      - '3003:80'
     deploy:
       replicas: 1
 
@@ -56,12 +60,12 @@ services:
     build:
       context: ../intent-management
     environment:
-      - PORT=3010
+      - PORT=3004
       - DB_HOST=mongo
       - DB_PORT=27017
       - DB_NAME=intent-management
-    expose:
-      - '3010'
+    ports:
+      - '3005:3004'
     deploy:
       replicas: 1
   

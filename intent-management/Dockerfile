@@ -18,4 +18,6 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
+EXPOSE 3004
+
 CMD ["pm2-runtime", "ecosystem.config.js"]
