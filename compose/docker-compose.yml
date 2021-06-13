@@ -11,9 +11,9 @@ services:
       context: ../backend
     environment:
       - MICL_ENDPOINT=http://13.76.152.232:8081
-      - SPEECH_API=ws://40.90.170.182:8001/client/ws/speech
+      - SPEECH_API=wss://gateway.speechlab.sg/client/ws/speech
       - SPEECH_HTTP_API=http://40.90.170.182:8001/client/dynamic/recognize
-      - SPEECH_HTTP_AUTH=https://api.speechlab.sg/auth
+      - SPEECH_HTTP_AUTH=https://gateway.speechlab.sg/auth
       - DIALOGFLOW_KEYFILENAME_COVID19=/run/secrets/dialog_covid19
       - DIALOGFLOW_KEYFILENAME_BABYBONUS=/run/secrets/dialog_babybonus
       - RAJAT_ENDPOINT_BABYBONUS=http://13.76.152.232:1995
