@@ -201,7 +201,7 @@ class MainController {
                     })
                 }
             })
-
+            
             return res.json({
                 success: true
             })

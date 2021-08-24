@@ -1,7 +1,6 @@
-version: '3.1'
+version: "3.1"
 
 services:
-
   ##################
   # Node Container
   ##################
@@ -24,7 +23,7 @@ services:
       - DB_PORT=27017
       - DB_NAME=faqdatastore
     ports:
-      - '3001:3001'
+      - "3001:3001"
     deploy:
       replicas: 1
     secrets:
@@ -41,12 +40,13 @@ services:
       context: ../frontend
       args:
         # need to specify here because it will be complied into image
-        - REACT_APP_API=https://chatbot.speechlab.sg:3001
+        - REACT_APP_API=http://localhost:3001
+        # - REACT_APP_API=https://chatbot.speechlab.sg:3001
     ports:
-      - '3000:80'
+      - "3000:80"
     deploy:
       replicas: 1
-  
+
   ################
   # Mongo Database
   ################
