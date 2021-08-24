@@ -131,9 +131,9 @@ export default function MultiChatbotInterface(props) {
           };
         }
       });
-      console.log(currentModelDetail);
+      // console.log(currentModelDetail);
       setModelDetail({ ...currentModelDetail });
-      console.log(replies);
+      // console.log(replies);
     });
   };
 

@@ -92,10 +92,6 @@ export default function MassChatbotComparison(props) {
   const [option, setOption] = React.useState(false);
 
   const [topic, setTopic] = React.useState("Baby Bonus");
-  // const [availableMICL, setAvailableMICL] = React.useState(true);
-  // const [availableDialog, setAvailableDialog] = React.useState(true);
-  // const [availableRajat, setAvailableRajat] = React.useState(true);
-  // const [availableRushi, setAvailableRushi] = React.useState(true);
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
@@ -124,35 +120,6 @@ export default function MassChatbotComparison(props) {
         setPage(0);
       }
     });
-    /*
-    switch (topic) {
-      case "Baby Bonus":
-        setAvailableDialog(true);
-        setAvailableMICL(true);
-        setAvailableRajat(true);
-        setAvailableRushi(true);
-        break;
-      case "Covid 19":
-        setAvailableDialog(true);
-        setAvailableMICL(false);
-        setAvailableRajat(true);
-        setAvailableRushi(true);
-        break;
-      case "ComCare":
-        setAvailableDialog(false);
-        setAvailableMICL(false);
-        setAvailableRajat(false);
-        setAvailableRushi(true);
-        break;
-      case "Adoption":
-        setAvailableDialog(false);
-        setAvailableMICL(false);
-        setAvailableRajat(false);
-        setAvailableRushi(true);
-        break;
-      default:
-        break;
-    }*/
     let currentModelDetail = modelDetail;
     props.models.forEach((model) => {
       const name = model.name;
@@ -303,17 +270,14 @@ export default function MassChatbotComparison(props) {
         topic: topic,
       };
       let service = "";
+      const modelName = value;
 
-      const modelName = value.toLowerCase();
-      if (value === "Andrew") {
-        modelName = "micl";
-      }
       service = props.queryModel(modelName, params);
 
       await Promise.all([props.askJamieAPI(params), service])
         .then((val) => {
           let req = { responses: [summarizer(val[0]), summarizer(val[1])] };
-          let prob = ResponseComparison(req);
+          let prob = props.makeResponseComparisonRequest(req);
           prob.then((probval) => {
             scorecontent.push(probval);
             tablecontent = [
@@ -470,12 +434,6 @@ export default function MassChatbotComparison(props) {
                     const details = modelDetail[name];
                     return <MenuItem value={name}>{name}</MenuItem>;
                   })}
-                {/* {availableDialog && (
-                  <MenuItem value="Dialogflow">Dialogflow</MenuItem>
-                )}
-                {availableMICL && <MenuItem value="Andrew">Andrew</MenuItem>}
-                {availableRajat && <MenuItem value="Rajat">Rajat</MenuItem>}
-                {availableRushi && <MenuItem value="Rushi">Rushi</MenuItem>} */}
               </Select>
 
               <FormHelperText>Chat Model Selection</FormHelperText>
