@@ -3,20 +3,7 @@ const mongoose = require('mongoose');
 
 /*  
     GET /models 
-    Response: [
-        {'name': 'Rushi', 'model_endpoint': [
-            {
-                "_id": "611a438193ac300d4a1970ea",
-                "topic": "Baby Bonus",
-                "topic_endpoint": "http://localhost:3002/rushi/api/queryEndpoint"
-            },
-            {
-                "_id": "611a438193ac300d4a1970eb",
-                "topic": "Covid 19",
-                "topic_endpoint": "http://localhost:3002/rushi/api/queryEndpoint"
-            },
-        ]}
-    ]
+    Response: []
 */
 const modelSchema = new mongoose.Schema({
     name: {

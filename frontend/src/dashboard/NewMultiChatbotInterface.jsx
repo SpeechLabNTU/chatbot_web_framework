@@ -25,7 +25,6 @@ import Collapse from "@material-ui/core/Collapse";
 import TopicSelection from "./components/TopicSelection";
 
 import Record from "../Record";
-import Jamie from "./components/Jamie";
 import AnswerModel from "./components/AnswerModel";
 import axios from "axios";
 
@@ -46,9 +45,6 @@ export default function MultiChatbotInterface(props) {
   const [topic, setTopic] = React.useState("Baby Bonus");
   const [inputMethod, setInputMethod] = React.useState(0);
 
-  const [responseJamie, setResponseJamie] = React.useState("");
-  const [loadingJamie, setLoadingJamie] = React.useState(false);
-
   /**
    * Each model requires the following state information to be kept track of:
    * Example:
@@ -61,7 +57,6 @@ export default function MultiChatbotInterface(props) {
    *      available: boolean
    *  }
    * }
-   
    */
   const [modelDetail, setModelDetail] = React.useState({});
 
@@ -69,6 +64,22 @@ export default function MultiChatbotInterface(props) {
     setInput("");
     resetResponses();
   }, [inputMethod]);
+
+  const compareOne = async (ModelResponse, jamieResponse) => {
+    let req = { responses: [ModelResponse, jamieResponse] };
+    return props
+      .makeResponseComparisonRequest(req)
+      .then((val) => {
+        try {
+          return parseFloat(val);
+        } catch {
+          return null;
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   const getResponses = (value) => {
     if (value.trim() === "") return;
@@ -83,36 +94,31 @@ export default function MultiChatbotInterface(props) {
       setSimilarQuestions(val);
     });
 
-    var promiseArray = [];
-    setLoadingJamie(true);
-    var askJamiePromise = props.askJamieAPI(params);
-    promiseArray.push(askJamiePromise);
-
-    askJamiePromise.then((res) => {
-      setResponseJamie(res);
-      setLoadingJamie(false);
-    });
     const currentModelDetail = modelDetail;
-    const queries = Object.keys(modelDetail).map((modelName) => {
-      const { check, available } = modelDetail[modelName];
-      if (check && available) {
-        currentModelDetail[modelName] = {
-          ...currentModelDetail[modelName],
-          loading: true,
-        };
-        setModelDetail(currentModelDetail);
-        return props
-          .queryModel(modelName, params)
-          .then((r) => {
-            return { modelName: modelName, response: r };
-          })
-          .catch((e) => {
-            return { modelName: modelName, response: e };
-          });
-      } else {
-        console.log("not checked", modelName);
-      }
-    });
+    const queries = Object.keys(modelDetail)
+      .filter((modelName) => {
+        return modelDetail[modelName].check;
+      })
+      .map((modelName) => {
+        const { check, available } = modelDetail[modelName];
+        if (check && available) {
+          currentModelDetail[modelName] = {
+            ...currentModelDetail[modelName],
+            loading: true,
+          };
+          setModelDetail(currentModelDetail);
+          return props
+            .queryModel(modelName, params)
+            .then(async (r) => {
+              return { modelName: modelName, response: r };
+            })
+            .catch((e) => {
+              return { modelName: modelName, response: e };
+            });
+        } else {
+          console.log("not checked", modelName);
+        }
+      });
 
     Promise.all(queries).then((replies) => {
       replies.forEach((reply) => {
@@ -124,6 +130,7 @@ export default function MultiChatbotInterface(props) {
           };
         } else {
           console.log("Error");
+          console.log(reply);
           currentModelDetail[reply.modelName] = {
             ...currentModelDetail[reply.modelName],
             loading: false,
@@ -131,17 +138,32 @@ export default function MultiChatbotInterface(props) {
           };
         }
       });
+      // setModelDetail({ ...currentModelDetail });
+      replies.forEach(async (reply) => {
+        if (reply.modelName === "AskJamie") return;
+        const modelScore = await compareOne(
+          reply.response,
+          currentModelDetail["AskJamie"].response
+        );
+        currentModelDetail[reply.modelName].score = modelScore;
+        setModelDetail({ ...currentModelDetail });
+      });
       // console.log(currentModelDetail);
-      setModelDetail({ ...currentModelDetail });
-      // console.log(replies);
     });
   };
 
   const resetResponses = () => {
-    // reset score
-    setSimilarQuestions(null);
-    setResponseJamie("");
-    //to set reponse and score to null for rest of answering model
+    // reset score and score
+    const currentModelDetail = modelDetail;
+    Object.keys(modelDetail).map((modelName) => {
+      const details = modelDetail[modelName];
+      currentModelDetail[modelName] = {
+        ...currentModelDetail[modelName],
+        score: null,
+        response: "",
+      };
+      setModelDetail(currentModelDetail);
+    });
   };
   const getEnabledText = () => {
     if (props.models && Object.keys(modelDetail).length > 0) {
@@ -189,7 +211,9 @@ export default function MultiChatbotInterface(props) {
       >
         {Object.keys(modelDetail)
           .filter((name) => {
-            return modelDetail[name].available;
+            if (name !== "AskJamie") {
+              return modelDetail[name].available;
+            }
           })
           .map((name) => {
             const details = modelDetail[name];
@@ -223,21 +247,6 @@ export default function MultiChatbotInterface(props) {
   };
 
   useEffect(() => {
-    const newModelDetail = {};
-    Object.keys(props.models).forEach((index) => {
-      const model = props.models[index];
-      newModelDetail[model.name] = {
-        score: null,
-        loading: false,
-        response: "",
-        check: true,
-        available: true,
-      };
-    });
-    setModelDetail(newModelDetail);
-  }, [props.models]);
-
-  useEffect(() => {
     resetResponses();
     let currentModelDetail = modelDetail;
     props.models.forEach((model) => {
@@ -267,6 +276,21 @@ export default function MultiChatbotInterface(props) {
     });
     setModelDetail(currentModelDetail);
   }, [topic]);
+
+  useEffect(() => {
+    const newModelDetail = {};
+    Object.keys(props.models).forEach((index) => {
+      const model = props.models[index];
+      newModelDetail[model.name] = {
+        score: null,
+        loading: false,
+        response: "",
+        check: true,
+        available: true,
+      };
+    });
+    setModelDetail(newModelDetail);
+  }, [props.models]);
 
   return (
     <React.Fragment>
@@ -409,9 +433,6 @@ export default function MultiChatbotInterface(props) {
           </Grid>
         </Grid>
         {/* below are the various chatbots */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Jamie loadingJamie={loadingJamie} responseJamie={responseJamie} />
-        </Grid>
         {renderBoxes()}
       </Grid>
     </React.Fragment>

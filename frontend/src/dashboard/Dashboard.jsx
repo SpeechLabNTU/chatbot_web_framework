@@ -25,7 +25,6 @@ export default function Dashboard(props) {
     });
   }, []);
 
-  // API calls for various chatbots
   const askJamieAPI = (params) => {
     return new Promise((resolve, reject) => {
       axios
@@ -63,6 +62,71 @@ export default function Dashboard(props) {
       }
     });
   };
+
+  // const dialogAPI = (params) => {
+  //   return new Promise((resolve, reject) => {
+  //     axios
+  //       .post(`${process.env.REACT_APP_API}/dialog/api/dialogflow`, params)
+  //       .then((res) => {
+  //         resolve(res.data.reply);
+  //       })
+  //       .catch((error) => {
+  //         console.log("Error contacting Dialogflow");
+  //       });
+  //   });
+  // };
+
+  // const miclAPI = (params) => {
+  //   return new Promise((resolve, reject) => {
+  //     axios
+  //       .post(`${process.env.REACT_APP_API}/micl/api/directQuery`, params)
+  //       .then((res) => {
+  //         resolve(res.data.reply);
+  //       })
+  //       .catch((error) => {
+  //         console.log("Error contacting MICL server");
+  //       });
+  //   });
+  // };
+
+  // const rajatAPI = (params) => {
+  //   return new Promise((resolve, reject) => {
+  //     axios
+  //       .post(`${process.env.REACT_APP_API}/rajat/api/queryEndpoint`, params)
+  //       .then((res) => {
+  //         resolve(res.data.reply);
+  //       })
+  //       .catch((error) => {
+  //         console.log("Error contacting Rajat server");
+  //       });
+  //   });
+  // };
+
+  // const rushiAPI = (params) => {
+  //   return new Promise((resolve, reject) => {
+  //     axios
+  //       .post(`${process.env.REACT_APP_API}/rushi/api/queryEndpoint`, params)
+  //       .then((res) => {
+  //         resolve(res.data.reply);
+  //       })
+  //       .catch((error) => {
+  //         console.log("Error contacting Rushi server");
+  //       });
+  //   });
+  // };
+
+  // const baniAPI = (params) => {
+  //   return new Promise((resolve, reject) => {
+  //     axios
+  //       .post(`${process.env.REACT_APP_API}/bani/api/queryEndpoint`, params)
+  //       .then((res) => {
+  //         resolve(res.data.reply);
+  //       })
+  //       .catch((error) => {
+  //         console.log("Error contacting Bani server");
+  //       });
+  //   });
+  // };
 
   const similarQuestionsAPI = (params) => {
     return new Promise((resolve, reject) => {
@@ -110,7 +174,6 @@ export default function Dashboard(props) {
           <ReactTab eventKey="dashboard" title="Multi-Chatbot Interface">
             <MultiChatbotInterface
               backendURL={backendURL}
-              askJamieAPI={askJamieAPI}
               queryModel={makeModelCall}
               similarQuestionsAPI={similarQuestionsAPI}
               makeResponseComparisonRequest={makeResponseComparisonRequest}
