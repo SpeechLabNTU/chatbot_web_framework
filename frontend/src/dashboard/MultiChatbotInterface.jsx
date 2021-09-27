@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Grid from "@material-ui/core/Grid";
@@ -14,6 +14,7 @@ import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
+import TabPanel from "./components/TabPanel";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -21,12 +22,11 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 
 import Collapse from "@material-ui/core/Collapse";
+import TopicSelection from "./components/TopicSelection";
 
 import Record from "../Record";
-import Jamie from "./components/Jamie";
 import AnswerModel from "./components/AnswerModel";
-import TopicSelection from "./components/TopicSelection";
-import TabPanel from "./components/TabPanel";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   descriptionCardGrid: {
@@ -38,141 +38,51 @@ const useStyles = makeStyles((theme) => ({
 export default function MultiChatbotInterface(props) {
   const classes = useStyles();
 
+  const [chatbotMenuRef, setChatbotMenuRef] = React.useState(null);
+
   const [input, setInput] = React.useState("");
   const [similarQuestions, setSimilarQuestions] = React.useState(null);
   const [topic, setTopic] = React.useState("Baby Bonus");
   const [inputMethod, setInputMethod] = React.useState(0);
 
-  ////////// various chatbot state variables
-  const [chatbotMenuRef, setChatbotMenuRef] = React.useState(null);
-  const [responseJamie, setResponseJamie] = React.useState("");
-  const [loadingJamie, setLoadingJamie] = React.useState(false);
-
-  const [responseDialog, setResponseDialog] = React.useState("");
-  const [loadingDialog, setLoadingDialog] = React.useState(false);
-  const [scoreDialog, setScoreDialog] = React.useState(null);
-  const [checkDialog, setCheckDialog] = React.useState(true);
-  const [availableDialog, setAvailableDialog] = React.useState(true);
-
-  const [responseMICL, setResponseMICL] = React.useState("");
-  const [loadingMICL, setLoadingMICL] = React.useState(false);
-  const [scoreMICL, setScoreMICL] = React.useState(null);
-  const [checkMICL, setCheckMICL] = React.useState(true);
-  const [availableMICL, setAvailableMICL] = React.useState(true);
-
-  const [responseRajat, setResponseRajat] = React.useState("");
-  const [loadingRajat, setLoadingRajat] = React.useState(false);
-  const [scoreRajat, setScoreRajat] = React.useState(null);
-  const [checkRajat, setCheckRajat] = React.useState(true);
-  const [availableRajat, setAvailableRajat] = React.useState(true);
-
-  const [responseRushi, setResponseRushi] = React.useState("");
-  const [loadingRushi, setLoadingRushi] = React.useState(false);
-  const [scoreRushi, setScoreRushi] = React.useState(null);
-  const [checkRushi, setCheckRushi] = React.useState(true);
-  const [availableRushi, setAvailableRushi] = React.useState(true);
-
-  const [responseBani, setResponseBani] = React.useState("");
-  const [loadingBani, setLoadingBani] = React.useState(false);
-  const [scoreBani, setScoreBani] = React.useState(null);
-  const [checkBani, setCheckBani] = React.useState(true);
-  const [availableBani, setAvailableBani] = React.useState(true);
-
-  // when topic changes
-  React.useEffect(() => {
-    resetResponses();
-
-    switch (topic) {
-      case "Baby Bonus":
-        setAvailableDialog(true);
-        setCheckDialog(true);
-        setAvailableMICL(true);
-        setCheckMICL(true);
-        setAvailableRajat(true);
-        setCheckRajat(true);
-        setAvailableRushi(true);
-        setCheckRushi(true);
-        setAvailableBani(true);
-        setCheckBani(true);
-        break;
-      case "Covid 19":
-        setAvailableDialog(true);
-        setCheckDialog(true);
-        setAvailableMICL(false);
-        setCheckMICL(false);
-        setAvailableRajat(true);
-        setCheckRajat(true);
-        setAvailableRushi(true);
-        setCheckRushi(true);
-        setAvailableBani(true);
-        setCheckBani(true);
-        break;
-      case "ComCare":
-        setAvailableDialog(false);
-        setCheckDialog(false);
-        setAvailableMICL(false);
-        setCheckMICL(false);
-        setAvailableRajat(false);
-        setCheckRajat(false);
-        setAvailableRushi(true);
-        setCheckRushi(true);
-        setAvailableBani(true);
-        setCheckBani(true);
-        break;
-      case "Adoption":
-        setAvailableDialog(false);
-        setCheckDialog(false);
-        setAvailableMICL(false);
-        setCheckMICL(false);
-        setAvailableRajat(false);
-        setCheckRajat(false);
-        setAvailableRushi(true);
-        setCheckRushi(true);
-        setAvailableBani(true);
-        setCheckBani(true);
-        break;
-      default:
-        break;
-    }
-  }, [topic]);
+  /**
+   * Each model requires the following state information to be kept track of:
+   * Example:
+   * {
+   *  'modelName': {
+   *      score: number,
+   *      loading: boolean,
+   *      response: String,
+   *      check: boolean,
+   *      available: boolean
+   *  }
+   * }
+   */
+  const [modelDetail, setModelDetail] = React.useState({});
 
   React.useEffect(() => {
     setInput("");
     resetResponses();
   }, [inputMethod]);
 
-  const makeComparisons = (responseArray) => {
-    // have to use responseArray instead of useState variables because values
-    // will be stale.
-    // getResponses changed the state of response variables previously,
-    // upon reaching this function, variables will still be referencing stale values
-    let temp = [
-      [checkDialog, responseArray[1], setScoreDialog],
-      [checkMICL, responseArray[2], setScoreMICL],
-      [checkRajat, responseArray[3], setScoreRajat],
-      [checkRushi, responseArray[4], setScoreRushi],
-      [checkBani, responseArray[5], setScoreBani],
-    ];
-    temp.forEach(([check, response, setScore]) => {
-      if (check) {
-        let req = { responses: [response, responseArray[0]] };
-        props
-          .makeResponseComparisonRequest(req)
-          .then((val) => {
-            setScore(val);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      }
-    });
+  const compareOne = async (ModelResponse, jamieResponse) => {
+    let req = { responses: [ModelResponse, jamieResponse] };
+    return props
+      .makeResponseComparisonRequest(req)
+      .then((val) => {
+        try {
+          return parseFloat(val);
+        } catch {
+          return null;
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
-  // starting point of user text/speech input
   const getResponses = (value) => {
     if (value.trim() === "") return;
-
-    // reset scores
     resetResponses();
 
     var params = {
@@ -184,65 +94,206 @@ export default function MultiChatbotInterface(props) {
       setSimilarQuestions(val);
     });
 
-    var promiseArray = [];
-    setLoadingJamie(true);
-    var askJamiePromise = props.askJamieAPI(params);
-    promiseArray.push(askJamiePromise);
+    const currentModelDetail = modelDetail;
+    const queries = Object.keys(modelDetail)
+      .filter((modelName) => {
+        return modelDetail[modelName].check;
+      })
+      .map((modelName) => {
+        const { check, available } = modelDetail[modelName];
+        if (check && available) {
+          currentModelDetail[modelName] = {
+            ...currentModelDetail[modelName],
+            loading: true,
+          };
+          setModelDetail(currentModelDetail);
+          return props
+            .queryModel(modelName, params)
+            .then(async (r) => {
+              return { modelName: modelName, response: r };
+            })
+            .catch((e) => {
+              return { modelName: modelName, response: e };
+            });
+        } else {
+          console.log("not checked", modelName);
+        }
+      });
 
-    askJamiePromise.then((res) => {
-      setResponseJamie(res);
-      setLoadingJamie(false);
-    });
-
-    let temp = [
-      [checkDialog, props.dialogAPI, setLoadingDialog, setResponseDialog],
-      [checkMICL, props.miclAPI, setLoadingMICL, setResponseMICL],
-      [checkRajat, props.rajatAPI, setLoadingRajat, setResponseRajat],
-      [checkRushi, props.rushiAPI, setLoadingRushi, setResponseRushi],
-      [checkBani, props.baniAPI, setLoadingBani, setResponseBani],
-    ];
-
-    temp.forEach(([check, apiCall, setLoading, setResponse]) => {
-      if (check) {
-        setLoading(true);
-        var promise = apiCall(params);
-        promiseArray.push(promise);
-
-        promise.then((res) => {
-          setResponse(res);
-          setLoading(false);
-        });
-      } else {
-        promiseArray.push("");
-      }
-    });
-
-    Promise.all(promiseArray).then((values) => {
-      // console.log(values)
-      makeComparisons(values);
+    Promise.all(queries).then((replies) => {
+      replies.forEach((reply) => {
+        if (reply && !(reply.response instanceof Error)) {
+          currentModelDetail[reply.modelName] = {
+            ...currentModelDetail[reply.modelName],
+            loading: false,
+            response: reply.response,
+          };
+        } else {
+          console.log("Error");
+          console.log(reply);
+          currentModelDetail[reply.modelName] = {
+            ...currentModelDetail[reply.modelName],
+            loading: false,
+            response: "Error getting response",
+          };
+        }
+      });
+      // setModelDetail({ ...currentModelDetail });
+      replies.forEach(async (reply) => {
+        if (reply.modelName === "AskJamie") return;
+        const modelScore = await compareOne(
+          reply.response,
+          currentModelDetail["AskJamie"].response
+        );
+        currentModelDetail[reply.modelName].score = modelScore;
+        setModelDetail({ ...currentModelDetail });
+      });
+      // console.log(currentModelDetail);
     });
   };
 
   const resetResponses = () => {
-    setSimilarQuestions(null);
-
-    setResponseJamie("");
-    setResponseDialog("");
-    setResponseMICL("");
-    setResponseRajat("");
-    setResponseRushi("");
-    setResponseBani("");
-
-    setScoreDialog(null);
-    setScoreMICL(null);
-    setScoreRajat(null);
-    setScoreRushi(null);
-    setScoreBani(null);
+    // reset score and score
+    const currentModelDetail = modelDetail;
+    Object.keys(modelDetail).map((modelName) => {
+      const details = modelDetail[modelName];
+      currentModelDetail[modelName] = {
+        ...currentModelDetail[modelName],
+        score: null,
+        response: "",
+      };
+      setModelDetail(currentModelDetail);
+    });
   };
+  const getEnabledText = () => {
+    if (props.models && Object.keys(modelDetail).length > 0) {
+      return Object.keys(props.models)
+        .filter((index) => {
+          return modelDetail[props.models[index].name].check;
+        })
+        .map((index) => {
+          return props.models[index].name;
+        })
+        .join(" ");
+    } else {
+      return "";
+    }
+  };
+  // To display boxes based on how many model
+  const renderBoxes = () => {
+    return Object.keys(modelDetail)
+      .filter((name) => {
+        return modelDetail[name].check;
+      })
+      .map((name) => {
+        const details = modelDetail[name];
+        return (
+          <Grid item xs={12} sm={6} md={4}>
+            <AnswerModel
+              value={name}
+              loading={details.loading}
+              response={details.response}
+              score={details.score}
+            />
+          </Grid>
+        );
+      });
+  };
+  const renderCheckboxList = () => {
+    return (
+      <Menu
+        anchorEl={chatbotMenuRef}
+        keepMounted
+        open={Boolean(chatbotMenuRef)}
+        onClose={() => {
+          setChatbotMenuRef(null);
+        }}
+      >
+        {Object.keys(modelDetail)
+          .filter((name) => {
+            if (name !== "AskJamie") {
+              return modelDetail[name].available;
+            }
+          })
+          .map((name) => {
+            const details = modelDetail[name];
+            return (
+              <MenuItem
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                {name}
+                <Checkbox
+                  checked={details.check}
+                  name={"check" + name}
+                  value={name}
+                  onChange={(e) => {
+                    setModelDetail({
+                      ...modelDetail,
+                      [name]: {
+                        ...modelDetail[name],
+                        check: e.target.checked,
+                        response: !e.target.checked
+                          ? ""
+                          : modelDetail[name].response,
+                      },
+                    });
+                  }}
+                />
+              </MenuItem>
+            );
+          })}
+      </Menu>
+    );
+  };
+
+  useEffect(() => {
+    resetResponses();
+    let currentModelDetail = modelDetail;
+    props.models.forEach((model) => {
+      const name = model.name;
+      const matchedEndpoint = model.model_endpoint.find(
+        (topicEndpointInfo) => topicEndpointInfo.topic === topic
+      );
+      if (matchedEndpoint) {
+        currentModelDetail = {
+          ...currentModelDetail,
+          [model.name]: {
+            ...currentModelDetail[model.name],
+            available: true,
+            check: true,
+          },
+        };
+      } else {
+        currentModelDetail = {
+          ...currentModelDetail,
+          [model.name]: {
+            ...currentModelDetail[model.name],
+            available: false,
+            check: false,
+          },
+        };
+      }
+    });
+    setModelDetail(currentModelDetail);
+  }, [topic]);
+
+  useEffect(() => {
+    const newModelDetail = {};
+    Object.keys(props.models).forEach((index) => {
+      const model = props.models[index];
+      newModelDetail[model.name] = {
+        score: null,
+        loading: false,
+        response: "",
+        check: true,
+        available: true,
+      };
+    });
+    setModelDetail(newModelDetail);
+  }, [props.models]);
 
   return (
     <React.Fragment>
-      {/* Description Card */}
       <Grid container className={classes.descriptionCardGrid} justify="center">
         <Card style={{ paddingRight: 10 }}>
           <CardContent>
@@ -260,7 +311,6 @@ export default function MultiChatbotInterface(props) {
           </CardContent>
         </Card>
       </Grid>
-
       {/* The rest of the main interface */}
       <Grid container spacing={3}>
         {/* Tabs and User Inputs */}
@@ -358,13 +408,11 @@ export default function MultiChatbotInterface(props) {
             </Collapse>
           </Grid>
         </Grid>
-
         {/* Question topic and Chatbot services */}
         <Grid item container xs={12} spacing={1}>
           <Grid item>
             <TopicSelection topic={topic} setTopic={setTopic} />
           </Grid>
-
           <Grid item>
             <Paper elevation={1}>
               <List component="nav">
@@ -376,168 +424,16 @@ export default function MultiChatbotInterface(props) {
                 >
                   <ListItemText
                     primary="Chatbot Services"
-                    secondary={
-                      (checkDialog ? "Dialogflow " : "") +
-                      (checkMICL ? "Andrew " : "") +
-                      (checkRajat ? "Rajat " : "") +
-                      (checkRushi ? "Rushi " : "") +
-                      (checkBani ? "Bani" : "")
-                    }
+                    secondary={getEnabledText()}
                   />
                 </ListItem>
               </List>
             </Paper>
-            <Menu
-              anchorEl={chatbotMenuRef}
-              keepMounted
-              open={Boolean(chatbotMenuRef)}
-              onClose={() => {
-                setChatbotMenuRef(null);
-              }}
-            >
-              {availableDialog && (
-                <MenuItem
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  Dialogflow
-                  <Checkbox
-                    checked={checkDialog}
-                    name="checkDialog"
-                    value="Dialogflow"
-                    onChange={(e) => {
-                      setCheckDialog(e.target.checked);
-                      if (!e.target.checked) setResponseDialog("");
-                    }}
-                  />
-                </MenuItem>
-              )}
-              {availableMICL && (
-                <MenuItem
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  Andrew
-                  <Checkbox
-                    checked={checkMICL}
-                    name="checkMICL"
-                    value="MICL"
-                    onChange={(e) => {
-                      setCheckMICL(e.target.checked);
-                      if (!e.target.checked) setResponseMICL("");
-                    }}
-                  />
-                </MenuItem>
-              )}
-              {availableRajat && (
-                <MenuItem
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  Rajat
-                  <Checkbox
-                    checked={checkRajat}
-                    name="checkRajat"
-                    value="Rajat"
-                    onChange={(e) => {
-                      setCheckRajat(e.target.checked);
-                      if (!e.target.checked) setResponseRajat("");
-                    }}
-                  />
-                </MenuItem>
-              )}
-              {availableRushi && (
-                <MenuItem
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  Rushi
-                  <Checkbox
-                    checked={checkRushi}
-                    name="checkRushi"
-                    value="Rushi"
-                    onChange={(e) => {
-                      setCheckRushi(e.target.checked);
-                      if (!e.target.checked) setResponseRushi("");
-                    }}
-                  />
-                </MenuItem>
-              )}
-              {availableBani && (
-                <MenuItem
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  Bani
-                  <Checkbox
-                    checked={checkBani}
-                    name="checkBani"
-                    value="Bani"
-                    onChange={(e) => {
-                      setCheckBani(e.target.checked);
-                      if (!e.target.checked) setResponseBani("");
-                    }}
-                  />
-                </MenuItem>
-              )}
-            </Menu>
+            {renderCheckboxList()}
           </Grid>
         </Grid>
-
         {/* below are the various chatbots */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Jamie loadingJamie={loadingJamie} responseJamie={responseJamie} />
-        </Grid>
-
-        {checkDialog && (
-          <Grid item xs={12} sm={6} md={4}>
-            <AnswerModel
-              value="Dialogflow"
-              loading={loadingDialog}
-              response={responseDialog}
-              score={scoreDialog}
-            />
-          </Grid>
-        )}
-
-        {checkMICL && (
-          <Grid item xs={12} sm={6} md={4}>
-            <AnswerModel
-              value="Andrew"
-              loading={loadingMICL}
-              response={responseMICL}
-              score={scoreMICL}
-            />
-          </Grid>
-        )}
-
-        {checkRajat && (
-          <Grid item xs={12} sm={6} md={4}>
-            <AnswerModel
-              value="Rajat"
-              loading={loadingRajat}
-              response={responseRajat}
-              score={scoreRajat}
-            />
-          </Grid>
-        )}
-
-        {checkRushi && (
-          <Grid item xs={12} sm={6} md={4}>
-            <AnswerModel
-              value="Rushi"
-              loading={loadingRushi}
-              response={responseRushi}
-              score={scoreRushi}
-            />
-          </Grid>
-        )}
-
-        {checkBani && (
-          <Grid item xs={12} sm={6} md={4}>
-            <AnswerModel
-              value="Bani"
-              loading={loadingBani}
-              response={responseBani}
-              score={scoreBani}
-            />
-          </Grid>
-        )}
+        {renderBoxes()}
       </Grid>
     </React.Fragment>
   );

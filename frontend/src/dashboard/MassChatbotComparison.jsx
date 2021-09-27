@@ -104,10 +104,12 @@ export default function MassChatbotComparison(props) {
   useEffect(() => {
     const newModelDetail = {};
     Object.keys(props.models).forEach((index) => {
-      const model = props.models[index];
-      newModelDetail[model.name] = {
-        available: true,
-      };
+      if (props.models[index].name != "AskJamie") {
+        const model = props.models[index];
+        newModelDetail[model.name] = {
+          available: true,
+        };
+      }
     });
     setModelDetail(newModelDetail);
   }, [props.models]);
@@ -126,7 +128,7 @@ export default function MassChatbotComparison(props) {
       const matchedEndpoint = model.model_endpoint.find(
         (topicEndpointInfo) => topicEndpointInfo.topic === topic
       );
-      if (matchedEndpoint) {
+      if (matchedEndpoint && name != "AskJamie") {
         currentModelDetail = {
           ...currentModelDetail,
           [model.name]: {

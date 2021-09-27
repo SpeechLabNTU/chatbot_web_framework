@@ -7,7 +7,7 @@ import Container from "@material-ui/core/Container";
 import LogoHeaders from "./components/LogoHeaders";
 import MassChatbotComparison from "./MassChatbotComparison";
 import AudioTranscriptionComparison from "./AudioTranscriptionComparison";
-import MultiChatbotInterface from "./NewMultiChatbotInterface";
+import MultiChatbotInterface from "./MultiChatbotInterface";
 
 import ReactTab from "react-bootstrap/Tab";
 import ReactTabs from "react-bootstrap/Tabs";
@@ -25,19 +25,6 @@ export default function Dashboard(props) {
     });
   }, []);
 
-  const askJamieAPI = (params) => {
-    return new Promise((resolve, reject) => {
-      axios
-        .post(`${process.env.REACT_APP_API}/jamie/api/askJamieFast`, params)
-        .then((res) => {
-          resolve(res.data.reply);
-        })
-        .catch((error) => {
-          console.log("Error contacting Ask Jamie");
-        });
-    });
-  };
-
   const makeModelCall = (modelName, params) => {
     return new Promise((resolve, reject) => {
       const foundModelDetail = models.find((m) => m.name === modelName);
@@ -46,7 +33,7 @@ export default function Dashboard(props) {
       );
       if (endpoint) {
         axios
-          .post(endpoint.topic_endpoint, params, {
+          .post(`${backendURL}` + endpoint.topic_endpoint, params, {
             timeout: 2500,
           })
           .then((r) => {
@@ -62,72 +49,18 @@ export default function Dashboard(props) {
       }
     });
   };
-
-  // const dialogAPI = (params) => {
-  //   return new Promise((resolve, reject) => {
-  //     axios
-  //       .post(`${process.env.REACT_APP_API}/dialog/api/dialogflow`, params)
-  //       .then((res) => {
-  //         resolve(res.data.reply);
-  //       })
-  //       .catch((error) => {
-  //         console.log("Error contacting Dialogflow");
-  //       });
-  //   });
-  // };
-
-  // const miclAPI = (params) => {
-  //   return new Promise((resolve, reject) => {
-  //     axios
-  //       .post(`${process.env.REACT_APP_API}/micl/api/directQuery`, params)
-  //       .then((res) => {
-  //         resolve(res.data.reply);
-  //       })
-  //       .catch((error) => {
-  //         console.log("Error contacting MICL server");
-  //       });
-  //   });
-  // };
-
-  // const rajatAPI = (params) => {
-  //   return new Promise((resolve, reject) => {
-  //     axios
-  //       .post(`${process.env.REACT_APP_API}/rajat/api/queryEndpoint`, params)
-  //       .then((res) => {
-  //         resolve(res.data.reply);
-  //       })
-  //       .catch((error) => {
-  //         console.log("Error contacting Rajat server");
-  //       });
-  //   });
-  // };
-
-  // const rushiAPI = (params) => {
-  //   return new Promise((resolve, reject) => {
-  //     axios
-  //       .post(`${process.env.REACT_APP_API}/rushi/api/queryEndpoint`, params)
-  //       .then((res) => {
-  //         resolve(res.data.reply);
-  //       })
-  //       .catch((error) => {
-  //         console.log("Error contacting Rushi server");
-  //       });
-  //   });
-  // };
-
-  // const baniAPI = (params) => {
-  //   return new Promise((resolve, reject) => {
-  //     axios
-  //       .post(`${process.env.REACT_APP_API}/bani/api/queryEndpoint`, params)
-  //       .then((res) => {
-  //         resolve(res.data.reply);
-  //       })
-  //       .catch((error) => {
-  //         console.log("Error contacting Bani server");
-  //       });
-  //   });
-  // };
-
+  const askJamieAPI = (params) => {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${process.env.REACT_APP_API}/jamie/api/askJamieFast`, params)
+        .then((res) => {
+          resolve(res.data.reply);
+        })
+        .catch((error) => {
+          console.log("Error contacting Ask Jamie");
+        });
+    });
+  };
   const similarQuestionsAPI = (params) => {
     return new Promise((resolve, reject) => {
       axios
@@ -140,7 +73,6 @@ export default function Dashboard(props) {
         });
     });
   };
-
   // for response comparisons
   const makeResponseComparisonRequest = (params) => {
     return new Promise((resolve, reject) => {
@@ -166,28 +98,26 @@ export default function Dashboard(props) {
     <React.Fragment>
       <Container maxWidth="lg" style={{ paddingBottom: theme.spacing(6) }}>
         <LogoHeaders />
-
         <ChatWidget />
-
         <ReactTabs defaultActiveKey="dashboard" id="uncontrolled-tab-example">
           {/* Multi-Chatbot Interface */}
           <ReactTab eventKey="dashboard" title="Multi-Chatbot Interface">
             <MultiChatbotInterface
               backendURL={backendURL}
+              models={models}
               queryModel={makeModelCall}
               similarQuestionsAPI={similarQuestionsAPI}
               makeResponseComparisonRequest={makeResponseComparisonRequest}
-              models={models}
             />
           </ReactTab>
 
           {/* Performance Analysis */}
           <ReactTab eventKey="chart" title="Performance Analysis">
             <MassChatbotComparison
+              models={models}
               askJamieAPI={askJamieAPI}
               queryModel={makeModelCall}
               makeResponseComparisonRequest={makeResponseComparisonRequest}
-              models={models}
             />
           </ReactTab>
 

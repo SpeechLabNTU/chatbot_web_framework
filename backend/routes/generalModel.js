@@ -1,9 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
 /*  
     GET /models 
-    Response: []
+    Response:
+    {
+    "name":"Rushi",
+    "model_endpoint":[
+        {"topic":"Baby Bonus", "topic_endpoint":"rushi/api/queryEndpoint"},
+        {"topic":"Covid 19", "topic_endpoint":"/rushi/api/queryEndpoint"},
+        {"topic":"ComCare", "topic_endpoint":"/rushi/api/queryEndpoint"},
+        {"topic":"Adoption", "topic_endpoint":"/rushi/api/queryEndpoint"}
+    }    
 */
 const modelSchema = new mongoose.Schema({
     name: {
@@ -38,7 +45,6 @@ module.exports = () => {
                             };
                         })};
         const options = {upsert: true, returnOriginal: false};
-
         Model.findOneAndUpdate(filter, update, options, function(error, model) {
             if (!error) {
                 if (!model) {
@@ -57,37 +63,11 @@ module.exports = () => {
             }
         });
     });
-
-    router.delete("/delete/:name", async (req, res) => {
-        await Model.deleteOne({name: req.params.name})
-        .then(function(){console.log("Data deleted");})
-        .catch(function(error){console.log(error);});
-    });
-
     
     router.delete("/deleteAll", async (req, res) => {
         await Model.deleteMany()
         .then(function(){console.log("Data deleted");})
         .catch(function(error){console.log(error);});
-    });
-
-    router.post("/add", async (req, res) => { 
-        const model = new Model({
-            name: req.body.name,
-            url: req.body.url,
-            model_endpoint: req.body.model_endpoint.map(model_endpoint => {
-                return {
-                    topic: model_endpoint.topic,
-                    topic_endpoint: model_endpoint.topic_endpoint
-                };
-            })
-        });
-        try{
-            const savedModel = await model.save();
-            res.json(savedModel);
-        } catch (err) {
-            res.json({message: err})
-        }
     });
     return router
 }
