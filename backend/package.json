@@ -18,6 +18,7 @@
     "csv-writer": "^1.6.0",
     "debug": "~2.6.9",
     "dependencies": "0.0.1",
+    "dotenv": "^8.6.0",
     "ejs": "~2.5.7",
     "express": "^4.17.1",
     "fluent-ffmpeg": "^2.1.2",
@@ -36,7 +37,6 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "dotenv": "^8.6.0",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",
