@@ -1,20 +1,19 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
 
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-
+import TextField from "@material-ui/core/TextField";
+import FormControl from "@material-ui/core/FormControl";
 
 const useStyles = makeStyles((theme) => ({
   formcontrol: {
-    width: '100%',
+    width: "100%",
   },
   textfield: {
     "& .MuiInputBase-input.Mui-disabled": {
-      color: 'black'
+      color: "black",
     },
-  }
-}))
+  },
+}));
 
 export default function AnswerModel(props) {
   const classes = useStyles();
@@ -30,7 +29,13 @@ export default function AnswerModel(props) {
           rows="10"
           variant="outlined"
           disabled
-          helperText={props.score !== null ? "Similarity Score: " + props.score : "Comparison Inactive"}
+          helperText={
+            props.value !== "AskJamie"
+              ? props.score
+                ? "Similarity Score: " + props.score
+                : "Comparison Inactive"
+              : undefined
+          }
           value={props.loading ? "loading..." : props.response}
         />
       </FormControl>

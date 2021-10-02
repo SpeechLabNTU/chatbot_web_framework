@@ -30,4 +30,5 @@ lib64
 #optional
 .env
 .vscode/
+.idea/
 .DS_Store
